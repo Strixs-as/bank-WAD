@@ -1,0 +1,111 @@
+# Build output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE
+.idea/
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+.vscode/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Mac OS
+.DS_Store
+
+# Logs
+*.log
+logs/
+app-startup.log
+build.log
+build2.log
+compile_output.txt
+h2-startup.log
+jetty-run.log
+last-run.log
+maven_compile.log
+run.log
+run_output.txt
+
+# Docs folder (keep docs/ in repo but ignore old loose doc files)
+docs/
+
+# Old documentation files (Russian)
+БЫСТРЫЙ_ЗАПУСК.bat
+БЫСТРЫЙ_СТАРТ.md
+ЗАПУСК.bat
+ЗАПУСК.md
+ЗАПУСК_3_ШАГА.txt
+ЗАПУСК_IDEA.md
+ЗАПУСК_SQLSERVER.bat
+ЗАПУСК_SQL_SERVER.md
+ЗАПУСК_ПРЯМО_СЕЙЧАС.bat
+ЗАПУСК_САЙТА_СЕЙЧАС.bat
+ЗАПУСК_ЧЕРЕЗ_IDEA.md
+ЗАПУСТИТЬ_СЕЙЧАС.bat
+ИНСТРУКЦИЯ_ЗАПУСК_IDEA.md
+ИТОГОВОЕ_РЕШЕНИЕ.md
+КАК_ЗАПУСТИТЬ_САЙТ.txt
+НАЧНИ_ЗДЕСЬ.md
+НАЧНИ_ЗДЕСЬ_ФИНАЛ.md
+ПЕРЕЗАПУСК_САЙТА.txt
+ПРОБЛЕМА_РЕШЕНА.txt
+ПРОВЕРКА_БД.sql
+РЕШЕНИЕ_ОШИБКИ.md
+РЕШЕНИЕ_ПОРТ_8080.bat
+РЕШЕНИЕ_ПОРТ_8080.md
+УСТАНОВКА_SQL_SERVER.md
+ФИНАЛЬНАЯ_ИНСТРУКЦИЯ.md
+ФИНАЛЬНЫЙ_ЗАПУСК.txt
+ЧИТАЙ_И_ЗАПУСКАЙ.txt
+ЧИТАЙ_МЕНЯ.txt
+ЧИТАЙ_МЕНЯ_СЕЙЧАС.txt
+ЧИТАЙ_СНАЧАЛА.md
+ШПАРГАЛКА.txt
+ШПАРГАЛКА_ЗАПУСК.txt
+✅_ВСЁ_ИСПРАВЛЕНО_✅.txt
+🎯_НАЧАТЬ_ЗДЕСЬ_🎯.txt
+🚀_ЗАПУСК_САЙТА_🚀.txt
+FINAL_STATUS.md
+FIXES.md
+PROJECT_SUMMARY.md
+STATUS_FIX.md
+
+# Old bat/scripts
+build.bat
+run_spring_boot.bat
+start.bat
+START_APP.bat
+START_H2.bat
+start_sqlserver.bat
+ZAPUSK.bat
+QUICK_START_H2.bat
+
+# SQL scripts (not needed in repo)
+create_bank_database.sql
+database_setup.sql
+

@@ -1,0 +1,15 @@
+﻿INSERT INTO roles (id, name, description) VALUES (1, 'ADMIN', 'Administrator');
+INSERT INTO roles (id, name, description) VALUES (2, 'USER', 'Regular User');
+INSERT INTO roles (id, name, description) VALUES (3, 'MANAGER', 'Manager');
+INSERT INTO account_types (id, name) VALUES (1, 'Checking');
+INSERT INTO account_types (id, name) VALUES (2, 'Savings');
+INSERT INTO account_types (id, name) VALUES (3, 'Investment');
+INSERT INTO card_types (id, name, annual_fee) VALUES (1, 'Debit', 0);
+INSERT INTO card_types (id, name, annual_fee) VALUES (2, 'Credit', 50);
+INSERT INTO card_types (id, name, annual_fee) VALUES (3, 'Platinum', 150);
+INSERT INTO loan_types (id, name, interest_rate) VALUES (1, 'Personal', 7.5);
+INSERT INTO loan_types (id, name, interest_rate) VALUES (2, 'Home', 3.5);
+INSERT INTO loan_types (id, name, interest_rate) VALUES (3, 'Auto', 4.5);
+INSERT INTO currency_types (id, code, name) VALUES (1, 'USD', 'US Dollar');
+INSERT INTO currency_types (id, code, name) VALUES (2, 'EUR', 'Euro');
+INSERT INTO currency_types (id, code, name) VALUES (3, 'RUB', 'Russian Ruble');

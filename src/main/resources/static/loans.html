@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кредиты - Банковская Система</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .loan-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .loan-type-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .loan-type-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .loan-type-card h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .loan-type-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button.primary {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button.primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .loan-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .loan-item {
+            padding: 1.5rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .loan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d1ecf1; color: #0c5460; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-paid_off { background: #e2e3e5; color: #383d41; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏦 Банковская Система - Кредиты</h1>
+        <div class="nav-links">
+            <a href="dashboard.html">Главная</a>
+            <a href="deposits.html">Депозиты</a>
+            <a href="index.html" onclick="logout()">Выйти</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Типы кредитов -->
+        <div class="card">
+            <h2>Выберите тип кредита</h2>
+            <div class="loan-types">
+                <div class="loan-type-card" onclick="selectLoanType('PERSONAL')">
+                    <h3>💰 Потребительский</h3>
+                    <p>От 5% годовых<br>До 5 лет</p>
+                </div>
+                <div class="loan-type-card" onclick="selectLoanType('MORTGAGE')">
+                    <h3>🏠 Ипотека</h3>
+                    <p>От 7% годовых<br>До 30 лет</p>
+                </div>
+                <div class="loan-type-card" onclick="selectLoanType('AUTO')">
+                    <h3>🚗 Автокредит</h3>
+                    <p>От 6% годовых<br>До 7 лет</p>
+                </div>
+                <div class="loan-type-card" onclick="selectLoanType('BUSINESS')">
+                    <h3>💼 Бизнес кредит</h3>
+                    <p>От 8% годовых<br>До 10 лет</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма заявки на кредит -->
+        <div class="card">
+            <h2>Заявка на кредит</h2>
+            <div id="loanMessage" class="message"></div>
+            <form id="loanForm">
+                <div class="form-group">
+                    <label for="loanType">Тип кредита:</label>
+                    <select id="loanType" required>
+                        <option value="PERSONAL">Потребительский</option>
+                        <option value="MORTGAGE">Ипотека</option>
+                        <option value="AUTO">Автокредит</option>
+                        <option value="BUSINESS">Бизнес кредит</option>
+                        <option value="STUDENT">Студенческий</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Сумма кредита:</label>
+                    <input type="number" id="amount" min="10000" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label for="interestRate">Процентная ставка (% годовых):</label>
+                    <input type="number" id="interestRate" min="0.1" max="30" step="0.1" value="10" required>
+                </div>
+                <div class="form-group">
+                    <label for="termInMonths">Срок (месяцев):</label>
+                    <input type="number" id="termInMonths" min="3" max="360" value="12" required>
+                </div>
+                <div class="form-group">
+                    <label for="currency">Валюта:</label>
+                    <select id="currency" required>
+                        <option value="RUB">RUB - Рубль</option>
+                        <option value="USD">USD - Доллар</option>
+                        <option value="EUR">EUR - Евро</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="purpose">Цель кредита:</label>
+                    <textarea id="purpose" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="primary">Подать заявку</button>
+            </form>
+        </div>
+
+        <!-- Мои кредиты -->
+        <div class="card">
+            <h2>Мои кредиты</h2>
+            <div id="loansList" class="loan-list">
+                <p style="text-align: center; padding: 2rem; color: #666;">Загрузка...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'index.html';
+        }
+
+        window.addEventListener('load', loadLoans);
+
+        function selectLoanType(type) {
+            document.getElementById('loanType').value = type;
+            window.scrollTo({ top: document.getElementById('loanForm').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                loanType: document.getElementById('loanType').value,
+                amount: document.getElementById('amount').value,
+                interestRate: document.getElementById('interestRate').value,
+                termInMonths: document.getElementById('termInMonths').value,
+                currency: document.getElementById('currency').value,
+                purpose: document.getElementById('purpose').value
+            };
+
+            try {
+                const params = new URLSearchParams(formData);
+                const response = await fetch(`${API_BASE}/loans/apply?${params}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'userId': localStorage.getItem('userId')
+                    }
+                });
+
+                if (response.ok) {
+                    showMessage('loanMessage', 'Заявка успешно подана! Ожидайте рассмотрения.', 'success');
+                    document.getElementById('loanForm').reset();
+                    loadLoans();
+                } else {
+                    const error = await response.json();
+                    showMessage('loanMessage', error.error || 'Ошибка при подаче заявки', 'error');
+                }
+            } catch (error) {
+                showMessage('loanMessage', 'Ошибка соединения с сервером', 'error');
+            }
+        });
+
+        async function loadLoans() {
+            const userId = localStorage.getItem('userId');
+            const loansList = document.getElementById('loansList');
+
+            try {
+                const response = await fetch(`${API_BASE}/loans/user/${userId}`);
+                const loans = await response.json();
+
+                if (loans.length === 0) {
+                    loansList.innerHTML = '<p style="text-align: center; padding: 2rem;">У вас пока нет кредитов</p>';
+                    return;
+                }
+
+                loansList.innerHTML = loans.map(loan => `
+                    <div class="loan-item">
+                        <div class="loan-header">
+                            <div>
+                                <strong>${getLoanTypeName(loan.loanType)}</strong>
+                                <div style="font-size: 0.9rem; color: #666;">№ ${loan.loanNumber}</div>
+                            </div>
+                            <span class="status-badge status-${loan.status.toLowerCase()}">${getStatusName(loan.status)}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Сумма кредита</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${loan.principalAmount} ${loan.currency}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Остаток</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${loan.outstandingBalance} ${loan.currency}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Ежемесячный платеж</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${loan.monthlyPayment} ${loan.currency}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Ставка</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${loan.interestRate}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                loansList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки кредитов</p>';
+            }
+        }
+
+        function getLoanTypeName(type) {
+            const types = {
+                'PERSONAL': 'Потребительский кредит',
+                'MORTGAGE': 'Ипотека',
+                'AUTO': 'Автокредит',
+                'BUSINESS': 'Бизнес кредит',
+                'STUDENT': 'Студенческий кредит'
+            };
+            return types[type] || type;
+        }
+
+        function getStatusName(status) {
+            const statuses = {
+                'PENDING': 'Ожидает рассмотрения',
+                'APPROVED': 'Одобрен',
+                'ACTIVE': 'Активен',
+                'PAID_OFF': 'Погашен',
+                'REJECTED': 'Отклонен'
+            };
+            return statuses[status] || status;
+        }
+
+        function showMessage(elementId, text, type) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            setTimeout(() => messageEl.style.display = 'none', 5000);
+        }
+
+        function logout() {
+            localStorage.clear();
+        }
+    </script>
+</body>
+</html>
+

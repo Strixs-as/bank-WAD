@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Банковская система</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+            padding: 40px;
+        }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h1 { color: #333; font-size: 1.8em; margin-bottom: 10px; }
+        .login-header p { color: #666; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px; font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .error-message { color: #d32f2f; font-size: 0.9em; margin-top: 5px; display: none; }
+        .login-button {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 8px;
+            font-size: 1.1em; font-weight: bold; cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .login-button:hover { transform: scale(1.02); }
+        .register-link { text-align: center; margin-top: 20px; color: #666; }
+        .register-link a { color: #667eea; text-decoration: none; font-weight: bold; }
+        .register-link a:hover { text-decoration: underline; }
+        .success-message {
+            background: #4caf50; color: white; padding: 12px;
+            border-radius: 8px; margin-bottom: 20px; display: none;
+        }
+        .alert { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; }
+        .alert-error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🏦 Вход</h1>
+            <p>Добро пожаловать в банковскую систему</p>
+        </div>
+        <div class="success-message" id="successMessage"></div>
+        <div class="alert alert-error" id="errorAlert"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="example@mail.com" required>
+                <div class="error-message" id="emailError"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" placeholder="Введите пароль" required>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            <button type="submit" class="login-button">Войти</button>
+        </form>
+        <div class="register-link">
+            Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+        </div>
+    </div>
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const successMessage = document.getElementById('successMessage');
+        const errorAlert = document.getElementById('errorAlert');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorAlert.style.display = 'none';
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (response.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userId', data.userId);
+                    successMessage.textContent = 'Вход выполнен!';
+                    successMessage.style.display = 'block';
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+                } else {
+                    errorAlert.textContent = data.message || 'Ошибка входа. Проверьте email и пароль.';
+                    errorAlert.style.display = 'block';
+                }
+            } catch (error) {
+                errorAlert.textContent = 'Ошибка подключения к серверу';
+                errorAlert.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

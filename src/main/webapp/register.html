@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Банковская Система</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .switch-form a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Регистрация</h1>
+
+        <div id="message" class="message"></div>
+
+        <form id="registerForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">Имя:</label>
+                    <input type="text" id="firstName" name="firstName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Фамилия:</label>
+                    <input type="text" id="lastName" name="lastName" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="middleName">Отчество:</label>
+                <input type="text" id="middleName" name="middleName">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">Номер телефона:</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+7XXXXXXXXXX" required>
+            </div>
+
+            <div class="form-group">
+                <label for="passportNumber">Номер паспорта:</label>
+                <input type="text" id="passportNumber" name="passportNumber" required>
+            </div>
+
+            <div class="form-group">
+                <label for="dateOfBirth">Дата рождения:</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Адрес:</label>
+                <input type="text" id="address" name="address" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Подтвердите пароль:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+
+        <div class="switch-form">
+            <p>Уже есть аккаунт? <a href="index.html">Войти</a></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showMessage('Пароли не совпадают', 'error');
+                return;
+            }
+
+            const formData = {
+                email: document.getElementById('email').value,
+                password: password,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                patronymic: document.getElementById('middleName').value || null,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                passportNumber: document.getElementById('passportNumber').value,
+                dateOfBirth: document.getElementById('dateOfBirth').value + 'T00:00:00',
+                address: document.getElementById('address').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    showMessage('Регистрация успешна! Перенаправление...', 'success');
+
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userId', data.userId);
+                    localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('userName', data.fullName);
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    showMessage(data.message || 'Ошибка регистрации', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка соединения с сервером', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+

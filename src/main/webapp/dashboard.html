@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - Банковская Система</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .account-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .account-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .account-number {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .account-balance {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .account-type {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button.primary {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button.primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .transaction-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .transaction-amount.positive {
+            color: #28a745;
+        }
+
+        .transaction-amount.negative {
+            color: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏦 Банковская Система</h1>
+        <div class="user-info">
+            <span id="userName"></span>
+            <button class="logout-btn" onclick="logout()">Выйти</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('accounts')">Мои счета</button>
+            <button class="tab" onclick="switchTab('transfer')">Переводы</button>
+            <button class="tab" onclick="switchTab('transactions')">История операций</button>
+            <button class="tab" onclick="switchTab('newAccount')">Открыть счет</button>
+            <button class="tab" onclick="window.location.href='loans.html'">💰 Кредиты</button>
+            <button class="tab" onclick="window.location.href='deposits.html'">📈 Депозиты</button>
+        </div>
+
+        <!-- Мои счета -->
+        <div id="accounts" class="tab-content active">
+            <div class="card">
+                <h2>Мои счета</h2>
+                <div id="accountsList" class="account-grid">
+                    <div class="loading">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Переводы -->
+        <div id="transfer" class="tab-content">
+            <div class="card">
+                <h2>Перевод средств</h2>
+                <div id="transferMessage" class="message"></div>
+                <form id="transferForm">
+                    <div class="form-group">
+                        <label for="fromAccount">Счет списания:</label>
+                        <select id="fromAccount" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="toAccount">Номер счета получателя:</label>
+                        <input type="text" id="toAccount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Сумма:</label>
+                        <input type="number" id="amount" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Описание (необязательно):</label>
+                        <input type="text" id="description">
+                    </div>
+                    <button type="submit" class="primary">Отправить</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- История операций -->
+        <div id="transactions" class="tab-content">
+            <div class="card">
+                <h2>История операций</h2>
+                <div class="form-group">
+                    <label for="transactionAccount">Выберите счет:</label>
+                    <select id="transactionAccount" onchange="loadTransactions()"></select>
+                </div>
+                <div id="transactionsList" class="transaction-list">
+                    <div class="loading">Выберите счет для просмотра истории</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Открыть новый счет -->
+        <div id="newAccount" class="tab-content">
+            <div class="card">
+                <h2>Открыть новый счет</h2>
+                <div id="newAccountMessage" class="message"></div>
+                <form id="newAccountForm">
+                    <div class="form-group">
+                        <label for="accountType">Тип счета:</label>
+                        <select id="accountType" required>
+                            <option value="CHECKING">Расчетный счет</option>
+                            <option value="SAVINGS">Сберегательный счет</option>
+                            <option value="INVESTMENT">Инвестиционный счет</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency">Валюта:</label>
+                        <select id="currency" required>
+                            <option value="RUB">RUB - Российский рубль</option>
+                            <option value="USD">USD - Доллар США</option>
+                            <option value="EUR">EUR - Евро</option>
+                            <option value="KZT">KZT - Казахстанский тенге</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="initialDeposit">Начальный депозит (необязательно):</label>
+                        <input type="number" id="initialDeposit" step="0.01" min="0">
+                    </div>
+                    <button type="submit" class="primary">Открыть счет</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let accounts = [];
+
+        // Проверка авторизации
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'index.html';
+        }
+
+        // Загрузка имени пользователя
+        document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Пользователь';
+
+        // Загрузка счетов при загрузке страницы
+        window.addEventListener('load', () => {
+            loadAccounts();
+        });
+
+        async function loadAccounts() {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`${API_BASE}/accounts`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (response.ok) {
+                    accounts = await response.json();
+                } else {
+                    accounts = [];
+                }
+                displayAccounts();
+                populateAccountSelects();
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+            }
+        }
+
+        function displayAccounts() {
+            const accountsList = document.getElementById('accountsList');
+
+            if (accounts.length === 0) {
+                accountsList.innerHTML = '<p>У вас пока нет счетов. Откройте новый счет!</p>';
+                return;
+            }
+
+            accountsList.innerHTML = accounts.map(account => `
+                <div class="account-card">
+                    <div class="account-number">Счет: ${account.accountNumber}</div>
+                    <div class="account-balance">${account.balance} ${account.currency}</div>
+                    <div class="account-type">${getAccountTypeName(account.accountType)}</div>
+                </div>
+            `).join('');
+        }
+
+        function populateAccountSelects() {
+            const fromAccountSelect = document.getElementById('fromAccount');
+            const transactionAccountSelect = document.getElementById('transactionAccount');
+
+            const options = accounts.map(account =>
+                `<option value="${account.accountNumber}">${account.accountNumber} - ${account.balance} ${account.currency}</option>`
+            ).join('');
+
+            fromAccountSelect.innerHTML = options;
+            transactionAccountSelect.innerHTML = '<option value="">Выберите счет</option>' + options;
+        }
+
+        function getAccountTypeName(type) {
+            const types = {
+                'CHECKING': 'Расчетный счет',
+                'SAVINGS': 'Сберегательный счет',
+                'INVESTMENT': 'Инвестиционный счет',
+                'BUSINESS': 'Бизнес счет',
+                'CREDIT': 'Кредитный счет'
+            };
+            return types[type] || type;
+        }
+
+        // Переключение вкладок
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Форма перевода
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const transferData = {
+                fromAccountNumber: document.getElementById('fromAccount').value,
+                toAccountNumber: document.getElementById('toAccount').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/transactions/transfer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(transferData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('transferMessage', 'Перевод выполнен успешно!', 'success');
+                    document.getElementById('transferForm').reset();
+                    loadAccounts();
+                } else {
+                    showMessage('transferMessage', data.error || 'Ошибка при переводе', 'error');
+                }
+            } catch (error) {
+                showMessage('transferMessage', 'Ошибка соединения с сервером', 'error');
+            }
+        });
+
+        // Форма открытия счета
+        document.getElementById('newAccountForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const accountData = {
+                accountType: document.getElementById('accountType').value,
+                currency: document.getElementById('currency').value,
+                initialDeposit: document.getElementById('initialDeposit').value || '0'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/accounts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(accountData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('newAccountMessage', 'Счет успешно открыт!', 'success');
+                    document.getElementById('newAccountForm').reset();
+                    loadAccounts();
+                } else {
+                    showMessage('newAccountMessage', data.error || 'Ошибка при открытии счета', 'error');
+                }
+            } catch (error) {
+                showMessage('newAccountMessage', 'Ошибка соединения с сервером', 'error');
+            }
+        });
+
+        // Загрузка транзакций
+        async function loadTransactions() {
+            const accountNumber = document.getElementById('transactionAccount').value;
+            const transactionsList = document.getElementById('transactionsList');
+
+            if (!accountNumber) {
+                transactionsList.innerHTML = '<div class="loading">Выберите счет для просмотра истории</div>';
+                return;
+            }
+
+            const account = accounts.find(a => a.accountNumber === accountNumber);
+            if (!account) return;
+
+            transactionsList.innerHTML = '<div class="loading">Загрузка...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/transactions/account/${account.id}`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const transactions = await response.json();
+
+                if (transactions.length === 0) {
+                    transactionsList.innerHTML = '<p style="text-align: center; padding: 2rem;">Нет транзакций</p>';
+                    return;
+                }
+
+                transactionsList.innerHTML = transactions.map(t => {
+                    const isIncoming = t.toAccount && t.toAccount.id === account.id;
+                    const amountClass = isIncoming ? 'positive' : 'negative';
+                    const sign = isIncoming ? '+' : '-';
+
+                    return `
+                        <div class="transaction-item">
+                            <div class="transaction-details">
+                                <div><strong>${t.type}</strong></div>
+                                <div>${t.description || 'Без описания'}</div>
+                                <div style="font-size: 0.9rem; color: #666;">${new Date(t.createdAt).toLocaleString('ru-RU')}</div>
+                            </div>
+                            <div class="transaction-amount ${amountClass}">
+                                ${sign}${t.amount} ${t.currency}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                transactionsList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки транзакций</p>';
+            }
+        }
+
+        function showMessage(elementId, text, type) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
+

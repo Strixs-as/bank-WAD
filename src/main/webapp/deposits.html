@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Депозиты - Банковская Система</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .deposit-offers {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .deposit-offer-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .deposit-offer-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .deposit-rate {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        button.primary {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button.primary:hover {
+            transform: translateY(-2px);
+        }
+
+        button.danger {
+            padding: 0.5rem 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .deposit-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .deposit-item {
+            padding: 1.5rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .deposit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-active {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-closed {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Банковская Система - Депозиты</h1>
+        <div class="nav-links">
+            <a href="dashboard.html">Главная</a>
+            <a href="loans.html">Кредиты</a>
+            <a href="index.html" onclick="logout()">Выйти</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Предложения по депозитам -->
+        <div class="card">
+            <h2>Наши предложения</h2>
+            <div class="deposit-offers">
+                <div class="deposit-offer-card">
+                    <h3>📊 Стандартный</h3>
+                    <div class="deposit-rate">5%</div>
+                    <p>Годовых<br>От 6 месяцев</p>
+                </div>
+                <div class="deposit-offer-card">
+                    <h3>⭐ Премиальный</h3>
+                    <div class="deposit-rate">7%</div>
+                    <p>Годовых<br>От 12 месяцев</p>
+                </div>
+                <div class="deposit-offer-card">
+                    <h3>💎 VIP</h3>
+                    <div class="deposit-rate">9%</div>
+                    <p>Годовых<br>От 24 месяцев</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма открытия депозита -->
+        <div class="card">
+            <h2>Открыть депозит</h2>
+            <div id="depositMessage" class="message"></div>
+            <form id="depositForm">
+                <div class="form-group">
+                    <label for="amount">Сумма депозита:</label>
+                    <input type="number" id="amount" min="1000" step="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="interestRate">Процентная ставка (% годовых):</label>
+                    <input type="number" id="interestRate" min="0.1" max="20" step="0.1" value="5" required>
+                </div>
+                <div class="form-group">
+                    <label for="termInMonths">Срок (месяцев):</label>
+                    <select id="termInMonths" required>
+                        <option value="3">3 месяца</option>
+                        <option value="6">6 месяцев</option>
+                        <option value="12" selected>12 месяцев</option>
+                        <option value="24">24 месяца</option>
+                        <option value="36">36 месяцев</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="currency">Валюта:</label>
+                    <select id="currency" required>
+                        <option value="RUB">RUB - Рубль</option>
+                        <option value="USD">USD - Доллар</option>
+                        <option value="EUR">EUR - Евро</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="linkedAccount">Привязать к счету (необязательно):</label>
+                    <select id="linkedAccount">
+                        <option value="">Не привязывать</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="autoRenew">
+                        <label for="autoRenew" style="margin: 0;">Автоматическое продление</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="canWithdrawEarly">
+                        <label for="canWithdrawEarly" style="margin: 0;">Разрешить досрочное снятие (пониженная ставка)</label>
+                    </div>
+                </div>
+                <button type="submit" class="primary">Открыть депозит</button>
+            </form>
+        </div>
+
+        <!-- Мои депозиты -->
+        <div class="card">
+            <h2>Мои депозиты</h2>
+            <div id="depositsList" class="deposit-list">
+                <p style="text-align: center; padding: 2rem; color: #666;">Загрузка...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'index.html';
+        }
+
+        window.addEventListener('load', () => {
+            loadDeposits();
+            loadAccounts();
+        });
+
+        async function loadAccounts() {
+            const userId = localStorage.getItem('userId');
+            try {
+                const response = await fetch(`${API_BASE}/accounts/user/${userId}`);
+                const accounts = await response.json();
+
+                const select = document.getElementById('linkedAccount');
+                accounts.forEach(account => {
+                    const option = document.createElement('option');
+                    option.value = account.id;
+                    option.textContent = `${account.accountNumber} - ${account.balance} ${account.currency}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+            }
+        }
+
+        document.getElementById('depositForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const linkedAccountId = document.getElementById('linkedAccount').value || null;
+            const formData = {
+                amount: document.getElementById('amount').value,
+                interestRate: document.getElementById('interestRate').value,
+                termInMonths: document.getElementById('termInMonths').value,
+                currency: document.getElementById('currency').value,
+                autoRenew: document.getElementById('autoRenew').checked,
+                canWithdrawEarly: document.getElementById('canWithdrawEarly').checked,
+                linkedAccountId: linkedAccountId
+            };
+
+            try {
+                const params = new URLSearchParams(formData);
+                const response = await fetch(`${API_BASE}/deposits/open?${params}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'userId': localStorage.getItem('userId')
+                    }
+                });
+
+                if (response.ok) {
+                    showMessage('depositMessage', 'Депозит успешно открыт!', 'success');
+                    document.getElementById('depositForm').reset();
+                    loadDeposits();
+                } else {
+                    const error = await response.json();
+                    showMessage('depositMessage', error.error || 'Ошибка при открытии депозита', 'error');
+                }
+            } catch (error) {
+                showMessage('depositMessage', 'Ошибка соединения с сервером', 'error');
+            }
+        });
+
+        async function loadDeposits() {
+            const userId = localStorage.getItem('userId');
+            const depositsList = document.getElementById('depositsList');
+
+            try {
+                const response = await fetch(`${API_BASE}/deposits/user/${userId}`);
+                const deposits = await response.json();
+
+                if (deposits.length === 0) {
+                    depositsList.innerHTML = '<p style="text-align: center; padding: 2rem;">У вас пока нет депозитов</p>';
+                    return;
+                }
+
+                depositsList.innerHTML = deposits.map(deposit => `
+                    <div class="deposit-item">
+                        <div class="deposit-header">
+                            <div>
+                                <strong>Депозит № ${deposit.depositNumber}</strong>
+                                <div style="font-size: 0.9rem; color: #666;">Открыт: ${new Date(deposit.startDate).toLocaleDateString('ru-RU')}</div>
+                            </div>
+                            <span class="status-${deposit.isActive ? 'active' : 'closed'}">
+                                ${deposit.isActive ? 'Активен' : 'Закрыт'}
+                            </span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Сумма депозита</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${deposit.principalAmount} ${deposit.currency}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Начисленные проценты</div>
+                                <div style="font-size: 1.1rem; font-weight: 600; color: #28a745;">${deposit.accruedInterest} ${deposit.currency}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Итоговая сумма</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${deposit.totalAmount} ${deposit.currency}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #666;">Процентная ставка</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${deposit.interestRate}%</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                            Дата окончания: ${new Date(deposit.maturityDate).toLocaleDateString('ru-RU')}
+                            ${deposit.isActive && deposit.canWithdrawEarly ?
+                                `<button class="danger" style="margin-left: 1rem;" onclick="closeDeposit(${deposit.id})">Закрыть досрочно</button>`
+                                : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                depositsList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки депозитов</p>';
+            }
+        }
+
+        async function closeDeposit(depositId) {
+            if (!confirm('Вы уверены, что хотите закрыть депозит досрочно? Проценты будут пересчитаны.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/deposits/${depositId}/close`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Депозит успешно закрыт');
+                    loadDeposits();
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Ошибка при закрытии депозита');
+                }
+            } catch (error) {
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        function showMessage(elementId, text, type) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            setTimeout(() => messageEl.style.display = 'none', 5000);
+        }
+
+        function logout() {
+            localStorage.clear();
+        }
+    </script>
+</body>
+</html>
+

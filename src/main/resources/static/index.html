@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Банковская система</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            padding: 40px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        .feature-card p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        button, a.btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            font-weight: bold;
+        }
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        .info-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .info-section p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Добро пожаловать</h1>
+            <p class="subtitle">Современная банковская система для управления счетами, картами, кредитами и вкладами</p>
+        </header>
+        <div class="features">
+            <div class="feature-card">
+                <h3>Счета</h3>
+                <p>Открывайте счета, пополняйте баланс и отслеживайте операции</p>
+            </div>
+            <div class="feature-card">
+                <h3>Переводы</h3>
+                <p>Переводите деньги между своими счетами и другим пользователям</p>
+            </div>
+            <div class="feature-card">
+                <h3>Кредиты</h3>
+                <p>Оформляйте кредиты и контролируйте график платежей</p>
+            </div>
+            <div class="feature-card">
+                <h3>Вклады</h3>
+                <p>Открывайте вклады и получайте проценты</p>
+            </div>
+            <div class="feature-card">
+                <h3>Карты</h3>
+                <p>Выпускайте карты, блокируйте и управляйте статусом</p>
+            </div>
+            <div class="feature-card">
+                <h3>Курсы валют</h3>
+                <p>Просматривайте курсы и выполняйте конвертацию</p>
+            </div>
+        </div>
+        <div class="button-group">
+            <a href="register.html" class="btn btn-primary">Регистрация</a>
+            <a href="login.html" class="btn btn-secondary">Вход</a>
+        </div>
+        <div class="info-section">
+            <h2>Начните пользоваться банковской системой уже сейчас!</h2>
+            <p>
+                Здесь вы можете создать аккаунт, открыть счет, выпускать карты и выполнять основные операции.
+                После входа доступен личный кабинет с управлением продуктами.
+            </p>
+            <p>
+                Если это учебный проект, можно расширять функционал: лимиты, комиссии, роли доступа и отчеты.
+            </p>
+        </div>
+        <footer>
+            <p>&copy; 2026 Банковская система. Все права защищены.</p>
+        </footer>
+    </div>
+</body>
+</html>
