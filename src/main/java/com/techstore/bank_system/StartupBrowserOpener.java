@@ -19,16 +19,23 @@ public class StartupBrowserOpener implements ApplicationListener<ApplicationRead
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
             String port = env.getProperty("server.port", "8080");
-            String context = env.getProperty("server.servlet.context-path", "");
-            if (context == null || context.equals("/")) context = "";
-            String url = "http://localhost:" + port + context + "/";
-            if (Desktop.isDesktopSupported()) {
+            String url = "http://localhost:" + port + "/index.html";
+
+            System.out.println("🌐 Открываю браузер: " + url);
+
+            // Способ 1: java.awt.Desktop (работает в большинстве случаев)
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                 Desktop.getDesktop().browse(new URI(url));
+                return;
+            }
+
+            // Способ 2: через cmd (Windows fallback)
+            String os = System.getProperty("os.name", "").toLowerCase();
+            if (os.contains("win")) {
+                Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start", url});
             }
         } catch (Exception e) {
-            // ignore - don't prevent application from starting
-            System.err.println("Failed to open browser: " + e.getMessage());
+            System.err.println("⚠ Не удалось открыть браузер: " + e.getMessage());
         }
     }
 }
-
