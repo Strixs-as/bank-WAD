@@ -1,0 +1,699 @@
+{
+  "info": {
+    "name": "Bank System API",
+    "description": "Коллекция для тестирования Bank System REST API.\n\n**Порядок тестирования:**\n1. Register — зарегистрируйтесь\n2. Login — войдите, токен сохранится автоматически\n3. Остальные запросы используют токен из переменной `{{token}}`\n\n**Base URL:** http://localhost:8080",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "account_number",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "account_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"email\": \"ivan@bank.com\",\n  \"password\": \"password123\",\n  \"phone\": \"+79001234567\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Регистрация нового пользователя. Ожидаемый ответ: 201 Created с JWT токеном."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.token) {",
+                  "        pm.collectionVariables.set('token', json.token);",
+                  "        console.log('✅ Token saved:', json.token);",
+                  "    }",
+                  "}",
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ivan@bank.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Вход в систему. Токен автоматически сохраняется в переменную {{token}}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.token) {",
+                  "        pm.collectionVariables.set('token', json.token);",
+                  "        console.log('✅ Token saved:', json.token);",
+                  "    }",
+                  "}",
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Has token', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.token).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🏦 Accounts",
+      "item": [
+        {
+          "name": "Get My Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/accounts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "accounts"]
+            },
+            "description": "Получить список всех счетов текущего пользователя."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (Array.isArray(json) && json.length > 0) {",
+                  "    pm.collectionVariables.set('account_id', json[0].id);",
+                  "    pm.collectionVariables.set('account_number', json[0].accountNumber);",
+                  "    console.log('✅ Account ID:', json[0].id, 'Number:', json[0].accountNumber);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Account (CHECKING / RUB)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountType\": \"CHECKING\",\n  \"currency\": \"RUB\",\n  \"initialDeposit\": 10000.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/accounts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "accounts"]
+            },
+            "description": "Открыть текущий счёт в рублях с начальным взносом.\n\nТипы счетов: CHECKING, SAVINGS, INVESTMENT\nВалюты: RUB, USD, EUR"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (json.id) {",
+                  "    pm.collectionVariables.set('account_id', json.id);",
+                  "    pm.collectionVariables.set('account_number', json.accountNumber);",
+                  "    console.log('✅ Created account ID:', json.id, 'Number:', json.accountNumber);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Account (SAVINGS / USD)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountType\": \"SAVINGS\",\n  \"currency\": \"USD\",\n  \"initialDeposit\": 500.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/accounts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "accounts"]
+            },
+            "description": "Открыть сберегательный счёт в долларах."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💸 Transactions",
+      "item": [
+        {
+          "name": "Deposit (Пополнение)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountNumber\": \"{{account_number}}\",\n  \"amount\": 5000.00,\n  \"description\": \"Пополнение счёта\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transactions/deposit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions", "deposit"]
+            },
+            "description": "Пополнить счёт. Укажите accountNumber из переменной или вручную."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Withdraw (Снятие)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountNumber\": \"{{account_number}}\",\n  \"amount\": 1000.00,\n  \"description\": \"Снятие наличных\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transactions/withdraw",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions", "withdraw"]
+            },
+            "description": "Снять средства со счёта."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Transfer (Перевод)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"{{account_number}}\",\n  \"toAccountNumber\": \"ЗАМЕНИТЕ_НА_НОМЕР_ПОЛУЧАТЕЛЯ\",\n  \"amount\": 500.00,\n  \"description\": \"Перевод другу\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transactions/transfer",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions", "transfer"]
+            },
+            "description": "Перевод между счетами. Замените toAccountNumber на реальный номер счёта получателя."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "История всех транзакций текущего пользователя."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💳 Cards",
+      "item": [
+        {
+          "name": "Create Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cards/create/{{account_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cards", "create", "{{account_id}}"]
+            },
+            "description": "Выпустить карту для счёта. account_id берётся из переменной (заполняется после Get My Accounts)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Cards",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cards",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cards"]
+            },
+            "description": "Получить список всех карт пользователя."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Block Card",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cards/1/block",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cards", "1", "block"]
+            },
+            "description": "Заблокировать карту по ID. Замените 1 на реальный ID карты."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unblock Card",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cards/1/unblock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cards", "1", "unblock"]
+            },
+            "description": "Разблокировать карту по ID."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate Card",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cards/1/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cards", "1", "deactivate"]
+            },
+            "description": "Деактивировать карту по ID."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📋 Loans",
+      "item": [
+        {
+          "name": "Create Loan Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50000.00,\n  \"durationMonths\": 12,\n  \"currency\": \"RUB\",\n  \"accountId\": {{account_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/loans",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loans"]
+            },
+            "description": "Подать заявку на кредит.\n\nВалюты: RUB, USD, EUR\ndurationMonths: срок в месяцах"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Loans",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/loans",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loans"]
+            },
+            "description": "Получить список всех кредитов пользователя."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💰 Deposits",
+      "item": [
+        {
+          "name": "Create Deposit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 20000.00,\n  \"durationMonths\": 6,\n  \"currency\": \"RUB\",\n  \"accountId\": {{account_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/deposits",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deposits"]
+            },
+            "description": "Открыть вклад.\n\nВалюты: RUB, USD, EUR\ndurationMonths: срок вклада в месяцах"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Deposits",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/deposits",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deposits"]
+            },
+            "description": "Получить список всех вкладов пользователя."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔧 Health Check",
+      "item": [
+        {
+          "name": "Hello World",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/hello",
+              "host": ["{{base_url}}"],
+              "path": ["hello"]
+            },
+            "description": "Простая проверка — сервер отвечает."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns Hello World', function() {",
+                  "    pm.expect(pm.response.text()).to.include('Hello');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Main Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Проверить что главная страница открывается."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
