@@ -1,4 +1,5 @@
 package com.techstore.bank_system.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -46,6 +47,7 @@ public class Loan {
     @Column(nullable = false)
     private LocalDate endDate;
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
     @Column
     private LocalDateTime approvedAt;
@@ -54,10 +56,12 @@ public class Loan {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private Account account;
     public BigDecimal calculateMonthlyPayment() {
         if (durationMonths == 0) return BigDecimal.ZERO;

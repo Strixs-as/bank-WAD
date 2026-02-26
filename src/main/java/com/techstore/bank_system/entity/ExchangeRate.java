@@ -27,6 +27,7 @@ public class ExchangeRate {
     @Column(nullable = false, precision = 10, scale = 6)
     private BigDecimal rate;
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
     @PreUpdate
     public void preUpdate() {

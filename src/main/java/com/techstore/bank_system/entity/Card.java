@@ -26,10 +26,13 @@ public class Card {
     @Column(nullable = false)
     private LocalDate expiryDate;
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isActive = true;
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isBlocked = false;
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
     @Column
     private LocalDateTime blockedAt;

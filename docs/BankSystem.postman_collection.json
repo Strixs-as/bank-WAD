@@ -16,6 +16,11 @@
       "type": "string"
     },
     {
+      "key": "user_email",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "account_number",
       "value": "",
       "type": "string"
@@ -39,14 +44,15 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"email\": \"ivan@bank.com\",\n  \"password\": \"password123\",\n  \"phone\": \"+79001234567\"\n}"
+              "raw": "{\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"patronymic\": \"Иванович\",\n  \"email\": \"user_{{$timestamp}}@bank.com\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"+7{{$timestamp}}\",\n  \"passportNumber\": \"{{$timestamp}}\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"address\": \"г. Москва, ул. Тверская, д. 1\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{base_url}}/api/auth/register",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "register"]
             },
-            "description": "Регистрация нового пользователя. Ожидаемый ответ: 201 Created с JWT токеном."
+            "description": "Регистрация нового пользователя.\nEmail, телефон и паспорт генерируются автоматически через {{$timestamp}}.\nПосле регистрации выполните Login с тем же email."
           },
           "event": [
             {
@@ -57,7 +63,8 @@
                   "    var json = pm.response.json();",
                   "    if (json.token) {",
                   "        pm.collectionVariables.set('token', json.token);",
-                  "        console.log('✅ Token saved:', json.token);",
+                  "        pm.collectionVariables.set('user_email', json.email);",
+                  "        console.log('✅ Token saved, email:', json.email);",
                   "    }",
                   "}",
                   "pm.test('Status 201 Created', function() {",
@@ -78,7 +85,8 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ivan@bank.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{base_url}}/api/auth/login",

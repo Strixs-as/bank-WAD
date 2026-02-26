@@ -458,7 +458,7 @@
                     document.getElementById('transferForm').reset();
                     loadAccounts();
                 } else {
-                    showMessage('transferMessage', data.error || 'Ошибка при переводе', 'error');
+                    showMessage('transferMessage', data.message || 'Ошибка при переводе', 'error');
                 }
             } catch (error) {
                 showMessage('transferMessage', 'Ошибка соединения с сервером', 'error');
@@ -471,7 +471,7 @@
 
             const accountData = {
                 accountType: document.getElementById('accountType').value,
-                currencyStr: document.getElementById('currency').value,
+                currency: document.getElementById('currency').value,
                 initialDeposit: parseFloat(document.getElementById('initialDeposit').value) || 0
             };
 
@@ -492,7 +492,7 @@
                     document.getElementById('newAccountForm').reset();
                     loadAccounts();
                 } else {
-                    showMessage('newAccountMessage', data.error || 'Ошибка при открытии счета', 'error');
+                    showMessage('newAccountMessage', data.message || 'Ошибка при открытии счета', 'error');
                 }
             } catch (error) {
                 showMessage('newAccountMessage', 'Ошибка соединения с сервером', 'error');
@@ -526,7 +526,7 @@
                 }
 
                 transactionsList.innerHTML = transactions.map(t => {
-                    const isIncoming = t.toAccount && t.toAccount.id === account.id;
+                    const isIncoming = t.toAccountNumber === accountNumber;
                     const amountClass = isIncoming ? 'positive' : 'negative';
                     const sign = isIncoming ? '+' : '-';
 

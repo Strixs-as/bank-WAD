@@ -21,25 +21,31 @@ public class BankSystemApplication {
         try {
             String os = System.getProperty("os.name", "").toLowerCase();
             if (os.contains("win")) {
-                // Найти PID процесса на порту
-                Process findProcess = Runtime.getRuntime().exec(
-                    new String[]{"cmd", "/c", "netstat -ano | findstr :" + port + " | findstr LISTENING"}
+                // Найти PID через PowerShell (надёжнее чем netstat)
+                ProcessBuilder pbFind = new ProcessBuilder(
+                    "powershell", "-Command",
+                    "Get-NetTCPConnection -LocalPort " + port +
+                    " -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess"
                 );
+                pbFind.redirectErrorStream(true);
+                Process findProcess = pbFind.start();
                 String output = new String(findProcess.getInputStream().readAllBytes()).trim();
                 findProcess.waitFor();
 
                 if (!output.isEmpty()) {
-                    // Последний токен в строке — PID
-                    String[] parts = output.trim().split("\\s+");
-                    String pid = parts[parts.length - 1];
-                    if (pid.matches("\\d+") && !pid.equals("0")) {
-                        Process killProcess = Runtime.getRuntime().exec(
-                            new String[]{"cmd", "/c", "taskkill /PID " + pid + " /F"}
-                        );
-                        killProcess.waitFor();
-                        System.out.println("✅ Порт " + port + " освобождён (завершён процесс PID=" + pid + ")");
-                        Thread.sleep(500); // небольшая пауза после kill
+                    for (String line : output.split("\\r?\\n")) {
+                        String pid = line.trim();
+                        if (pid.matches("\\d+") && !pid.equals("0")) {
+                            ProcessBuilder pbKill = new ProcessBuilder(
+                                "taskkill", "/PID", pid, "/F"
+                            );
+                            pbKill.redirectErrorStream(true);
+                            Process killProcess = pbKill.start();
+                            killProcess.waitFor();
+                            System.out.println("✅ Порт " + port + " освобождён (завершён процесс PID=" + pid + ")");
+                        }
                     }
+                    Thread.sleep(2000); // увеличена пауза для надёжного освобождения порта
                 }
             }
         } catch (Exception e) {

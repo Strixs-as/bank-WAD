@@ -1,4 +1,5 @@
 package com.techstore.bank_system.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -44,15 +45,26 @@ public class Transaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "from_account_id")
     @ToString.Exclude
+    @JsonIgnore
     private Account fromAccount;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_account_id")
     @ToString.Exclude
+    @JsonIgnore
     private Account toAccount;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiated_by_user_id")
     @ToString.Exclude
+    @JsonIgnore
     private User initiatedBy;
+
+    // Вычисляемые поля для JSON-ответа
+    public String getFromAccountNumber() {
+        return fromAccount != null ? fromAccount.getAccountNumber() : null;
+    }
+    public String getToAccountNumber() {
+        return toAccount != null ? toAccount.getAccountNumber() : null;
+    }
     @PrePersist
     public void prePersist() {
         if (this.createdAt == null) {

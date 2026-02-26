@@ -47,6 +47,7 @@ public class LoanPayment {
     private Boolean isPaid = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)

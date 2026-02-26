@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -30,10 +31,28 @@ public class AuthService {
     private JwtUtil jwtUtil;
 
     public AuthResponse register(RegisterRequest request) {
-        // Проверка существующего пользователя
+        // Проверка существующего пользователя по email
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return AuthResponse.builder()
                     .message("Пользователь с таким email уже существует")
+                    .build();
+        }
+
+        // Автозаполнение необязательных полей дефолтными значениями
+        String phone = request.getPhoneNumber() != null ? request.getPhoneNumber() : ("+7" + System.currentTimeMillis() % 10000000000L);
+        String passport = request.getPassportNumber() != null ? request.getPassportNumber() : String.valueOf(System.currentTimeMillis() % 10000000000L);
+        LocalDate dob = request.getDateOfBirth() != null ? request.getDateOfBirth() : LocalDate.of(2000, 1, 1);
+        String address = request.getAddress() != null && !request.getAddress().isBlank() ? request.getAddress() : "Не указан";
+
+        // Проверка дубликатов phoneNumber и passportNumber
+        if (userRepository.findByPhoneNumber(phone).isPresent()) {
+            return AuthResponse.builder()
+                    .message("Пользователь с таким номером телефона уже существует")
+                    .build();
+        }
+        if (userRepository.findByPassportNumber(passport).isPresent()) {
+            return AuthResponse.builder()
+                    .message("Пользователь с таким номером паспорта уже существует")
                     .build();
         }
 
@@ -44,10 +63,10 @@ public class AuthService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .patronymic(request.getPatronymic())
-                .phoneNumber(request.getPhoneNumber())
-                .passportNumber(request.getPassportNumber())
-                .dateOfBirth(request.getDateOfBirth())
-                .address(request.getAddress())
+                .phoneNumber(phone)
+                .passportNumber(passport)
+                .dateOfBirth(dob)
+                .address(address)
                 .isActive(true)
                 .isVerified(false)
                 .createdAt(LocalDateTime.now())

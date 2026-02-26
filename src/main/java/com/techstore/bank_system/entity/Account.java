@@ -64,9 +64,11 @@ public class Account {
     private Boolean isFrozen = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     private LocalDateTime closedAt;

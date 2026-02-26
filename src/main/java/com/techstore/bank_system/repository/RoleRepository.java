@@ -1,6 +1,7 @@
 package com.techstore.bank_system.repository;
 import com.techstore.bank_system.entity.Role;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.NoResultException;
 import java.util.Optional;
 
@@ -13,6 +14,7 @@ public class RoleRepository extends GenericRepository<Role, Long> {
     protected Long getEntityId(Role entity) {
         return entity.getId();
     }
+    @Transactional(readOnly = true)
     public Optional<Role> findByName(String name) {
         try {
             return Optional.of(entityManager.createQuery("SELECT r FROM Role r WHERE r.name = :name", Role.class)
