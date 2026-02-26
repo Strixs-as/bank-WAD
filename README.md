@@ -281,6 +281,7 @@ MIT License — свободное использование.
 
 ## 👤 Автор
 
-**Найман**  
-GitHub: [Strixs-as](https://github.com/Strixs-as)
+**Макеш Найман** — ВТиПО-33  
+GitHub: [Strixs-as](https://github.com/Strixs-as)  
+Email: [makeshnaiman@gmail.com](mailto:makeshnaiman@gmail.com)
 
