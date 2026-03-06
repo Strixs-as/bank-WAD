@@ -3,567 +3,632 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет - Банковская Система</title>
+    <title>Личный кабинет — BankSystem</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --dark: #0d0d1a;
+            --dark2: #1a1a2e;
+            --dark3: #16213e;
+            --card: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.08);
+            --text: rgba(255,255,255,0.85);
+            --muted: rgba(255,255,255,0.45);
         }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            background: var(--dark);
+            color: #fff; min-height: 100vh;
         }
 
+        /* HEADER */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: rgba(13,13,26,0.97);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100;
         }
-
-        .header h1 {
-            font-size: 1.5rem;
+        .header-logo {
+            font-size: 1.3rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .header-user { display: flex; align-items: center; gap: 1rem; }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.85rem;
         }
-
+        .user-name { color: var(--text); font-size: 0.9rem; font-weight: 600; }
         .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid white;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5; border: 1px solid rgba(239,68,68,0.3);
+            padding: 0.45rem 1rem; border-radius: 8px;
+            font-size: 0.85rem; cursor: pointer; transition: all 0.3s;
         }
+        .logout-btn:hover { background: rgba(239,68,68,0.25); }
 
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+        /* LAYOUT */
+        .layout { display: flex; min-height: calc(100vh - 57px); }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 230px; flex-shrink: 0;
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 0;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+        .sidebar-section { padding: 0.5rem 1rem 0.25rem; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 700; }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.7rem 1.25rem; cursor: pointer;
+            color: var(--muted); font-size: 0.9rem; font-weight: 500;
+            transition: all 0.25s; border-left: 3px solid transparent;
         }
-
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.04); }
+        .nav-item.active {
+            color: #fff; background: rgba(102,126,234,0.1);
+            border-left-color: var(--primary);
         }
+        .nav-item .icon { font-size: 1.1rem; width: 20px; text-align: center; }
+        .nav-item a { text-decoration: none; color: inherit; }
 
-        .tab {
-            padding: 0.75rem 1.5rem;
-            background: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
+        /* MAIN */
+        .main { flex: 1; padding: 2rem; overflow-x: hidden; }
+
+        /* WELCOME BAR */
+        .welcome-bar {
+            background: linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.1));
+            border: 1px solid rgba(102,126,234,0.2);
+            border-radius: 14px; padding: 1.25rem 1.75rem;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;
         }
-
-        .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .welcome-bar h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.25rem; }
+        .welcome-bar p { color: var(--muted); font-size: 0.9rem; }
+        .quick-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .quick-btn {
+            padding: 0.55rem 1.1rem; border-radius: 8px; border: none;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s;
         }
+        .quick-btn.primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; }
+        .quick-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .quick-btn.secondary { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid var(--border); }
+        .quick-btn.secondary:hover { background: rgba(255,255,255,0.12); }
 
-        .tab-content {
-            display: none;
+        /* STATS ROW */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem 1.5rem;
         }
+        .stat-card .stat-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .stat-card .stat-value { font-size: 1.6rem; font-weight: 800; }
+        .stat-card .stat-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+        .stat-card.green .stat-value { color: #86efac; }
+        .stat-card.blue .stat-value { color: #93c5fd; }
+        .stat-card.yellow .stat-value { color: #fcd34d; }
+        .stat-card.purple .stat-value { color: #c4b5fd; }
 
-        .tab-content.active {
-            display: block;
+        /* PANELS */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* SECTION HEADER */
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.25rem;
         }
+        .section-header h2 { font-size: 1.15rem; font-weight: 800; }
 
+        /* CARD */
         .card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.5rem; margin-bottom: 1.25rem;
         }
+        .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--text); }
 
-        .card h2 {
-            margin-bottom: 1.5rem;
-            color: #333;
-        }
-
-        .account-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
+        /* ACCOUNT CARDS */
+        .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
         .account-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            position: relative;
+            border-radius: 14px; padding: 1.5rem; position: relative; overflow: hidden;
+            cursor: pointer; transition: all 0.3s;
         }
-
-        .account-number {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-bottom: 1rem;
+        .account-card.checking { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .account-card.savings { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .account-card.investment { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .account-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
+        .account-card::before {
+            content: ''; position: absolute; top: -40px; right: -40px;
+            width: 120px; height: 120px; border-radius: 50%;
+            background: rgba(255,255,255,0.08);
         }
+        .account-type-label { font-size: 0.75rem; opacity: 0.8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; }
+        .account-number { font-size: 0.85rem; opacity: 0.85; margin-bottom: 0.5rem; font-family: monospace; }
+        .account-balance { font-size: 1.8rem; font-weight: 900; margin-bottom: 0.25rem; }
+        .account-currency { font-size: 0.85rem; opacity: 0.8; }
 
-        .account-balance {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
+        /* FORM */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-group label { display: block; color: var(--muted); font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.75rem 0.9rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 10px;
+            color: #fff; font-size: 0.92rem; transition: all 0.3s;
         }
-
-        .account-type {
-            font-size: 0.9rem;
-            opacity: 0.8;
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--primary);
+            background: rgba(102,126,234,0.08);
         }
+        .form-group input::placeholder { color: rgba(255,255,255,0.2); }
+        .form-group select option { background: var(--dark2); color: #fff; }
 
-        .form-group {
-            margin-bottom: 1.5rem;
+        .btn-submit {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.3s;
+            margin-top: 1rem;
         }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
 
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #555;
-            font-weight: 500;
+        /* ALERT */
+        .alert { padding: 0.8rem 1rem; border-radius: 10px; font-size: 0.88rem; display: none; margin-bottom: 1rem; }
+        .alert.show { display: block; }
+        .alert-success { background: rgba(34,197,94,0.12); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+        .alert-error { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+
+        /* TRANSACTIONS */
+        .tx-list { max-height: 450px; overflow-y: auto; }
+        .tx-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.9rem 0; border-bottom: 1px solid var(--border);
         }
-
-        input, select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
+        .tx-item:last-child { border-bottom: none; }
+        .tx-left { display: flex; align-items: center; gap: 0.9rem; }
+        .tx-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
         }
+        .tx-icon.in { background: rgba(34,197,94,0.15); }
+        .tx-icon.out { background: rgba(239,68,68,0.12); }
+        .tx-icon.neutral { background: rgba(102,126,234,0.15); }
+        .tx-type { font-weight: 700; font-size: 0.9rem; }
+        .tx-desc { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+        .tx-date { font-size: 0.75rem; color: var(--muted); }
+        .tx-amount { font-weight: 800; font-size: 1rem; }
+        .tx-amount.positive { color: #86efac; }
+        .tx-amount.negative { color: #fca5a5; }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
+        .empty-state {
+            text-align: center; padding: 3rem; color: var(--muted);
         }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
 
-        button.primary {
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
+        /* LOADER */
+        .loader {
+            text-align: center; padding: 2rem; color: var(--muted); font-size: 0.9rem;
         }
+        .loader::before { content: '⏳ '; }
 
-        button.primary:hover {
-            transform: translateY(-2px);
+        @media(max-width: 900px) {
+            .sidebar { display: none; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
         }
-
-        .message {
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .transaction-list {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .transaction-item {
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        .transaction-details {
-            flex: 1;
-        }
-
-        .transaction-amount {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .transaction-amount.positive {
-            color: #28a745;
-        }
-
-        .transaction-amount.negative {
-            color: #dc3545;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
+        @media(max-width: 600px) {
+            .main { padding: 1rem; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid .full { grid-column: 1; }
+            .welcome-bar { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏦 Банковская Система</h1>
-        <div class="user-info">
-            <span id="userName"></span>
-            <button class="logout-btn" onclick="logout()">Выйти</button>
-        </div>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-logo">🏦 BankSystem</div>
+    <div class="header-user">
+        <div class="user-avatar" id="avatarInitial">?</div>
+        <span class="user-name" id="userName">Загрузка...</span>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+    </div>
+</div>
+
+<div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-section">Банкинг</div>
+        <div class="nav-item active" onclick="showPanel('home')"><span class="icon">🏠</span> Главная</div>
+        <div class="nav-item" onclick="showPanel('accounts')"><span class="icon">🏦</span> Мои счета</div>
+        <div class="nav-item" onclick="showPanel('newAccount')"><span class="icon">➕</span> Открыть счёт</div>
+        <div class="nav-item" onclick="showPanel('transfer')"><span class="icon">💸</span> Переводы</div>
+        <div class="nav-item" onclick="showPanel('transactions')"><span class="icon">📊</span> История</div>
+        <div class="sidebar-section" style="margin-top: 0.75rem;">Продукты</div>
+        <div class="nav-item" onclick="window.location.href='loans.html'"><span class="icon">📋</span> Кредиты</div>
+        <div class="nav-item" onclick="window.location.href='deposits.html'"><span class="icon">💰</span> Вклады</div>
+        <div class="sidebar-section" style="margin-top: 0.75rem;">Учёба</div>
+        <div class="nav-item" onclick="window.location.href='javaee.html'"><span class="icon">📚</span> Java EE</div>
+        <div class="nav-item" onclick="window.location.href='index.html'"><span class="icon">🌐</span> Главная страница</div>
     </div>
 
-    <div class="container">
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('accounts')">Мои счета</button>
-            <button class="tab" onclick="switchTab('transfer')">Переводы</button>
-            <button class="tab" onclick="switchTab('transactions')">История операций</button>
-            <button class="tab" onclick="switchTab('newAccount')">Открыть счет</button>
-            <button class="tab" onclick="window.location.href='loans.html'">💰 Кредиты</button>
-            <button class="tab" onclick="window.location.href='deposits.html'">📈 Депозиты</button>
-        </div>
+    <!-- MAIN CONTENT -->
+    <div class="main">
 
-        <!-- Мои счета -->
-        <div id="accounts" class="tab-content active">
+        <!-- ══ HOME PANEL ══ -->
+        <div class="panel active" id="panel-home">
+            <div class="welcome-bar">
+                <div>
+                    <h2>Добро пожаловать, <span id="welcomeName">—</span>! 👋</h2>
+                    <p>Управляйте финансами в одном месте</p>
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-btn primary" onclick="showPanel('newAccount')">+ Открыть счёт</button>
+                    <button class="quick-btn secondary" onclick="showPanel('transfer')">💸 Перевод</button>
+                    <button class="quick-btn secondary" onclick="showPanel('transactions')">📊 История</button>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card green">
+                    <div class="stat-label">Всего счетов</div>
+                    <div class="stat-value" id="statAccounts">—</div>
+                    <div class="stat-sub">активных</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-label">Транзакций</div>
+                    <div class="stat-value" id="statTx">—</div>
+                    <div class="stat-sub">всего</div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-label">Карты</div>
+                    <div class="stat-value" id="statCards">—</div>
+                    <div class="stat-sub">активных</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-label">Вклады</div>
+                    <div class="stat-value" id="statDeposits">—</div>
+                    <div class="stat-sub">открытых</div>
+                </div>
+            </div>
+
             <div class="card">
-                <h2>Мои счета</h2>
-                <div id="accountsList" class="account-grid">
-                    <div class="loading">Загрузка...</div>
+                <h3>🏦 Мои счета (краткий обзор)</h3>
+                <div id="homeAccountsList" class="accounts-grid">
+                    <div class="loader">Загрузка счетов...</div>
                 </div>
             </div>
         </div>
 
-        <!-- Переводы -->
-        <div id="transfer" class="tab-content">
-            <div class="card">
-                <h2>Перевод средств</h2>
-                <div id="transferMessage" class="message"></div>
-                <form id="transferForm">
-                    <div class="form-group">
-                        <label for="fromAccount">Счет списания:</label>
-                        <select id="fromAccount" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="toAccount">Номер счета получателя:</label>
-                        <input type="text" id="toAccount" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="amount">Сумма:</label>
-                        <input type="number" id="amount" step="0.01" min="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="description">Описание (необязательно):</label>
-                        <input type="text" id="description">
-                    </div>
-                    <button type="submit" class="primary">Отправить</button>
-                </form>
+        <!-- ══ ACCOUNTS PANEL ══ -->
+        <div class="panel" id="panel-accounts">
+            <div class="section-header">
+                <h2>🏦 Мои счета</h2>
+                <button class="quick-btn primary" onclick="showPanel('newAccount')">+ Новый счёт</button>
+            </div>
+            <div id="accountsListFull" class="accounts-grid">
+                <div class="loader">Загрузка...</div>
             </div>
         </div>
 
-        <!-- История операций -->
-        <div id="transactions" class="tab-content">
+        <!-- ══ NEW ACCOUNT PANEL ══ -->
+        <div class="panel" id="panel-newAccount">
+            <div class="section-header"><h2>➕ Открыть новый счёт</h2></div>
             <div class="card">
-                <h2>История операций</h2>
-                <div class="form-group">
-                    <label for="transactionAccount">Выберите счет:</label>
-                    <select id="transactionAccount" onchange="loadTransactions()"></select>
-                </div>
-                <div id="transactionsList" class="transaction-list">
-                    <div class="loading">Выберите счет для просмотра истории</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Открыть новый счет -->
-        <div id="newAccount" class="tab-content">
-            <div class="card">
-                <h2>Открыть новый счет</h2>
-                <div id="newAccountMessage" class="message"></div>
-                <form id="newAccountForm">
+                <h3>Заполните данные</h3>
+                <div class="alert alert-success" id="newAccSuccess"></div>
+                <div class="alert alert-error" id="newAccError"></div>
+                <div class="form-grid">
                     <div class="form-group">
-                        <label for="accountType">Тип счета:</label>
-                        <select id="accountType" required>
-                            <option value="CHECKING">Расчетный счет</option>
-                            <option value="SAVINGS">Сберегательный счет</option>
-                            <option value="DEPOSIT">Депозитный счет</option>
+                        <label>Тип счёта</label>
+                        <select id="accType">
+                            <option value="CHECKING">🏦 Расчётный (Checking)</option>
+                            <option value="SAVINGS">💚 Сберегательный (Savings)</option>
+                            <option value="INVESTMENT">📈 Инвестиционный (Investment)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="currency">Валюта:</label>
-                        <select id="currency" required>
-                            <option value="RUB">RUB - Российский рубль</option>
-                            <option value="USD">USD - Доллар США</option>
-                            <option value="EUR">EUR - Евро</option>
-                            <option value="KZT">KZT - Казахстанский тенге</option>
+                        <label>Валюта</label>
+                        <select id="accCurrency">
+                            <option value="RUB">🇷🇺 RUB — Российский рубль</option>
+                            <option value="USD">🇺🇸 USD — Доллар США</option>
+                            <option value="EUR">🇪🇺 EUR — Евро</option>
+                            <option value="KZT">🇰🇿 KZT — Казахстанский тенге</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="initialDeposit">Начальный депозит (необязательно):</label>
-                        <input type="number" id="initialDeposit" step="0.01" min="0">
+                    <div class="form-group full">
+                        <label>Начальный депозит (необязательно)</label>
+                        <input type="number" id="accDeposit" step="0.01" min="0" placeholder="0.00">
                     </div>
-                    <button type="submit" class="primary">Открыть счет</button>
-                </form>
+                </div>
+                <button class="btn-submit" onclick="openAccount()">Открыть счёт</button>
             </div>
         </div>
-    </div>
 
-    <script>
-        const API_BASE = '/api';
-        let accounts = [];
-
-        // Проверка авторизации
-        if (!localStorage.getItem('token')) {
-            window.location.href = 'index.html';
-        }
-
-        // Загрузка имени пользователя
-        document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Пользователь';
-
-        // Загрузка счетов при загрузке страницы
-        window.addEventListener('load', () => {
-            loadAccounts();
-        });
-
-        async function loadAccounts() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'login.html';
-                return;
-            }
-            try {
-                const response = await fetch(`${API_BASE}/accounts`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                console.log('Accounts response status:', response.status);
-                if (response.ok) {
-                    accounts = await response.json();
-                    console.log('Accounts loaded:', accounts.length);
-                } else {
-                    const err = await response.text();
-                    console.error('Accounts error:', err);
-                    // Токен устарел — перелогиниться
-                    if (response.status === 401) {
-                        localStorage.clear();
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                    accounts = [];
-                }
-                displayAccounts();
-                populateAccountSelects();
-            } catch (error) {
-                console.error('Error loading accounts:', error);
-            }
-        }
-
-        function displayAccounts() {
-            const accountsList = document.getElementById('accountsList');
-
-            if (accounts.length === 0) {
-                accountsList.innerHTML = '<p>У вас пока нет счетов. Откройте новый счет!</p>';
-                return;
-            }
-
-            accountsList.innerHTML = accounts.map(account => `
-                <div class="account-card">
-                    <div class="account-number">Счет: ${account.accountNumber}</div>
-                    <div class="account-balance">${account.balance} ${account.currency}</div>
-                    <div class="account-type">${getAccountTypeName(account.accountType)}</div>
+        <!-- ══ TRANSFER PANEL ══ -->
+        <div class="panel" id="panel-transfer">
+            <div class="section-header"><h2>💸 Переводы</h2></div>
+            <div class="card">
+                <h3>Перевод средств</h3>
+                <div class="alert alert-success" id="txSuccess"></div>
+                <div class="alert alert-error" id="txError"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Счёт отправителя</label>
+                        <select id="fromAccount"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Счёт получателя (номер)</label>
+                        <input type="text" id="toAccount" placeholder="ACC-00000001">
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма</label>
+                        <input type="number" id="txAmount" step="0.01" min="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Описание (необязательно)</label>
+                        <input type="text" id="txDesc" placeholder="Перевод...">
+                    </div>
                 </div>
-            `).join('');
+                <button class="btn-submit" onclick="doTransfer()">Отправить</button>
+            </div>
+
+            <div class="card" style="margin-top: 1rem;">
+                <h3>Пополнить счёт</h3>
+                <div class="alert alert-success" id="depSuccess"></div>
+                <div class="alert alert-error" id="depError"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Счёт</label>
+                        <select id="depAccount"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма</label>
+                        <input type="number" id="depAmount" step="0.01" min="0.01" placeholder="0.00">
+                    </div>
+                </div>
+                <button class="btn-submit" onclick="doDeposit()">Пополнить</button>
+            </div>
+        </div>
+
+        <!-- ══ TRANSACTIONS PANEL ══ -->
+        <div class="panel" id="panel-transactions">
+            <div class="section-header"><h2>📊 История операций</h2></div>
+            <div class="card">
+                <div class="form-group" style="max-width: 320px; margin-bottom: 1.25rem;">
+                    <label>Выберите счёт</label>
+                    <select id="txFilterAccount" onchange="loadTransactions()"></select>
+                </div>
+                <div class="tx-list" id="txList">
+                    <div class="loader">Выберите счёт для просмотра истории</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+    const API = '/api';
+    let accounts = [];
+
+    // ── Auth check
+    if (!localStorage.getItem('token')) window.location.href = 'index.html';
+
+    const token = () => localStorage.getItem('token');
+    const authHdr = () => ({ 'Authorization': 'Bearer ' + token(), 'Content-Type': 'application/json' });
+
+    // ── Init
+    const uName = localStorage.getItem('userName') || 'Пользователь';
+    document.getElementById('userName').textContent = uName;
+    document.getElementById('welcomeName').textContent = uName.split(' ')[0] || uName;
+    document.getElementById('avatarInitial').textContent = (uName[0] || '?').toUpperCase();
+
+    // ── Panel switch
+    function showPanel(name) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        event && event.currentTarget && event.currentTarget.classList.add('active');
+        if (name === 'accounts' || name === 'home') loadAccounts();
+        if (name === 'transfer' || name === 'transactions') { loadAccounts(); }
+    }
+
+    // ── Show alert
+    function showAlert(id, text, type) {
+        const el = document.getElementById(id);
+        el.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + text;
+        el.className = 'alert alert-' + type + ' show';
+        setTimeout(() => el.classList.remove('show'), 5000);
+    }
+
+    // ── Load accounts
+    async function loadAccounts() {
+        try {
+            const r = await fetch(`${API}/accounts`, { headers: authHdr() });
+            if (r.status === 401) { localStorage.clear(); window.location.href = 'login.html'; return; }
+            if (!r.ok) { accounts = []; return; }
+            accounts = await r.json();
+        } catch (e) { accounts = []; }
+        renderAccounts();
+        populateSelects();
+        updateStats();
+    }
+
+    function getAccountClass(type) {
+        if (!type) return 'checking';
+        const t = type.toUpperCase();
+        if (t === 'SAVINGS') return 'savings';
+        if (t === 'INVESTMENT') return 'investment';
+        return 'checking';
+    }
+
+    function getAccountIcon(type) {
+        if (!type) return '🏦';
+        const t = type.toUpperCase();
+        if (t === 'SAVINGS') return '💚';
+        if (t === 'INVESTMENT') return '📈';
+        return '🏦';
+    }
+
+    function formatBalance(balance, currency) {
+        const symbols = { RUB: '₽', USD: '$', EUR: '€', KZT: '₸' };
+        const sym = symbols[currency] || currency;
+        return sym + ' ' + Number(balance || 0).toLocaleString('ru-RU', { minimumFractionDigits: 2 });
+    }
+
+    function renderAccounts() {
+        const grid1 = document.getElementById('homeAccountsList');
+        const grid2 = document.getElementById('accountsListFull');
+        if (accounts.length === 0) {
+            const empty = `<div class="empty-state"><div class="icon">🏦</div><p>У вас пока нет счетов.<br>Откройте первый счёт!</p></div>`;
+            if (grid1) grid1.innerHTML = empty;
+            if (grid2) grid2.innerHTML = empty;
+            return;
         }
+        const html = accounts.map(a => `
+            <div class="account-card ${getAccountClass(a.accountType)}">
+                <div class="account-type-label">${getAccountIcon(a.accountType)} ${a.accountType || '—'}</div>
+                <div class="account-number">${a.accountNumber || '—'}</div>
+                <div class="account-balance">${formatBalance(a.balance, a.currency)}</div>
+                <div class="account-currency">${a.currency || ''}</div>
+            </div>
+        `).join('');
+        if (grid1) grid1.innerHTML = html;
+        if (grid2) grid2.innerHTML = html;
+    }
 
-        function populateAccountSelects() {
-            const fromAccountSelect = document.getElementById('fromAccount');
-            const transactionAccountSelect = document.getElementById('transactionAccount');
-
-            const options = accounts.map(account =>
-                `<option value="${account.accountNumber}">${account.accountNumber} - ${account.balance} ${account.currency}</option>`
-            ).join('');
-
-            fromAccountSelect.innerHTML = options;
-            transactionAccountSelect.innerHTML = '<option value="">Выберите счет</option>' + options;
-        }
-
-        function getAccountTypeName(type) {
-            const types = {
-                'CHECKING': 'Расчетный счет',
-                'SAVINGS': 'Сберегательный счет',
-                'INVESTMENT': 'Инвестиционный счет',
-                'BUSINESS': 'Бизнес счет',
-                'CREDIT': 'Кредитный счет'
-            };
-            return types[type] || type;
-        }
-
-        // Переключение вкладок
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-            event.target.classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-        }
-
-        // Форма перевода
-        document.getElementById('transferForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const transferData = {
-                fromAccountNumber: document.getElementById('fromAccount').value,
-                toAccountNumber: document.getElementById('toAccount').value,
-                amount: parseFloat(document.getElementById('amount').value),
-                description: document.getElementById('description').value
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}/transactions/transfer`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    },
-                    body: JSON.stringify(transferData)
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage('transferMessage', 'Перевод выполнен успешно!', 'success');
-                    document.getElementById('transferForm').reset();
-                    loadAccounts();
-                } else {
-                    showMessage('transferMessage', data.message || 'Ошибка при переводе', 'error');
-                }
-            } catch (error) {
-                showMessage('transferMessage', 'Ошибка соединения с сервером', 'error');
-            }
+    function populateSelects() {
+        const opts = accounts.map(a =>
+            `<option value="${a.accountNumber}">${a.accountNumber} (${formatBalance(a.balance, a.currency)})</option>`
+        ).join('');
+        ['fromAccount', 'depAccount', 'txFilterAccount'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.innerHTML = opts || '<option value="">Нет счетов</option>'; }
         });
+    }
 
-        // Форма открытия счета
-        document.getElementById('newAccountForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+    function updateStats() {
+        const el = id => document.getElementById(id);
+        if (el('statAccounts')) el('statAccounts').textContent = accounts.length;
+    }
 
-            const accountData = {
-                accountType: document.getElementById('accountType').value,
-                currency: document.getElementById('currency').value,
-                initialDeposit: parseFloat(document.getElementById('initialDeposit').value) || 0
-            };
+    // ── Open account
+    async function openAccount() {
+        const data = {
+            accountType: document.getElementById('accType').value,
+            currency: document.getElementById('accCurrency').value,
+            initialDeposit: parseFloat(document.getElementById('accDeposit').value) || 0
+        };
+        try {
+            const r = await fetch(`${API}/accounts`, { method: 'POST', headers: authHdr(), body: JSON.stringify(data) });
+            const d = await r.json();
+            if (r.ok) {
+                showAlert('newAccSuccess', 'Счёт успешно открыт! ' + (d.accountNumber || ''), 'success');
+                document.getElementById('accDeposit').value = '';
+                loadAccounts();
+            } else showAlert('newAccError', d.message || 'Ошибка', 'error');
+        } catch (e) { showAlert('newAccError', 'Ошибка соединения', 'error'); }
+    }
 
-            try {
-                const response = await fetch(`${API_BASE}/accounts`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    },
-                    body: JSON.stringify(accountData)
-                });
+    // ── Transfer
+    async function doTransfer() {
+        const data = {
+            fromAccountNumber: document.getElementById('fromAccount').value,
+            toAccountNumber: document.getElementById('toAccount').value,
+            amount: parseFloat(document.getElementById('txAmount').value),
+            description: document.getElementById('txDesc').value || 'Перевод'
+        };
+        if (!data.toAccountNumber || !data.amount) { showAlert('txError', 'Заполните все поля', 'error'); return; }
+        try {
+            const r = await fetch(`${API}/transactions/transfer`, { method: 'POST', headers: authHdr(), body: JSON.stringify(data) });
+            const d = await r.json();
+            if (r.ok) {
+                showAlert('txSuccess', 'Перевод выполнен успешно!', 'success');
+                document.getElementById('toAccount').value = '';
+                document.getElementById('txAmount').value = '';
+                loadAccounts();
+            } else showAlert('txError', d.message || 'Ошибка перевода', 'error');
+        } catch (e) { showAlert('txError', 'Ошибка соединения', 'error'); }
+    }
 
-                const data = await response.json();
+    // ── Deposit
+    async function doDeposit() {
+        const data = {
+            accountNumber: document.getElementById('depAccount').value,
+            amount: parseFloat(document.getElementById('depAmount').value),
+            description: 'Пополнение'
+        };
+        if (!data.amount || data.amount <= 0) { showAlert('depError', 'Укажите сумму', 'error'); return; }
+        try {
+            const r = await fetch(`${API}/transactions/deposit`, { method: 'POST', headers: authHdr(), body: JSON.stringify(data) });
+            const d = await r.json();
+            if (r.ok) {
+                showAlert('depSuccess', 'Счёт пополнен на ' + data.amount, 'success');
+                document.getElementById('depAmount').value = '';
+                loadAccounts();
+            } else showAlert('depError', d.message || 'Ошибка', 'error');
+        } catch (e) { showAlert('depError', 'Ошибка соединения', 'error'); }
+    }
 
-                if (response.ok) {
-                    showMessage('newAccountMessage', 'Счет успешно открыт!', 'success');
-                    document.getElementById('newAccountForm').reset();
-                    loadAccounts();
-                } else {
-                    showMessage('newAccountMessage', data.message || 'Ошибка при открытии счета', 'error');
-                }
-            } catch (error) {
-                showMessage('newAccountMessage', 'Ошибка соединения с сервером', 'error');
-            }
-        });
-
-        // Загрузка транзакций
-        async function loadTransactions() {
-            const accountNumber = document.getElementById('transactionAccount').value;
-            const transactionsList = document.getElementById('transactionsList');
-
-            if (!accountNumber) {
-                transactionsList.innerHTML = '<div class="loading">Выберите счет для просмотра истории</div>';
+    // ── Transactions
+    async function loadTransactions() {
+        const accNum = document.getElementById('txFilterAccount').value;
+        const list = document.getElementById('txList');
+        if (!accNum) { list.innerHTML = '<div class="loader">Выберите счёт</div>'; return; }
+        const acc = accounts.find(a => a.accountNumber === accNum);
+        if (!acc) return;
+        list.innerHTML = '<div class="loader">Загрузка...</div>';
+        try {
+            const r = await fetch(`${API}/transactions/account/${acc.id}`, { headers: authHdr() });
+            const txs = await r.json();
+            if (!txs.length) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>Нет транзакций по этому счёту</p></div>';
                 return;
             }
-
-            const account = accounts.find(a => a.accountNumber === accountNumber);
-            if (!account) return;
-
-            transactionsList.innerHTML = '<div class="loading">Загрузка...</div>';
-
-            try {
-                const response = await fetch(`${API_BASE}/transactions/account/${account.id}`, {
-                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-                });
-                const transactions = await response.json();
-
-                if (transactions.length === 0) {
-                    transactionsList.innerHTML = '<p style="text-align: center; padding: 2rem;">Нет транзакций</p>';
-                    return;
-                }
-
-                transactionsList.innerHTML = transactions.map(t => {
-                    const isIncoming = t.toAccountNumber === accountNumber;
-                    const amountClass = isIncoming ? 'positive' : 'negative';
-                    const sign = isIncoming ? '+' : '-';
-
-                    return `
-                        <div class="transaction-item">
-                            <div class="transaction-details">
-                                <div><strong>${t.type}</strong></div>
-                                <div>${t.description || 'Без описания'}</div>
-                                <div style="font-size: 0.9rem; color: #666;">${new Date(t.createdAt).toLocaleString('ru-RU')}</div>
-                            </div>
-                            <div class="transaction-amount ${amountClass}">
-                                ${sign}${t.amount} ${t.currency}
+            list.innerHTML = txs.map(t => {
+                const isIn = t.toAccountNumber === accNum;
+                const typeClass = isIn ? 'in' : (t.type === 'DEPOSIT' ? 'in' : 'out');
+                const amountClass = isIn || t.type === 'DEPOSIT' ? 'positive' : 'negative';
+                const sign = isIn || t.type === 'DEPOSIT' ? '+' : '-';
+                const icons = { TRANSFER: '💸', DEPOSIT: '⬇️', WITHDRAWAL: '⬆️' };
+                const icon = icons[t.type] || '💱';
+                const date = t.createdAt ? new Date(t.createdAt).toLocaleString('ru-RU') : '—';
+                return `
+                    <div class="tx-item">
+                        <div class="tx-left">
+                            <div class="tx-icon ${typeClass}">${icon}</div>
+                            <div>
+                                <div class="tx-type">${t.type || '—'}</div>
+                                <div class="tx-desc">${t.description || 'Без описания'}</div>
+                                <div class="tx-date">${date}</div>
                             </div>
                         </div>
-                    `;
-                }).join('');
-            } catch (error) {
-                transactionsList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки транзакций</p>';
-            }
+                        <div class="tx-amount ${amountClass}">${sign}${Number(t.amount||0).toLocaleString('ru-RU')} ${t.currency||''}</div>
+                    </div>`;
+            }).join('');
+            document.getElementById('statTx').textContent = txs.length;
+        } catch (e) {
+            list.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>Ошибка загрузки</p></div>';
         }
+    }
 
-        function showMessage(elementId, text, type) {
-            const messageEl = document.getElementById(elementId);
-            messageEl.textContent = text;
-            messageEl.className = `message ${type}`;
-            messageEl.style.display = 'block';
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 5000);
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-    </script>
+    // ── Init load
+    loadAccounts();
+</script>
 </body>
 </html>
 

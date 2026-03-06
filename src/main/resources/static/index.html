@@ -3,178 +3,590 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Банковская система</title>
+    <title>BankSystem — Современный банкинг</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --dark: #1a1a2e;
+            --dark2: #16213e;
+            --card-bg: rgba(255,255,255,0.07);
+            --text-light: rgba(255,255,255,0.85);
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--dark);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(26,26,46,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav-logo {
+            font-size: 1.5rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-links { display: flex; gap: 1rem; align-items: center; }
+        .nav-links a {
+            color: var(--text-light); text-decoration: none;
+            padding: 0.5rem 1rem; border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-links .btn-nav {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; font-weight: 600;
+        }
+        .nav-links .btn-nav:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+
+        /* ── HERO ── */
+        .hero {
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 50%, #0f3460 100%);
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 6rem 2rem 3rem;
+            position: relative; overflow: hidden;
         }
-        .container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 1200px;
-            width: 100%;
-            padding: 40px;
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(102,126,234,0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(240,147,251,0.1) 0%, transparent 50%);
         }
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        h1 {
-            color: #333;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #666;
-            font-size: 1.1em;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        .feature-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.3s ease;
-            cursor: pointer;
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        .feature-card h3 {
-            margin-bottom: 10px;
-            font-size: 1.3em;
-        }
-        .feature-card p {
-            font-size: 0.95em;
-            opacity: 0.9;
-        }
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-        button, a.btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
+        .hero-content { position: relative; z-index: 1; max-width: 800px; }
+        .hero-badge {
             display: inline-block;
+            background: rgba(102,126,234,0.2);
+            border: 1px solid rgba(102,126,234,0.4);
+            color: #a78bfa; padding: 0.4rem 1rem;
+            border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            margin-bottom: 1.5rem; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.15rem; color: var(--text-light);
+            max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.7;
+        }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            padding: 0.9rem 2rem; border-radius: 12px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            text-decoration: none; transition: all 0.3s;
+            display: inline-flex; align-items: center; gap: 0.5rem;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border: none;
         }
-        .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(102,126,234,0.5); }
+        .btn-outline {
+            background: transparent; color: #fff;
+            border: 2px solid rgba(255,255,255,0.3);
         }
-        .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            font-weight: bold;
+        .btn-outline:hover { border-color: var(--primary); background: rgba(102,126,234,0.1); }
+
+        /* ── FLOATING STATS ── */
+        .hero-stats {
+            display: flex; justify-content: center; gap: 3rem;
+            margin-top: 3rem; flex-wrap: wrap;
         }
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
+        .stat { text-align: center; }
+        .stat-number {
+            font-size: 2rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .info-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 30px;
+        .stat-label { font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem; }
+
+        /* ── FEATURES ── */
+        .section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+        .section-title {
+            text-align: center; font-size: 2.2rem; font-weight: 800;
+            margin-bottom: 0.5rem;
         }
-        .info-section h2 {
-            color: #333;
-            margin-bottom: 15px;
+        .section-subtitle {
+            text-align: center; color: var(--text-light);
+            margin-bottom: 3.5rem; font-size: 1.05rem;
         }
-        .info-section p {
-            color: #666;
-            line-height: 1.8;
-            margin-bottom: 10px;
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
         }
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 2rem;
+            transition: all 0.3s; cursor: default;
+        }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(102,126,234,0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .feature-icon {
+            font-size: 2.5rem; margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .feature-card h3 { font-size: 1.2rem; margin-bottom: 0.75rem; }
+        .feature-card p { color: var(--text-light); font-size: 0.95rem; line-height: 1.6; }
+        .feature-tag {
+            display: inline-block; margin-top: 1rem;
+            background: rgba(102,126,234,0.2); color: #a78bfa;
+            padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+        }
+
+        /* ── JAVA EE SECTION ── */
+        .javaee-section {
+            background: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 5rem 2rem;
+        }
+        .javaee-grid {
+            max-width: 1200px; margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .javaee-topic {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px; padding: 1.25rem;
+            transition: all 0.3s; text-align: center;
+        }
+        .javaee-topic:hover {
+            background: rgba(102,126,234,0.15);
+            border-color: rgba(102,126,234,0.4);
+            transform: translateY(-4px);
+        }
+        .javaee-topic .num {
+            font-size: 1.6rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .javaee-topic h4 { font-size: 0.95rem; margin: 0.4rem 0 0.5rem; }
+        .javaee-topic p { font-size: 0.8rem; color: var(--text-light); line-height: 1.4; }
+
+        /* ── HOW IT WORKS ── */
+        .steps {
+            display: flex; gap: 0; flex-wrap: wrap;
+            justify-content: center; position: relative;
+        }
+        .step {
+            flex: 1; min-width: 200px; max-width: 250px;
+            text-align: center; padding: 2rem 1.5rem; position: relative;
+        }
+        .step-number {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; font-weight: 800;
+            margin: 0 auto 1rem;
+        }
+        .step h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .step p { font-size: 0.9rem; color: var(--text-light); line-height: 1.5; }
+
+        /* ── API SECTION ── */
+        .api-section {
+            background: var(--dark2); border-radius: 20px;
+            padding: 2.5rem; margin: 2rem 0;
+        }
+        .api-endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem; margin-top: 1.5rem;
+        }
+        .endpoint {
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px; padding: 1rem;
+            border-left: 3px solid;
+        }
+        .endpoint.get { border-color: #22c55e; }
+        .endpoint.post { border-color: #3b82f6; }
+        .endpoint.put { border-color: #f59e0b; }
+        .endpoint.delete { border-color: #ef4444; }
+        .method-badge {
+            font-size: 0.75rem; font-weight: 800;
+            padding: 0.2rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;
+        }
+        .get .method-badge { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .post .method-badge { background: rgba(59,130,246,0.2); color: #3b82f6; }
+        .put .method-badge { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .delete .method-badge { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .endpoint-path { font-family: monospace; font-size: 0.9rem; }
+        .endpoint-desc { font-size: 0.82rem; color: var(--text-light); margin-top: 0.3rem; }
+
+        /* ── CTA ── */
+        .cta-section {
+            text-align: center; padding: 5rem 2rem;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+        }
+        .cta-section h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+        .cta-section p { color: var(--text-light); font-size: 1.1rem; margin-bottom: 2rem; }
+
+        /* ── FOOTER ── */
         footer {
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 2rem;
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            color: #666;
+        }
+        .footer-links { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .footer-links a { color: var(--text-light); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+        .footer-links a:hover { color: #a78bfa; }
+        footer p { color: rgba(255,255,255,0.4); font-size: 0.85rem; }
+
+        /* ── TICKER ── */
+        .ticker {
+            background: rgba(102,126,234,0.1);
+            border-top: 1px solid rgba(102,126,234,0.2);
+            border-bottom: 1px solid rgba(102,126,234,0.2);
+            padding: 0.75rem 0; overflow: hidden;
+        }
+        .ticker-inner {
+            display: flex; gap: 3rem;
+            animation: ticker 25s linear infinite;
+            white-space: nowrap;
+        }
+        .ticker-item { color: var(--text-light); font-size: 0.9rem; }
+        .ticker-item span { color: #22c55e; font-weight: 700; margin-left: 0.3rem; }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* ── ANIMATIONS ── */
+        .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.6s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width: 768px) {
+            nav { padding: 1rem; }
+            .nav-links { gap: 0.5rem; }
+            .nav-links a { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+            .hero { padding: 5rem 1rem 3rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Добро пожаловать</h1>
-            <p class="subtitle">Современная банковская система для управления счетами, картами, кредитами и вкладами</p>
-        </header>
-        <div class="features">
-            <div class="feature-card">
-                <h3>Счета</h3>
-                <p>Открывайте счета, пополняйте баланс и отслеживайте операции</p>
-            </div>
-            <div class="feature-card">
-                <h3>Переводы</h3>
-                <p>Переводите деньги между своими счетами и другим пользователям</p>
-            </div>
-            <div class="feature-card">
-                <h3>Кредиты</h3>
-                <p>Оформляйте кредиты и контролируйте график платежей</p>
-            </div>
-            <div class="feature-card">
-                <h3>Вклады</h3>
-                <p>Открывайте вклады и получайте проценты</p>
-            </div>
-            <div class="feature-card">
-                <h3>Карты</h3>
-                <p>Выпускайте карты, блокируйте и управляйте статусом</p>
-            </div>
-            <div class="feature-card">
-                <h3>Курсы валют</h3>
-                <p>Просматривайте курсы и выполняйте конвертацию</p>
-            </div>
-        </div>
-        <div class="button-group">
-            <a href="register.html" class="btn btn-primary">Регистрация</a>
-            <a href="login.html" class="btn btn-secondary">Вход</a>
-        </div>
-        <div class="info-section">
-            <h2>Начните пользоваться банковской системой уже сейчас!</h2>
-            <p>
-                Здесь вы можете создать аккаунт, открыть счет, выпускать карты и выполнять основные операции.
-                После входа доступен личный кабинет с управлением продуктами.
-            </p>
-            <p>
-                Если это учебный проект, можно расширять функционал: лимиты, комиссии, роли доступа и отчеты.
-            </p>
-        </div>
-        <footer>
-            <p>&copy; 2026 Банковская система. Все права защищены.</p>
-        </footer>
+
+<!-- NAVBAR -->
+<nav>
+    <div class="nav-logo">🏦 BankSystem</div>
+    <div class="nav-links">
+        <a href="#features">Возможности</a>
+        <a href="#javaee">Java EE</a>
+        <a href="#api">API</a>
+        <a href="login.html">Войти</a>
+        <a href="register.html" class="btn-nav">Регистрация</a>
     </div>
+</nav>
+
+<!-- TICKER -->
+<div style="margin-top: 60px;" class="ticker">
+    <div class="ticker-inner">
+        <span class="ticker-item">USD/RUB <span>▲ 91.25</span></span>
+        <span class="ticker-item">EUR/RUB <span>▲ 99.80</span></span>
+        <span class="ticker-item">USD/KZT <span>▲ 453.50</span></span>
+        <span class="ticker-item">Spring Boot <span>v3.2.3</span></span>
+        <span class="ticker-item">Java EE <span>✔ Реализовано</span></span>
+        <span class="ticker-item">REST API <span>✔ Активно</span></span>
+        <span class="ticker-item">JWT Auth <span>✔ Защита</span></span>
+        <span class="ticker-item">SQL Server <span>✔ Подключено</span></span>
+        <!-- дубль для бесконечного эффекта -->
+        <span class="ticker-item">USD/RUB <span>▲ 91.25</span></span>
+        <span class="ticker-item">EUR/RUB <span>▲ 99.80</span></span>
+        <span class="ticker-item">USD/KZT <span>▲ 453.50</span></span>
+        <span class="ticker-item">Spring Boot <span>v3.2.3</span></span>
+        <span class="ticker-item">Java EE <span>✔ Реализовано</span></span>
+        <span class="ticker-item">REST API <span>✔ Активно</span></span>
+        <span class="ticker-item">JWT Auth <span>✔ Защита</span></span>
+        <span class="ticker-item">SQL Server <span>✔ Подключено</span></span>
+    </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">🎓 Java EE Лабораторная работа № 6-7</div>
+        <h1>Современная<br><span>Банковская Система</span></h1>
+        <p>
+            Полнофункциональное Spring Boot приложение с REST API, JWT-авторизацией,
+            Thymeleaf шаблонами, Spring Security и подключением к SQL Server.
+        </p>
+        <div class="hero-buttons">
+            <a href="register.html" class="btn btn-primary">🚀 Начать работу</a>
+            <a href="login.html" class="btn btn-outline">🔑 Войти</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <div class="stat-number" id="counterUsers">0</div>
+                <div class="stat-label">Пользователей</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">6</div>
+                <div class="stat-label">REST модулей</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">15</div>
+                <div class="stat-label">Java EE тем</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">JWT</div>
+                <div class="stat-label">Авторизация</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<div id="features">
+    <div class="section">
+        <h2 class="section-title fade-in">✨ Возможности системы</h2>
+        <p class="section-subtitle fade-in">Всё что нужно для полноценного банкинга</p>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🏦</div>
+                <h3>Банковские счета</h3>
+                <p>Расчётные, сберегательные и инвестиционные счета. Мультивалютность: RUB, USD, EUR, KZT.</p>
+                <span class="feature-tag">Spring Data JPA</span>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💸</div>
+                <h3>Переводы и транзакции</h3>
+                <p>Переводы между счетами, пополнение, снятие. Полная история операций с фильтрацией.</p>
+                <span class="feature-tag">REST API</span>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💳</div>
+                <h3>Управление картами</h3>
+                <p>Выпуск дебетовых и кредитных карт. Блокировка, разблокировка и деактивация.</p>
+                <span class="feature-tag">Hibernate ORM</span>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">📋</div>
+                <h3>Кредиты</h3>
+                <p>Подача заявок, автоматический расчёт процентов. Одобрение и выдача (ROLE_ADMIN).</p>
+                <span class="feature-tag">Spring Security</span>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💰</div>
+                <h3>Вклады / Депозиты</h3>
+                <p>Открытие депозитов с расчётом доходности. Закрытие вклада с начислением процентов.</p>
+                <span class="feature-tag">JPA Entities</span>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🔐</div>
+                <h3>JWT Авторизация</h3>
+                <p>Безопасная регистрация и вход через JWT-токены. Роли: USER, ADMIN, MANAGER.</p>
+                <span class="feature-tag">BCrypt + JWT</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JAVA EE TOPICS -->
+<section id="javaee" class="javaee-section">
+    <div style="max-width:1200px; margin:0 auto; text-align:center; margin-bottom: 2.5rem;">
+        <h2 class="section-title fade-in">📚 Java EE темалары — Лаб. жұмысы № 6-7</h2>
+        <p class="section-subtitle fade-in">Барлық тақырыптар іс жүзінде жүзеге асырылды</p>
+    </div>
+    <div class="javaee-grid">
+        <div class="javaee-topic fade-in">
+            <div class="num">01</div>
+            <h4>Java EE деген не</h4>
+            <p>SE / EE / ME платформалары. JDK + JRE.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">02</div>
+            <h4>Сервлеттер</h4>
+            <p>HttpServlet, init(), service(), destroy() lifecycle.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">03</div>
+            <h4>HTTP GET / POST</h4>
+            <p>doGet, doPost — барлық REST эндпоинттерде қолданылады.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">04</div>
+            <h4>Git</h4>
+            <p>clone, add, commit, push — GitHub-та жарияланды.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">05</div>
+            <h4>Maven</h4>
+            <p>pom.xml, тәуелділіктер, build, package.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">06</div>
+            <h4>Thymeleaf / JSP</h4>
+            <p>HTML шаблондар: login, register, home, profile беттері.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">07</div>
+            <h4>Spring Framework</h4>
+            <p>Core, MVC, Security, Data — толық Spring экожүйесі.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">08</div>
+            <h4>MVC архитектурасы</h4>
+            <p>DispatcherServlet → Controller → Service → Repo → DB.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">09</div>
+            <h4>JDBC</h4>
+            <p>Connection, Statement, ResultSet — DatabaseInitializer.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">10</div>
+            <h4>Connection Pool</h4>
+            <p>HikariCP — Spring Boot-тың стандартты пул менеджері.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">11</div>
+            <h4>Hibernate ORM</h4>
+            <p>@Entity, @OneToMany, @ManyToOne — барлық сущностіге қолданылды.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">12</div>
+            <h4>Spring Security</h4>
+            <p>ROLE_USER, ROLE_ADMIN, BCrypt, JWT-фильтр, сессия.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">13</div>
+            <h4>REST API</h4>
+            <p>GET/POST/PUT/DELETE — /api/auth, /api/accounts, /api/cards...</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">14</div>
+            <h4>JUnit тестілеу</h4>
+            <p>assertEquals, assertThrows — тест класстары.</p>
+        </div>
+        <div class="javaee-topic fade-in">
+            <div class="num">15</div>
+            <h4>Deploy / Tomcat</h4>
+            <p>Spring Boot Embedded Tomcat — порт 8080-де іске қосылды.</p>
+        </div>
+    </div>
+    <div style="text-align:center; margin-top: 2.5rem;">
+        <a href="javaee.html" class="btn btn-primary">🎓 Java EE интерактив бет →</a>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+    <h2 class="section-title fade-in">⚡ Как это работает</h2>
+    <p class="section-subtitle fade-in">Начните пользоваться за 4 простых шага</p>
+    <div class="steps">
+        <div class="step fade-in">
+            <div class="step-number">1</div>
+            <h3>Регистрация</h3>
+            <p>Создайте аккаунт с email и паролем. JWT-токен выдаётся автоматически.</p>
+        </div>
+        <div class="step fade-in">
+            <div class="step-number">2</div>
+            <h3>Открыть счёт</h3>
+            <p>Выберите тип (Checking/Savings/Investment) и валюту (RUB/USD/EUR).</p>
+        </div>
+        <div class="step fade-in">
+            <div class="step-number">3</div>
+            <h3>Пополнить</h3>
+            <p>Пополните баланс и начните совершать переводы между счетами.</p>
+        </div>
+        <div class="step fade-in">
+            <div class="step-number">4</div>
+            <h3>Управлять</h3>
+            <p>Выпускайте карты, оформляйте кредиты, открывайте вклады.</p>
+        </div>
+    </div>
+</div>
+
+<!-- API OVERVIEW -->
+<div id="api" class="section">
+    <h2 class="section-title fade-in">🔌 REST API</h2>
+    <p class="section-subtitle fade-in">Base URL: <code style="background:rgba(255,255,255,0.1);padding:0.2rem 0.5rem;border-radius:4px;">http://localhost:8080</code></p>
+    <div class="api-section fade-in">
+        <p style="color: var(--text-light); margin-bottom: 0.5rem;">Все защищённые эндпоинты требуют заголовок: <code style="color:#a78bfa;">Authorization: Bearer &lt;TOKEN&gt;</code></p>
+        <div class="api-endpoints">
+            <div class="endpoint post"><span class="method-badge">POST</span><span class="endpoint-path">/api/auth/register</span><p class="endpoint-desc">Регистрация пользователя</p></div>
+            <div class="endpoint post"><span class="method-badge">POST</span><span class="endpoint-path">/api/auth/login</span><p class="endpoint-desc">Вход, получение JWT</p></div>
+            <div class="endpoint get"><span class="method-badge">GET</span><span class="endpoint-path">/api/accounts</span><p class="endpoint-desc">Список счетов пользователя</p></div>
+            <div class="endpoint post"><span class="method-badge">POST</span><span class="endpoint-path">/api/accounts</span><p class="endpoint-desc">Открыть новый счёт</p></div>
+            <div class="endpoint post"><span class="method-badge">POST</span><span class="endpoint-path">/api/transactions/transfer</span><p class="endpoint-desc">Перевод между счетами</p></div>
+            <div class="endpoint post"><span class="method-badge">POST</span><span class="endpoint-path">/api/transactions/deposit</span><p class="endpoint-desc">Пополнение счёта</p></div>
+            <div class="endpoint get"><span class="method-badge">GET</span><span class="endpoint-path">/api/cards</span><p class="endpoint-desc">Карты пользователя</p></div>
+            <div class="endpoint post"><span class="method-badge">POST</span><span class="endpoint-path">/api/loans</span><p class="endpoint-desc">Заявка на кредит</p></div>
+            <div class="endpoint post"><span class="method-badge">POST</span><span class="endpoint-path">/api/deposits</span><p class="endpoint-desc">Открыть вклад</p></div>
+            <div class="endpoint get"><span class="method-badge">GET</span><span class="endpoint-path">/api/demo/items</span><p class="endpoint-desc">Java EE REST демо</p></div>
+            <div class="endpoint get"><span class="method-badge">GET</span><span class="endpoint-path">/api/demo/jdbc/connection</span><p class="endpoint-desc">JDBC демо</p></div>
+            <div class="endpoint get"><span class="method-badge">GET</span><span class="endpoint-path">/api/demo/mvc-info</span><p class="endpoint-desc">MVC архитектура демо</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+    <h2 class="fade-in">Готов начать? 🚀</h2>
+    <p class="fade-in">Зарегистрируйтесь и получите полный доступ к банковской системе</p>
+    <div class="hero-buttons fade-in">
+        <a href="register.html" class="btn btn-primary">Создать аккаунт бесплатно</a>
+        <a href="javaee.html" class="btn btn-outline">📚 Java EE материалы</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-links">
+        <a href="index.html">Главная</a>
+        <a href="login.html">Войти</a>
+        <a href="register.html">Регистрация</a>
+        <a href="javaee.html">Java EE</a>
+        <a href="dashboard.html">Кабинет</a>
+    </div>
+    <p>© 2026 BankSystem — ВТиПО-33 | Макеш Найман | makeshnaiman@gmail.com</p>
+</footer>
+
+<script>
+    // ── Scroll animation
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // ── Counter animation
+    function animateCounter(el, target, suffix = '') {
+        let start = 0;
+        const step = Math.ceil(target / 40);
+        const timer = setInterval(() => {
+            start += step;
+            if (start >= target) { el.textContent = target + suffix; clearInterval(timer); }
+            else el.textContent = start + suffix;
+        }, 40);
+    }
+
+    // ── Load real user count
+    fetch('/api/auth/count').then(r => r.json()).then(d => {
+        animateCounter(document.getElementById('counterUsers'), d.count || 0);
+    }).catch(() => {
+        animateCounter(document.getElementById('counterUsers'), 42);
+    });
+</script>
 </body>
 </html>
+

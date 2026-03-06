@@ -2,8 +2,15 @@ package com.techstore.bank_system;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 
+/**
+ * Java EE / Spring Boot негізгі класы.
+ * @SpringBootApplication = @Configuration + @EnableAutoConfiguration + @ComponentScan
+ * @ServletComponentScan  = @WebServlet, @WebFilter, @WebListener аннотацияларын тіркейді
+ */
 @SpringBootApplication
+@ServletComponentScan  // BankInfoServlet (@WebServlet) тіркелуі үшін қажет
 public class BankSystemApplication {
 
     public static void main(String[] args) {

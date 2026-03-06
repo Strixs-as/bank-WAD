@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Профиль — BankSystem</title>
+    <style>
+        :root { --primary: #667eea; --secondary: #764ba2; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; }
+        nav {
+            background: rgba(13,13,26,0.97); padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .logo {
+            font-size: 1.3rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), #f093fb);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        nav a { color: rgba(255,255,255,0.6); text-decoration: none; margin-left: 1rem; transition: color 0.3s; }
+        nav a:hover { color: #fff; }
+        .container { max-width: 600px; margin: 3rem auto; padding: 0 2rem; }
+        .profile-card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px; padding: 2.5rem; text-align: center;
+        }
+        .avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 900; margin: 0 auto 1.25rem;
+        }
+        h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.4rem; }
+        .role-badge {
+            display: inline-block;
+            background: rgba(102,126,234,0.2); border: 1px solid rgba(102,126,234,0.3);
+            color: #a78bfa; padding: 0.3rem 0.8rem; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; margin-bottom: 2rem;
+        }
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.9rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: rgba(255,255,255,0.45); font-weight: 600; }
+        .info-value { color: #fff; font-weight: 500; }
+        .btn-back {
+            display: inline-block; margin-top: 2rem;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border-radius: 10px; text-decoration: none;
+            font-weight: 700; transition: all 0.3s;
+        }
+        .btn-back:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="logo">🏦 BankSystem</div>
+    <div>
+        <a href="/home">🏠 Главная</a>
+        <a href="/logout">Выйти</a>
+    </div>
+</nav>
+<div class="container">
+    <div class="profile-card">
+        <div class="avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">U</div>
+        <h1 th:text="${username}">Пользователь</h1>
+        <div class="role-badge">🔐 ROLE_USER</div>
+        <div class="info-row">
+            <span class="info-label">Email / логин</span>
+            <span class="info-value" th:text="${username}">—</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Статус сессии</span>
+            <span class="info-value">✅ Активна</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Авторизация</span>
+            <span class="info-value">Spring Security + JWT</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Java EE тақырыбы #12</span>
+            <span class="info-value">Session механизм</span>
+        </div>
+        <a href="/home" class="btn-back">← Главная</a>
+    </div>
+</div>
+</body>
+</html>
+

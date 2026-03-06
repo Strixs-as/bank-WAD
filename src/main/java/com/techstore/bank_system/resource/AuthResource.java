@@ -3,14 +3,12 @@ package com.techstore.bank_system.resource;
 import com.techstore.bank_system.dto.AuthResponse;
 import com.techstore.bank_system.dto.LoginRequest;
 import com.techstore.bank_system.dto.RegisterRequest;
+import com.techstore.bank_system.repository.UserRepository;
 import com.techstore.bank_system.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -20,6 +18,20 @@ public class AuthResource {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    /** Количество пользователей — для главной страницы */
+    @GetMapping("/count")
+    public ResponseEntity<?> getUserCount() {
+        try {
+            long count = userRepository.count();
+            return ResponseEntity.ok(Map.of("count", count));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("count", 0));
+        }
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody(required = false) RegisterRequest request) {

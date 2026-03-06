@@ -3,98 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vxod - Bankovskaya sistema</title>
+    <title>Вход — BankSystem</title>
     <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --dark: #1a1a2e;
+            --dark2: #16213e;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
+            background: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
         }
-        .login-container {
-            background: white; border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 400px; width: 100%; padding: 40px;
+
+        /* ── LEFT PANEL ── */
+        .left-panel {
+            flex: 1; display: none;
+            background: linear-gradient(135deg, var(--dark2) 0%, #0f3460 100%);
+            position: relative; overflow: hidden;
+            align-items: center; justify-content: center;
+            flex-direction: column; padding: 3rem; text-align: center;
         }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header h1 { color: #333; font-size: 1.8em; margin-bottom: 10px; }
-        .login-header p { color: #666; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        @media(min-width: 900px) { .left-panel { display: flex; } }
+        .left-panel::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 30% 70%, rgba(102,126,234,0.2) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 20%, rgba(240,147,251,0.1) 0%, transparent 50%);
+        }
+        .left-content { position: relative; z-index: 1; color: #fff; }
+        .left-logo { font-size: 3rem; margin-bottom: 1rem; }
+        .left-title { font-size: 2rem; font-weight: 800; margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .left-desc { color: rgba(255,255,255,0.7); font-size: 1rem; line-height: 1.7; margin-bottom: 2rem; }
+        .features-list { text-align: left; }
+        .feature-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            color: rgba(255,255,255,0.8); font-size: 0.95rem;
+            padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .feature-item:last-child { border: none; }
+        .feature-item .icon {
+            width: 32px; height: 32px;
+            background: rgba(102,126,234,0.2);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
+        }
+
+        /* ── RIGHT PANEL (Form) ── */
+        .right-panel {
+            flex: 0 0 auto; width: 100%;
+            max-width: 480px; background: #0d0d1a;
+            display: flex; flex-direction: column;
+            justify-content: center; padding: 3rem 2.5rem;
+            position: relative;
+        }
+        @media(min-width: 900px) { .right-panel { min-height: 100vh; } }
+
+        .back-link {
+            position: absolute; top: 1.5rem; left: 1.5rem;
+            color: rgba(255,255,255,0.5); text-decoration: none;
+            font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: #fff; }
+
+        .form-header { margin-bottom: 2rem; }
+        .form-header h1 { color: #fff; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.4rem; }
+        .form-header p { color: rgba(255,255,255,0.5); font-size: 0.95rem; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block; color: rgba(255,255,255,0.7);
+            font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;
+        }
+        .input-wrapper { position: relative; }
+        .input-wrapper .input-icon {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            font-size: 1rem; color: rgba(255,255,255,0.3);
+        }
         .form-group input {
-            width: 100%; padding: 12px; border: 2px solid #e0e0e0;
-            border-radius: 8px; font-size: 1em; transition: border-color 0.3s;
+            width: 100%; padding: 0.85rem 1rem 0.85rem 2.75rem;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: #fff; font-size: 1rem;
+            transition: all 0.3s;
         }
-        .form-group input:focus { outline: none; border-color: #667eea; }
-        .login-button {
-            width: 100%; padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none; border-radius: 8px;
-            font-size: 1.1em; font-weight: bold; cursor: pointer; transition: transform 0.3s;
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(102,126,234,0.1);
         }
-        .login-button:hover { transform: scale(1.02); }
-        .register-link { text-align: center; margin-top: 20px; color: #666; }
-        .register-link a { color: #667eea; text-decoration: none; font-weight: bold; }
-        .alert { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; }
-        .alert-error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
-        .alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .form-group input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .submit-btn {
+            width: 100%; padding: 0.9rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            transition: all 0.3s; margin-top: 0.5rem;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+        .submit-btn:active { transform: translateY(0); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .divider { text-align: center; color: rgba(255,255,255,0.3); margin: 1.25rem 0; font-size: 0.85rem; position: relative; }
+        .divider::before, .divider::after {
+            content: ''; position: absolute; top: 50%; width: 42%; height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .switch-link {
+            text-align: center; color: rgba(255,255,255,0.5); font-size: 0.9rem;
+            margin-top: 1.5rem;
+        }
+        .switch-link a { color: #a78bfa; text-decoration: none; font-weight: 600; }
+        .switch-link a:hover { text-decoration: underline; }
+
+        .alert {
+            padding: 0.85rem 1rem; border-radius: 10px;
+            margin-bottom: 1.25rem; font-size: 0.9rem;
+            display: none; align-items: center; gap: 0.5rem;
+        }
+        .alert.show { display: flex; }
+        .alert-error { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .alert-success { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.6s linear infinite; vertical-align: middle;
+            margin-right: 0.5rem; display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <h1>&#127974; Vxod</h1>
-            <p>Dobro pozhalovat v bankovskuyu sistemu</p>
-        </div>
-        <div class="alert alert-success" id="successAlert"></div>
-        <div class="alert alert-error" id="errorAlert"></div>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="example@mail.com" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Parol</label>
-                <input type="password" id="password" placeholder="Vvedite parol" required>
-            </div>
-            <button type="submit" class="login-button">Voyti</button>
-        </form>
-        <div class="register-link">
-            Net akkaunta? <a href="register.html">Zaregistrirovatsya</a>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+    <div class="left-content">
+        <div class="left-logo">🏦</div>
+        <div class="left-title">BankSystem</div>
+        <p class="left-desc">Управляйте счетами, картами, кредитами и вкладами в одном месте.</p>
+        <div class="features-list">
+            <div class="feature-item"><div class="icon">🔐</div><span>JWT-авторизация и роли</span></div>
+            <div class="feature-item"><div class="icon">🏦</div><span>Мультивалютные счета</span></div>
+            <div class="feature-item"><div class="icon">💸</div><span>Быстрые переводы</span></div>
+            <div class="feature-item"><div class="icon">💳</div><span>Управление картами</span></div>
+            <div class="feature-item"><div class="icon">📊</div><span>История транзакций</span></div>
+            <div class="feature-item"><div class="icon">📋</div><span>Кредиты и вклады</span></div>
         </div>
     </div>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const errorAlert = document.getElementById('errorAlert');
-            const successAlert = document.getElementById('successAlert');
-            errorAlert.style.display = 'none';
-            successAlert.style.display = 'none';
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await response.json();
-                if (response.ok && data.token) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('userId', data.userId);
-                    localStorage.setItem('userName', data.fullName || data.email);
-                    successAlert.textContent = 'Uspeshno! Perenapravlenie...';
-                    successAlert.style.display = 'block';
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
-                } else {
-                    errorAlert.textContent = data.message || 'Oshibka vxoda';
-                    errorAlert.style.display = 'block';
-                }
-            } catch (err) {
-                errorAlert.textContent = 'Oshibka podklyucheniya k serveru';
-                errorAlert.style.display = 'block';
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+    <a href="index.html" class="back-link">← Главная</a>
+
+    <div class="form-header">
+        <h1>Добро пожаловать 👋</h1>
+        <p>Введите данные для входа в систему</p>
+    </div>
+
+    <div class="alert alert-error" id="errorAlert">
+        <span>⚠️</span><span id="errorText">Ошибка входа</span>
+    </div>
+    <div class="alert alert-success" id="successAlert">
+        <span>✅</span><span>Успешно! Перенаправление...</span>
+    </div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <div class="input-wrapper">
+                <span class="input-icon">✉️</span>
+                <input type="email" id="email" placeholder="example@mail.com" required autocomplete="email">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="password" placeholder="Введите пароль" required autocomplete="current-password">
+            </div>
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="spinner" id="spinner"></span>
+            Войти
+        </button>
+    </form>
+
+    <div class="divider">или</div>
+
+    <div class="switch-link">
+        Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+    </div>
+    <div class="switch-link" style="margin-top: 0.75rem;">
+        <a href="index.html">← Вернуться на главную</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorAlert = document.getElementById('errorAlert');
+        const successAlert = document.getElementById('successAlert');
+        const spinner = document.getElementById('spinner');
+        const btn = document.getElementById('submitBtn');
+
+        errorAlert.classList.remove('show');
+        successAlert.classList.remove('show');
+        spinner.style.display = 'inline-block';
+        btn.disabled = true;
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+
+            if (response.ok && data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.userId || '');
+                localStorage.setItem('userName', data.fullName || data.email || email);
+                successAlert.classList.add('show');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+            } else {
+                document.getElementById('errorText').textContent = data.message || 'Неверный email или пароль';
+                errorAlert.classList.add('show');
+                spinner.style.display = 'none';
+                btn.disabled = false;
             }
-        });
-    </script>
+        } catch (err) {
+            document.getElementById('errorText').textContent = 'Ошибка подключения к серверу';
+            errorAlert.classList.add('show');
+            spinner.style.display = 'none';
+            btn.disabled = false;
+        }
+    });
+</script>
 </body>
 </html>
+

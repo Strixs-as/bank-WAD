@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Регистрация — BankSystem</title>
+    <style>
+        :root { --primary: #667eea; --secondary: #764ba2; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #1a1a2e; min-height: 100vh;
+            display: flex; align-items: flex-start; justify-content: center; padding: 2rem 1rem;
+        }
+        .card {
+            background: #0d0d1a; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px; padding: 2.5rem; width: 100%; max-width: 540px; color: #fff;
+        }
+        .logo { text-align: center; font-size: 2rem; margin-bottom: 0.5rem; }
+        h1 { text-align: center; font-size: 1.6rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .sub { text-align: center; color: rgba(255,255,255,0.45); font-size: 0.9rem; margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-group { display: flex; flex-direction: column; }
+        label { color: rgba(255,255,255,0.6); font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; }
+        input[type=text], input[type=email], input[type=password], input[type=date], input[type=tel] {
+            padding: 0.75rem 0.9rem;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px; color: #fff; font-size: 0.9rem; transition: all 0.3s;
+        }
+        input:focus { outline: none; border-color: var(--primary); background: rgba(102,126,234,0.08); }
+        input::placeholder { color: rgba(255,255,255,0.2); }
+        input.error-field { border-color: #ef4444; }
+        .field-error { color: #fca5a5; font-size: 0.78rem; margin-top: 3px; }
+        .btn {
+            width: 100%; padding: 0.85rem; margin-top: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
+        .link-row { text-align: center; margin-top: 1.25rem; color: rgba(255,255,255,0.45); font-size: 0.88rem; }
+        .link-row a { color: #a78bfa; text-decoration: none; font-weight: 600; }
+        .link-row a:hover { text-decoration: underline; }
+        .back { display: block; text-align: center; margin-top: 0.75rem; color: rgba(255,255,255,0.35); font-size: 0.82rem; text-decoration: none; }
+        .back:hover { color: #fff; }
+        .global-error {
+            background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.88rem; margin-bottom: 1.25rem;
+        }
+        @media(max-width:480px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid .full { grid-column: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">📝</div>
+    <h1>Регистрация</h1>
+    <p class="sub">Заполните все поля для создания аккаунта</p>
+
+    <!-- Global errors -->
+    <div th:if="${#fields.hasGlobalErrors()}" class="global-error">
+        <span th:each="err : ${#fields.globalErrors()}" th:text="${err}"></span>
+    </div>
+
+    <form th:action="@{/register}" th:object="${user}" method="post">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="firstName">Имя *</label>
+                <input type="text" id="firstName" th:field="*{firstName}"
+                       placeholder="Айбек" th:classappend="${#fields.hasErrors('firstName')} ? 'error-field'" required/>
+                <span class="field-error" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></span>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Фамилия *</label>
+                <input type="text" id="lastName" th:field="*{lastName}"
+                       placeholder="Сейткали" th:classappend="${#fields.hasErrors('lastName')} ? 'error-field'" required/>
+                <span class="field-error" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></span>
+            </div>
+            <div class="form-group full">
+                <label for="patronymic">Отчество</label>
+                <input type="text" id="patronymic" th:field="*{patronymic}" placeholder="Необязательно"/>
+            </div>
+            <div class="form-group full">
+                <label for="email">Email *</label>
+                <input type="email" id="email" th:field="*{email}"
+                       placeholder="example@mail.com" th:classappend="${#fields.hasErrors('email')} ? 'error-field'" required/>
+                <span class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+            </div>
+            <div class="form-group">
+                <label for="phoneNumber">Телефон *</label>
+                <input type="tel" id="phoneNumber" th:field="*{phoneNumber}"
+                       placeholder="+77001234567" th:classappend="${#fields.hasErrors('phoneNumber')} ? 'error-field'" required/>
+                <span class="field-error" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></span>
+            </div>
+            <div class="form-group">
+                <label for="passportNumber">Паспорт *</label>
+                <input type="text" id="passportNumber" th:field="*{passportNumber}"
+                       placeholder="N12345678" th:classappend="${#fields.hasErrors('passportNumber')} ? 'error-field'" required/>
+                <span class="field-error" th:if="${#fields.hasErrors('passportNumber')}" th:errors="*{passportNumber}"></span>
+            </div>
+            <div class="form-group">
+                <label for="dateOfBirth">Дата рождения *</label>
+                <input type="date" id="dateOfBirth" th:field="*{dateOfBirth}"
+                       th:classappend="${#fields.hasErrors('dateOfBirth')} ? 'error-field'" required/>
+                <span class="field-error" th:if="${#fields.hasErrors('dateOfBirth')}" th:errors="*{dateOfBirth}"></span>
+            </div>
+            <div class="form-group">
+                <label for="address">Адрес *</label>
+                <input type="text" id="address" th:field="*{address}"
+                       placeholder="г. Алматы, ул. ..." th:classappend="${#fields.hasErrors('address')} ? 'error-field'" required/>
+                <span class="field-error" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></span>
+            </div>
+            <div class="form-group full">
+                <label for="password">Пароль * (мин. 6 символов)</label>
+                <input type="password" id="password" th:field="*{password}"
+                       placeholder="Введите пароль" th:classappend="${#fields.hasErrors('password')} ? 'error-field'"
+                       required minlength="6"/>
+                <span class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+            </div>
+        </div>
+        <button type="submit" class="btn">Зарегистрироваться</button>
+    </form>
+
+    <div class="link-row">Уже есть аккаунт? <a href="/login">Войти</a></div>
+    <a href="/index.html" class="back">← Вернуться на главную</a>
+</div>
+</body>
+</html>
+

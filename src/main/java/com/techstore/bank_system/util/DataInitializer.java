@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Component("dataInitializerUtil")
+@Component("appDataInitializer")
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired

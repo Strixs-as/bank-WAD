@@ -3,254 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация - Банковская Система</title>
+    <title>Регистрация — BankSystem</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --dark: #1a1a2e;
+            --dark2: #16213e;
         }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--dark);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 0;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 2rem 1rem;
         }
-
         .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 500px;
+            background: #0d0d1a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            width: 100%; max-width: 580px;
+            padding: 2.5rem 2rem;
+            position: relative;
         }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 2rem;
+        .back-link {
+            color: rgba(255,255,255,0.4); text-decoration: none;
+            font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;
+            margin-bottom: 1.5rem; transition: color 0.3s;
         }
+        .back-link:hover { color: #fff; }
+        .form-header { margin-bottom: 2rem; }
+        .form-header h1 { color: #fff; font-size: 1.7rem; font-weight: 800; margin-bottom: 0.4rem; }
+        .form-header p { color: rgba(255,255,255,0.45); font-size: 0.9rem; }
 
-        .form-group {
-            margin-bottom: 1rem;
+        .progress-bar {
+            display: flex; gap: 0.5rem; margin-bottom: 2rem;
         }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #555;
-            font-weight: 500;
+        .progress-step {
+            flex: 1; height: 4px; border-radius: 2px;
+            background: rgba(255,255,255,0.1); transition: background 0.3s;
         }
+        .progress-step.active { background: linear-gradient(90deg, var(--primary), var(--secondary)); }
 
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
+        .form-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
         }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-group label {
+            display: block; color: rgba(255,255,255,0.65);
+            font-size: 0.85rem; font-weight: 600; margin-bottom: 0.45rem;
         }
-
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 1rem;
+        .input-wrapper { position: relative; }
+        .input-icon {
+            position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+            font-size: 0.95rem; color: rgba(255,255,255,0.3);
         }
-
-        button:hover {
-            transform: translateY(-2px);
+        .form-group input {
+            width: 100%; padding: 0.8rem 0.9rem 0.8rem 2.6rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px; color: #fff; font-size: 0.95rem;
+            transition: all 0.3s;
         }
-
-        .switch-form {
-            text-align: center;
-            margin-top: 1rem;
+        .form-group input:focus {
+            outline: none; border-color: var(--primary);
+            background: rgba(102,126,234,0.08);
         }
+        .form-group input::placeholder { color: rgba(255,255,255,0.2); }
+        .form-group input.error { border-color: #ef4444; }
 
-        .switch-form a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
+        .password-strength {
+            display: flex; gap: 4px; margin-top: 6px;
         }
-
-        .switch-form a:hover {
-            text-decoration: underline;
+        .strength-bar {
+            flex: 1; height: 3px; border-radius: 2px;
+            background: rgba(255,255,255,0.08); transition: background 0.3s;
         }
+        .strength-bar.weak { background: #ef4444; }
+        .strength-bar.medium { background: #f59e0b; }
+        .strength-bar.strong { background: #22c55e; }
+        .strength-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
 
-        .message {
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            display: none;
+        .submit-btn {
+            width: 100%; padding: 0.9rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            transition: all 0.3s; margin-top: 1.5rem;
         }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .alert {
+            padding: 0.85rem 1rem; border-radius: 10px;
+            margin-bottom: 1.25rem; font-size: 0.9rem;
+            display: none; align-items: center; gap: 0.5rem;
         }
+        .alert.show { display: flex; }
+        .alert-error { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+        .alert-success { background: rgba(34,197,94,0.12); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
 
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .switch-link {
+            text-align: center; color: rgba(255,255,255,0.45); font-size: 0.9rem; margin-top: 1.5rem;
         }
+        .switch-link a { color: #a78bfa; text-decoration: none; font-weight: 600; }
+        .switch-link a:hover { text-decoration: underline; }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        .spinner {
+            display: none; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle; margin-right: 0.5rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media(max-width: 500px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid .full { grid-column: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📝 Регистрация</h1>
-
-        <div id="message" class="message"></div>
-
-        <form id="registerForm">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="firstName">Имя:</label>
-                    <input type="text" id="firstName" name="firstName" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="lastName">Фамилия:</label>
-                    <input type="text" id="lastName" name="lastName" required>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="middleName">Отчество:</label>
-                <input type="text" id="middleName" name="middleName">
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="phoneNumber">Номер телефона:</label>
-                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+7XXXXXXXXXX" required>
-            </div>
-
-            <div class="form-group">
-                <label for="passportNumber">Номер паспорта:</label>
-                <input type="text" id="passportNumber" name="passportNumber" required>
-            </div>
-
-            <div class="form-group">
-                <label for="dateOfBirth">Дата рождения:</label>
-                <input type="date" id="dateOfBirth" name="dateOfBirth" required>
-            </div>
-
-            <div class="form-group">
-                <label for="address">Адрес:</label>
-                <input type="text" id="address" name="address" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" name="password" required minlength="6">
-            </div>
-
-            <div class="form-group">
-                <label for="confirmPassword">Подтвердите пароль:</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required>
-            </div>
-
-            <button type="submit">Зарегистрироваться</button>
-        </form>
-
-        <div class="switch-form">
-            <p>Уже есть аккаунт? <a href="index.html">Войти</a></p>
-        </div>
+<div class="container">
+    <a href="index.html" class="back-link">← Главная</a>
+    <div class="form-header">
+        <h1>Создать аккаунт 📝</h1>
+        <p>Заполните все поля для регистрации в системе</p>
     </div>
 
-    <script>
-        const API_BASE = '/api';
+    <div class="progress-bar">
+        <div class="progress-step active" id="ps1"></div>
+        <div class="progress-step" id="ps2"></div>
+        <div class="progress-step" id="ps3"></div>
+    </div>
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+    <div class="alert alert-error" id="errorAlert">
+        <span>⚠️</span><span id="errorText">Ошибка</span>
+    </div>
+    <div class="alert alert-success" id="successAlert">
+        <span>✅</span><span>Регистрация успешна! Перенаправление...</span>
+    </div>
 
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+    <form id="registerForm">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Имя *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="firstName" placeholder="Айбек" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Фамилия *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="lastName" placeholder="Сейткали" required>
+                </div>
+            </div>
+            <div class="form-group full">
+                <label>Отчество</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="middleName" placeholder="Необязательно">
+                </div>
+            </div>
+            <div class="form-group full">
+                <label>Email *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" id="email" placeholder="example@mail.com" required autocomplete="email">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Телефон *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📱</span>
+                    <input type="tel" id="phoneNumber" placeholder="+77001234567" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Номер паспорта *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🪪</span>
+                    <input type="text" id="passportNumber" placeholder="N12345678" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Дата рождения *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🎂</span>
+                    <input type="date" id="dateOfBirth" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Адрес *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📍</span>
+                    <input type="text" id="address" placeholder="г. Алматы, ул. ..." required>
+                </div>
+            </div>
+            <div class="form-group full">
+                <label>Пароль * (минимум 6 символов)</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" placeholder="Введите пароль" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="password-strength">
+                    <div class="strength-bar" id="sb1"></div>
+                    <div class="strength-bar" id="sb2"></div>
+                    <div class="strength-bar" id="sb3"></div>
+                    <div class="strength-bar" id="sb4"></div>
+                </div>
+                <div class="strength-label" id="strengthLabel"></div>
+            </div>
+            <div class="form-group full">
+                <label>Подтвердите пароль *</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="confirmPassword" placeholder="Повторите пароль" required autocomplete="new-password">
+                </div>
+            </div>
+        </div>
 
-            if (password !== confirmPassword) {
-                showMessage('Пароли не совпадают', 'error');
-                return;
-            }
+        <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="spinner" id="spinner"></span>
+            Зарегистрироваться
+        </button>
+    </form>
 
-            const formData = {
-                email: document.getElementById('email').value,
-                password: password,
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                patronymic: document.getElementById('middleName').value || null,
-                phoneNumber: document.getElementById('phoneNumber').value,
-                passportNumber: document.getElementById('passportNumber').value,
-                dateOfBirth: document.getElementById('dateOfBirth').value,
-                address: document.getElementById('address').value
-            };
+    <div class="switch-link">
+        Уже есть аккаунт? <a href="login.html">Войти</a>
+    </div>
+</div>
 
-            try {
-                const response = await fetch(`${API_BASE}/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
+<script>
+    // Progress bar animation
+    const fields = ['firstName', 'lastName', 'email', 'password'];
+    function updateProgress() {
+        const filled = fields.filter(id => document.getElementById(id).value.trim()).length;
+        const pct = filled / fields.length;
+        document.getElementById('ps1').classList.toggle('active', pct > 0);
+        document.getElementById('ps2').classList.toggle('active', pct >= 0.5);
+        document.getElementById('ps3').classList.toggle('active', pct >= 1);
+    }
+    fields.forEach(id => document.getElementById(id).addEventListener('input', updateProgress));
 
-                const data = await response.json();
-
-                if (response.ok && data.token) {
-                    showMessage('Регистрация успешна! Перенаправление...', 'success');
-
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('userId', data.userId);
-                    localStorage.setItem('userEmail', data.email);
-                    localStorage.setItem('userName', data.fullName);
-
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
-                } else {
-                    showMessage(data.message || 'Ошибка регистрации', 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка соединения с сервером', 'error');
-                console.error('Error:', error);
-            }
+    // Password strength
+    document.getElementById('password').addEventListener('input', function () {
+        const pw = this.value;
+        let strength = 0;
+        if (pw.length >= 6) strength++;
+        if (pw.length >= 10) strength++;
+        if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) strength++;
+        if (/[^A-Za-z0-9]/.test(pw)) strength++;
+        const bars = ['sb1','sb2','sb3','sb4'];
+        const labels = ['', 'Слабый 🔴', 'Средний 🟡', 'Хороший 🟢', 'Отличный 💪'];
+        const classes = ['', 'weak', 'medium', 'strong', 'strong'];
+        bars.forEach((b, i) => {
+            const el = document.getElementById(b);
+            el.className = 'strength-bar ' + (i < strength ? classes[strength] : '');
         });
+        document.getElementById('strengthLabel').textContent = labels[strength];
+    });
 
-        function showMessage(text, type) {
-            const messageEl = document.getElementById('message');
-            messageEl.textContent = text;
-            messageEl.className = `message ${type}`;
-            messageEl.style.display = 'block';
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorAlert = document.getElementById('errorAlert');
+        const successAlert = document.getElementById('successAlert');
+        const spinner = document.getElementById('spinner');
+        const btn = document.getElementById('submitBtn');
+
+        errorAlert.classList.remove('show');
+        successAlert.classList.remove('show');
+
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        if (password !== confirm) {
+            document.getElementById('errorText').textContent = 'Пароли не совпадают';
+            errorAlert.classList.add('show');
+            return;
         }
-    </script>
+
+        spinner.style.display = 'inline-block';
+        btn.disabled = true;
+
+        const formData = {
+            email: document.getElementById('email').value,
+            password,
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            patronymic: document.getElementById('middleName').value || null,
+            phoneNumber: document.getElementById('phoneNumber').value,
+            passportNumber: document.getElementById('passportNumber').value,
+            dateOfBirth: document.getElementById('dateOfBirth').value,
+            address: document.getElementById('address').value
+        };
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+
+            if (response.ok && data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.userId || '');
+                localStorage.setItem('userEmail', data.email || formData.email);
+                localStorage.setItem('userName', data.fullName || formData.firstName + ' ' + formData.lastName);
+                successAlert.classList.add('show');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+            } else {
+                document.getElementById('errorText').textContent = data.message || 'Ошибка регистрации';
+                errorAlert.classList.add('show');
+                spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        } catch (err) {
+            document.getElementById('errorText').textContent = 'Ошибка подключения к серверу';
+            errorAlert.classList.add('show');
+            spinner.style.display = 'none';
+            btn.disabled = false;
+        }
+    });
+</script>
 </body>
 </html>
 

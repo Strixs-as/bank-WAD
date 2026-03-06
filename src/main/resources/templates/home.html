@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Главная — BankSystem</title>
+    <style>
+        :root { --primary: #667eea; --secondary: #764ba2; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; }
+        nav {
+            background: rgba(13,13,26,0.97); padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .logo {
+            font-size: 1.3rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), #f093fb);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        nav a { color: rgba(255,255,255,0.6); text-decoration: none; margin-left: 1rem; transition: color 0.3s; }
+        nav a:hover { color: #fff; }
+        .container { max-width: 900px; margin: 3rem auto; padding: 0 2rem; text-align: center; }
+        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        h1 span {
+            background: linear-gradient(135deg, var(--primary), #f093fb);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        p { color: rgba(255,255,255,0.6); margin-bottom: 2.5rem; font-size: 1rem; }
+        .cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem; margin-bottom: 2rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 1.75rem 1.25rem;
+            text-decoration: none; color: #fff; transition: all 0.3s;
+        }
+        .card:hover { border-color: rgba(102,126,234,0.4); transform: translateY(-4px); background: rgba(102,126,234,0.1); }
+        .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+        .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .card p { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin: 0; }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="logo">🏦 BankSystem</div>
+    <div>
+        <a href="/profile">👤 Профиль</a>
+        <a href="/logout">Выйти</a>
+    </div>
+</nav>
+<div class="container">
+    <h1>Привет, <span th:text="${username}">Пользователь</span>! 👋</h1>
+    <p>Управляйте своими финансами — выберите нужный раздел</p>
+    <div class="cards">
+        <a href="/dashboard.html" class="card">
+            <div class="card-icon">🏦</div>
+            <h3>Личный кабинет</h3>
+            <p>Счета, переводы, история операций</p>
+        </a>
+        <a href="/loans.html" class="card">
+            <div class="card-icon">📋</div>
+            <h3>Кредиты</h3>
+            <p>Оформление и управление кредитами</p>
+        </a>
+        <a href="/deposits.html" class="card">
+            <div class="card-icon">💰</div>
+            <h3>Вклады</h3>
+            <p>Открытие и управление вкладами</p>
+        </a>
+        <a href="/javaee.html" class="card">
+            <div class="card-icon">📚</div>
+            <h3>Java EE</h3>
+            <p>Лаб. жұмысы № 6-7 — интерактив</p>
+        </a>
+        <a href="/profile" class="card">
+            <div class="card-icon">👤</div>
+            <h3>Профиль</h3>
+            <p>Настройки аккаунта</p>
+        </a>
+        <a href="/logout" class="card" style="border-color: rgba(239,68,68,0.2);">
+            <div class="card-icon">🚪</div>
+            <h3>Выйти</h3>
+            <p>Завершить сеанс</p>
+        </a>
+    </div>
+</div>
+</body>
+</html>
+
