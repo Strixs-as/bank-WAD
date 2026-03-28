@@ -1,253 +1,250 @@
-<!DOCTYPE html>
+з<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кредиты - Банковская Система</title>
+    <title>Кредиты — BankSystem</title>
     <style>
+        :root { --primary: #667eea; --secondary: #764ba2; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; padding: 1rem 2rem;
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; }
+
+        nav {
+            background: rgba(13,13,26,0.97); padding: 1rem 2rem;
             display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-        .header h1 { font-size: 1.5rem; }
-        .nav-links { display: flex; gap: 1rem; }
-        .nav-links a {
-            color: white; text-decoration: none; padding: 0.5rem 1rem;
-            border-radius: 5px; transition: background 0.3s;
+        .logo {
+            font-size: 1.3rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), #f093fb);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .nav-links a:hover { background: rgba(255,255,255,0.2); }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        nav a { color: rgba(255,255,255,0.6); text-decoration: none; margin-left: 1rem; transition: color 0.3s; }
+        nav a:hover { color: #fff; }
+
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 2rem; }
+
+        .section-title {
+            font-size: 1.4rem; font-weight: 800; margin-bottom: 1.25rem;
+            background: linear-gradient(135deg, var(--primary), #f093fb);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
         .card {
-            background: white; padding: 2rem; border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 1.75rem; margin-bottom: 1.5rem;
         }
-        .card h2 { margin-bottom: 1.5rem; color: #333; }
-        .loan-types {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem; margin-bottom: 2rem;
-        }
+
+        /* Loan type cards */
+        .loan-types { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.5rem; }
         .loan-type-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; padding: 1.5rem; border-radius: 10px; cursor: pointer; transition: transform 0.3s;
+            background: linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15));
+            border: 1px solid rgba(102,126,234,0.25);
+            border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.3s;
         }
-        .loan-type-card:hover { transform: translateY(-5px); }
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: 0.5rem; color: #555; font-weight: 500; }
+        .loan-type-card:hover { border-color: rgba(102,126,234,0.6); transform: translateY(-4px); background: rgba(102,126,234,0.2); }
+        .loan-type-card h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+        .loan-type-card p { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+
+        /* Form */
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; color: rgba(255,255,255,0.6); font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
         input, select {
-            width: 100%; padding: 0.75rem; border: 1px solid #ddd;
-            border-radius: 5px; font-size: 1rem;
+            width: 100%; padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: #fff; font-size: 0.95rem; transition: all 0.3s;
         }
-        button.primary {
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none; border-radius: 5px;
-            font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s;
+        input:focus, select:focus { outline: none; border-color: var(--primary); background: rgba(102,126,234,0.08); }
+        input::placeholder { color: rgba(255,255,255,0.2); }
+        select option { background: #1a1a2e; }
+
+        .btn-primary {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s;
         }
-        button.primary:hover { transform: translateY(-2px); }
-        .message {
-            padding: 0.75rem; border-radius: 5px; margin-bottom: 1rem; display: none;
-        }
-        .message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
+
+        /* Messages */
+        .message { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; display: none; font-size: 0.9rem; }
+        .message.success { background: rgba(34,197,94,0.12); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+        .message.error   { background: rgba(239,68,68,0.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+
+        /* Loan items */
         .loan-item {
-            padding: 1.5rem; border: 1px solid #eee;
-            border-radius: 8px; margin-bottom: 1rem;
+            padding: 1.25rem; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; margin-bottom: 1rem; background: rgba(255,255,255,0.02);
+            transition: border-color 0.3s;
         }
-        .loan-header {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: 1rem;
-        }
-        .status-badge { padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d1ecf1; color: #0c5460; }
-        .status-active { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-        .status-closed { background: #e2e3e5; color: #383d41; }
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
-        .info-label { font-size: 0.85rem; color: #666; }
-        .info-value { font-size: 1.1rem; font-weight: 600; }
-        .loading { text-align: center; padding: 2rem; color: #666; }
+        .loan-item:hover { border-color: rgba(102,126,234,0.3); }
+        .loan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .loan-header strong { font-size: 1rem; }
+        .loan-header .date { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
+
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .status-pending  { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .status-approved { background: rgba(96,165,250,0.15);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+        .status-active   { background: rgba(34,197,94,0.15);   color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .status-rejected { background: rgba(239,68,68,0.15);   color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .status-closed   { background: rgba(148,163,184,0.1);  color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+        .info-label { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 0.2rem; }
+        .info-value { font-size: 1rem; font-weight: 700; }
+
+        .loading { text-align: center; padding: 2rem; color: rgba(255,255,255,0.4); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏦 Банковская Система - Кредиты</h1>
-        <div class="nav-links">
-            <a href="dashboard.html">Главная</a>
-            <a href="deposits.html">Депозиты</a>
-            <a href="index.html" onclick="logout()">Выйти</a>
+<nav>
+    <div class="logo">🏦 BankSystem</div>
+    <div>
+        <a href="/home">← Главная</a>
+        <a href="dashboard.html">Кабинет</a>
+        <a href="deposits.html">Депозиты</a>
+        <a href="index.html" onclick="logout()">Выйти</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="card">
+        <div class="section-title">📋 Типы кредитов</div>
+        <div class="loan-types">
+            <div class="loan-type-card"><h3>💰 Потребительский</h3><p>Ставка от 12.5% годовых</p></div>
+            <div class="loan-type-card"><h3>🏠 Ипотека</h3><p>Ставка от 10.5% годовых</p></div>
+            <div class="loan-type-card"><h3>🚗 Автокредит</h3><p>Ставка от 11.5% годовых</p></div>
+            <div class="loan-type-card"><h3>💼 Бизнес</h3><p>Ставка от 14% годовых</p></div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <h2>Выберите тип кредита</h2>
-            <div class="loan-types">
-                <div class="loan-type-card">
-                    <h3>💰 Потребительский</h3>
-                    <p>Ставка 12.5% годовых</p>
-                </div>
-                <div class="loan-type-card">
-                    <h3>🏠 Ипотека</h3>
-                    <p>Ставка 12.5% годовых</p>
-                </div>
-                <div class="loan-type-card">
-                    <h3>🚗 Автокредит</h3>
-                    <p>Ставка 12.5% годовых</p>
-                </div>
-                <div class="loan-type-card">
-                    <h3>💼 Бизнес</h3>
-                    <p>Ставка 12.5% годовых</p>
-                </div>
+    <div class="card">
+        <div class="section-title">📝 Заявка на кредит</div>
+        <div id="loanMessage" class="message"></div>
+        <form id="loanForm">
+            <div class="form-group">
+                <label for="accountId">Счёт для зачисления</label>
+                <select id="accountId" required>
+                    <option value="">— Выберите счёт —</option>
+                </select>
             </div>
-        </div>
-
-        <div class="card">
-            <h2>Заявка на кредит</h2>
-            <div id="loanMessage" class="message"></div>
-            <form id="loanForm">
-                <div class="form-group">
-                    <label for="accountId">Счёт для зачисления:</label>
-                    <select id="accountId" required>
-                        <option value="">-- Выберите счёт --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="amount">Сумма кредита:</label>
-                    <input type="number" id="amount" min="10000" step="1000" placeholder="Минимум 10 000" required>
-                </div>
-                <div class="form-group">
-                    <label for="durationMonths">Срок (месяцев):</label>
-                    <select id="durationMonths" required>
-                        <option value="6">6 месяцев</option>
-                        <option value="12" selected>12 месяцев</option>
-                        <option value="24">24 месяца</option>
-                        <option value="36">36 месяцев</option>
-                        <option value="60">60 месяцев</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="currency">Валюта:</label>
-                    <select id="currency" required>
-                        <option value="RUB">RUB - Рубль</option>
-                        <option value="USD">USD - Доллар</option>
-                        <option value="EUR">EUR - Евро</option>
-                    </select>
-                </div>
-                <button type="submit" class="primary">Подать заявку</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>Мои кредиты</h2>
-            <div id="loansList">
-                <p class="loading">Загрузка...</p>
+            <div class="form-group">
+                <label for="amount">Сумма кредита</label>
+                <input type="number" id="amount" min="10000" step="1000" placeholder="Минимум 10 000" required>
             </div>
-        </div>
+            <div class="form-group">
+                <label for="durationMonths">Срок (месяцев)</label>
+                <select id="durationMonths" required>
+                    <option value="6">6 месяцев</option>
+                    <option value="12" selected>12 месяцев</option>
+                    <option value="24">24 месяца</option>
+                    <option value="36">36 месяцев</option>
+                    <option value="60">60 месяцев</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="currency">Валюта</label>
+                <select id="currency" required>
+                    <option value="RUB">RUB — Рубль</option>
+                    <option value="USD">USD — Доллар</option>
+                    <option value="EUR">EUR — Евро</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">Подать заявку</button>
+        </form>
     </div>
 
-    <script>
-        const API_BASE = '/api';
-        const token = localStorage.getItem('token');
+    <div class="card">
+        <div class="section-title">🗂 Мои кредиты</div>
+        <div id="loansList"><p class="loading">Загрузка...</p></div>
+    </div>
 
-        if (!token) window.location.href = 'index.html';
+</div>
 
-        window.addEventListener('load', () => {
-            loadAccounts();
-            loadLoans();
-        });
+<script>
+    const API_BASE = '/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'index.html';
 
-        async function loadAccounts() {
-            try {
-                const res = await fetch(`${API_BASE}/accounts`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (!res.ok) { if (res.status === 401) { localStorage.clear(); window.location.href = 'login.html'; } return; }
-                const accounts = await res.json();
-                const sel = document.getElementById('accountId');
-                accounts.forEach(a => {
-                    const opt = document.createElement('option');
-                    opt.value = a.id;
-                    opt.textContent = `${a.accountNumber} — ${a.balance} ${a.currency}`;
-                    sel.appendChild(opt);
-                });
-            } catch (e) { console.error(e); }
-        }
+    window.addEventListener('load', () => { loadAccounts(); loadLoans(); });
 
-        document.getElementById('loanForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const body = {
-                accountId: parseInt(document.getElementById('accountId').value),
-                amount: parseFloat(document.getElementById('amount').value),
-                durationMonths: parseInt(document.getElementById('durationMonths').value),
-                currency: document.getElementById('currency').value
-            };
-            try {
-                const res = await fetch(`${API_BASE}/loans`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showMessage('loanMessage', 'Заявка успешно подана! Ожидайте рассмотрения.', 'success');
-                    document.getElementById('loanForm').reset();
-                    loadLoans();
-                } else {
-                    showMessage('loanMessage', data.message || 'Ошибка при подаче заявки', 'error');
-                }
-            } catch (e) {
-                showMessage('loanMessage', 'Ошибка соединения с сервером', 'error');
+    async function loadAccounts() {
+        try {
+            const res = await fetch(`${API_BASE}/accounts`, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) { if (res.status === 401) { localStorage.clear(); window.location.href = 'login.html'; } return; }
+            const accounts = await res.json();
+            const sel = document.getElementById('accountId');
+            accounts.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.textContent = `${a.accountNumber} — ${a.balance} ${a.currency}`;
+                sel.appendChild(opt);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    document.getElementById('loanForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+            accountId: parseInt(document.getElementById('accountId').value),
+            amount: parseFloat(document.getElementById('amount').value),
+            durationMonths: parseInt(document.getElementById('durationMonths').value),
+            currency: document.getElementById('currency').value
+        };
+        try {
+            const res = await fetch(`${API_BASE}/loans`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showMessage('loanMessage', 'Заявка успешно подана! Ожидайте рассмотрения.', 'success');
+                document.getElementById('loanForm').reset();
+                loadLoans();
+            } else {
+                showMessage('loanMessage', data.message || 'Ошибка при подаче заявки', 'error');
             }
-        });
+        } catch (e) { showMessage('loanMessage', 'Ошибка соединения с сервером', 'error'); }
+    });
 
-        async function loadLoans() {
-            const list = document.getElementById('loansList');
-            try {
-                const res = await fetch(`${API_BASE}/loans`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (!res.ok) { list.innerHTML = '<p class="loading" style="color:red">Ошибка загрузки</p>'; return; }
-                const loans = await res.json();
-                if (!loans.length) { list.innerHTML = '<p class="loading">У вас пока нет кредитов</p>'; return; }
-                list.innerHTML = loans.map(l => `
-                    <div class="loan-item">
-                        <div class="loan-header">
-                            <div>
-                                <strong>Кредит № ${l.loanNumber}</strong>
-                                <div style="font-size:0.9rem;color:#666">Открыт: ${l.startDate || '—'}</div>
-                            </div>
-                            <span class="status-badge status-${(l.status||'').toLowerCase()}">${getStatusName(l.status)}</span>
+    async function loadLoans() {
+        const list = document.getElementById('loansList');
+        try {
+            const res = await fetch(`${API_BASE}/loans`, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) { list.innerHTML = '<p class="loading" style="color:#f87171">Ошибка загрузки</p>'; return; }
+            const loans = await res.json();
+            if (!loans.length) { list.innerHTML = '<p class="loading">У вас пока нет кредитов</p>'; return; }
+            list.innerHTML = loans.map(l => `
+                <div class="loan-item">
+                    <div class="loan-header">
+                        <div>
+                            <strong>Кредит № ${l.loanNumber}</strong>
+                            <div class="date">Открыт: ${l.startDate || '—'}</div>
                         </div>
-                        <div class="info-grid">
-                            <div><div class="info-label">Сумма кредита</div><div class="info-value">${l.principalAmount} ${l.currency}</div></div>
-                            <div><div class="info-label">Остаток долга</div><div class="info-value">${l.remainingAmount} ${l.currency}</div></div>
-                            <div><div class="info-label">Ставка</div><div class="info-value">${l.interestRate}%</div></div>
-                            <div><div class="info-label">Срок</div><div class="info-value">${l.durationMonths} мес.</div></div>
-                        </div>
+                        <span class="status-badge status-${(l.status||'').toLowerCase()}">${getStatusName(l.status)}</span>
                     </div>
-                `).join('');
-            } catch (e) {
-                list.innerHTML = '<p class="loading" style="color:red">Ошибка загрузки кредитов</p>';
-            }
-        }
+                    <div class="info-grid">
+                        <div><div class="info-label">Сумма кредита</div><div class="info-value">${l.principalAmount} ${l.currency}</div></div>
+                        <div><div class="info-label">Остаток долга</div><div class="info-value">${l.remainingAmount} ${l.currency}</div></div>
+                        <div><div class="info-label">Ставка</div><div class="info-value">${l.interestRate}%</div></div>
+                        <div><div class="info-label">Срок</div><div class="info-value">${l.durationMonths} мес.</div></div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) { list.innerHTML = '<p class="loading" style="color:#f87171">Ошибка загрузки кредитов</p>'; }
+    }
 
-        function getStatusName(status) {
-            const names = { PENDING: 'На рассмотрении', APPROVED: 'Одобрен', ACTIVE: 'Активен', REJECTED: 'Отклонён', CLOSED: 'Закрыт' };
-            return names[status] || status;
-        }
-
-        function showMessage(id, text, type) {
-            const el = document.getElementById(id);
-            el.textContent = text; el.className = `message ${type}`; el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 5000);
-        }
-
-        function logout() { localStorage.clear(); }
-    </script>
+    function getStatusName(s) {
+        return { PENDING:'На рассмотрении', APPROVED:'Одобрен', ACTIVE:'Активен', REJECTED:'Отклонён', CLOSED:'Закрыт' }[s] || s;
+    }
+    function showMessage(id, text, type) {
+        const el = document.getElementById(id);
+        el.textContent = text; el.className = `message ${type}`; el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 5000);
+    }
+    function logout() { localStorage.clear(); }
+</script>
 </body>
 </html>
-

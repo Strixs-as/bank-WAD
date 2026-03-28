@@ -3,21 +3,28 @@ package com.techstore.bank_system.config;
 import com.techstore.bank_system.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService,
+                          JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.userDetailsService = userDetailsService;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -25,26 +32,38 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // ─── Публичные эндпоинты (Java EE тақырыбы #11 — permitAll)
+                // ─── Публичные статические страницы
                 .requestMatchers(
                     "/", "/index.html", "/login.html", "/register.html",
-                    "/dashboard.html", "/deposits.html", "/loans.html",
+                    "/dashboard.html", "/deposits.html", "/loans.html", "/javaee.html",
                     "/register", "/login",
                     "/css/**", "/js/**", "/images/**", "/favicon.ico",
                     "/api/auth/**"
                 ).permitAll()
-                // ─── Java EE Demo (Servlet + REST demo — барлығына ашық)
-                .requestMatchers("/api/demo/**", "/servlet/**").permitAll()
-                // ─── Тек ADMIN рөлі үшін (Java EE тақырыбы #11 — ROLE_ADMIN)
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                // ─── Тек USER немесе ADMIN рөлі үшін (Java EE тақырыбы #11 — ROLE_USER)
+                // ─── Java EE Demo
+                .requestMatchers("/api/demo/**", "/servlet/**", "/hello").permitAll()
+                // ─── Только ADMIN
+                .requestMatchers("/admin/**", "/api/admin/**").authenticated()
+                // ─── USER или ADMIN
                 .requestMatchers("/api/accounts/**", "/api/transactions/**",
                                  "/api/loans/**", "/api/deposits/**").hasAnyRole("USER", "ADMIN")
-                // ─── Қалған сұраулар JWT фильтрі арқылы тексеріледі
+                // ─── Авторизованные страницы
+                .requestMatchers("/home", "/profile").authenticated()
+                // ─── Остальные запросы — разрешены (REST API с JWT)
                 .anyRequest().permitAll()
             )
-            .formLogin(AbstractHttpConfigurer::disable)
-            .httpBasic(AbstractHttpConfigurer::disable);
+            // включаем форму логина (используем страницу /login контроллера)
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/home", true)
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
+            )
+            // JWT фильтр для API-запросов с Bearer токеном
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -53,5 +72,17 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-}
 
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+}

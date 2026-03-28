@@ -281,6 +281,50 @@ public class JavaEEDemoResource {
     }
 
     // ─────────────────────────────────────────────────────────────
+    // HELLO DEMO — /api/demo/hello
+    // ─────────────────────────────────────────────────────────────
+    @GetMapping("/hello")
+    public ResponseEntity<Map<String, Object>> hello(
+            @RequestParam(defaultValue = "World") String name) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message",   "Hello, " + name + "! 👋");
+        response.put("topic",     "#2 Servlet — doGet демо");
+        response.put("timestamp", LocalDateTime.now().toString());
+        response.put("server",    "Spring Boot / Embedded Tomcat 10");
+        return ResponseEntity.ok(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // TIME DEMO — /api/demo/time
+    // ─────────────────────────────────────────────────────────────
+    @GetMapping("/time")
+    public ResponseEntity<Map<String, Object>> serverTime() {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("serverTime", LocalDateTime.now().toString());
+        response.put("topic",      "#1 Java EE — серверлік уақыт");
+        response.put("timezone",   java.util.TimeZone.getDefault().getID());
+        response.put("javaVersion",System.getProperty("java.version"));
+        return ResponseEntity.ok(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // INFO DEMO — /api/demo/info
+    // ─────────────────────────────────────────────────────────────
+    @GetMapping("/info")
+    public ResponseEntity<Map<String, Object>> projectInfo() {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("project",    "BankSystem");
+        response.put("version",    "1.0");
+        response.put("author",     "Макеш Найман — ВТиПО-33");
+        response.put("framework",  "Spring Boot 3.2.3");
+        response.put("database",   "SQL Server 2021");
+        response.put("security",   "Spring Security + JWT");
+        response.put("topics",     15);
+        response.put("timestamp",  LocalDateTime.now().toString());
+        return ResponseEntity.ok(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // ЖАЛПЫ АНЫҚТАМА — барлық эндпоинттер
     // ─────────────────────────────────────────────────────────────
     /**

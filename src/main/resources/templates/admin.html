@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Админ панель — BankSystem</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --bg: #0f0f1a;
+            --surface: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: rgba(10, 10, 20, .97);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-right a {
+            color: rgba(255, 255, 255, .55);
+            text-decoration: none;
+            font-size: .9rem;
+            transition: color .2s;
+        }
+
+        .nav-right a:hover {
+            color: #fff;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, .55);
+            cursor: pointer;
+            font-size: .9rem;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.2rem;
+            text-align: center;
+            transition: transform .2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card.warn-border {
+            border-color: rgba(251, 191, 36, .35);
+        }
+
+        .stat-icon {
+            font-size: 1.4rem;
+            margin-bottom: .35rem;
+        }
+
+        .stat-num {
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .45);
+            margin-top: .3rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: .55rem 1.1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: rgba(255, 255, 255, .55);
+            cursor: pointer;
+            font-size: .88rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .tab-count {
+            background: rgba(255, 255, 255, .18);
+            border-radius: 10px;
+            padding: 0 6px;
+            font-size: .72rem;
+        }
+
+        .tab-btn.active .tab-count {
+            background: rgba(255, 255, 255, .25);
+        }
+
+        .pending-count {
+            background: #fbbf24;
+            color: #1a1a2e;
+            border-radius: 10px;
+            padding: 0 6px;
+            font-size: .72rem;
+            font-weight: 800;
+        }
+
+        .notif {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fbbf24;
+            display: inline-block;
+            margin-left: 3px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1
+            }
+            50% {
+                opacity: .4
+            }
+        }
+
+        /* SECTION HEADER */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        /* TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: rgba(255, 255, 255, .05);
+            padding: .85rem 1rem;
+            text-align: left;
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .45);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        td {
+            padding: .78rem 1rem;
+            border-top: 1px solid var(--border);
+            font-size: .87rem;
+            vertical-align: middle;
+        }
+
+        /* CLICKABLE ROWS */
+        .clickable-row {
+            cursor: pointer;
+        }
+
+        .clickable-row:hover td {
+            background: rgba(102, 126, 234, .08) !important;
+        }
+
+        .no-hover tr:hover td {
+            background: transparent !important;
+            cursor: default;
+        }
+
+        /* BADGES */
+        .badge {
+            padding: .2rem .65rem;
+            border-radius: 20px;
+            font-size: .73rem;
+            font-weight: 700;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, .15);
+            color: #4ade80;
+            border: 1px solid rgba(16, 185, 129, .3);
+        }
+
+        .badge-inactive {
+            background: rgba(148, 163, 184, .1);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, .2);
+        }
+
+        .badge-pending {
+            background: rgba(251, 191, 36, .15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, .3);
+        }
+
+        .badge-rejected {
+            background: rgba(239, 68, 68, .15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        .badge-closed {
+            background: rgba(148, 163, 184, .1);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, .2);
+        }
+
+        .badge-admin {
+            background: rgba(245, 158, 11, .15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, .3);
+        }
+
+        .badge-user {
+            background: rgba(102, 126, 234, .15);
+            color: #a78bfa;
+            border: 1px solid rgba(102, 126, 234, .3);
+        }
+
+        .badge-verified {
+            background: rgba(16, 185, 129, .15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, .3);
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, .15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, .3);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: .35rem .8rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: .8rem;
+            font-weight: 600;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .btn-success {
+            background: rgba(16, 185, 129, .15);
+            color: #4ade80;
+            border-color: rgba(16, 185, 129, .3);
+        }
+
+        .btn-success:hover {
+            background: rgba(16, 185, 129, .3);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, .15);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, .3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, .3);
+        }
+
+        .btn-warn {
+            background: rgba(245, 158, 11, .15);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, .3);
+        }
+
+        .btn-warn:hover {
+            background: rgba(245, 158, 11, .3);
+        }
+
+        .btn-info {
+            background: rgba(59, 130, 246, .15);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, .3);
+        }
+
+        .btn-info:hover {
+            background: rgba(59, 130, 246, .3);
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, .05);
+            color: rgba(255, 255, 255, .6);
+            border-color: rgba(255, 255, 255, .12);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, .1);
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: .85;
+        }
+
+        .role-select {
+            padding: .3rem .5rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 6px;
+            color: #fff;
+            font-size: .8rem;
+        }
+
+        .role-select option {
+            background: #1a1a2e;
+        }
+
+        .actions {
+            display: flex;
+            gap: .35rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        form.inline {
+            display: inline;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, .3);
+            font-size: .9rem;
+        }
+
+        /* REQUEST CARDS */
+        .request-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+        }
+
+        .request-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: transform .2s, border-color .2s;
+        }
+
+        .request-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, .15);
+        }
+
+        .request-card.loan-card {
+            border-left: 3px solid #fbbf24;
+        }
+
+        .request-card.deposit-card {
+            border-left: 3px solid #34d399;
+        }
+
+        .rc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: .75rem;
+        }
+
+        .rc-title {
+            font-size: .95rem;
+            font-weight: 700;
+        }
+
+        .rc-type {
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .4);
+            margin-top: .15rem;
+        }
+
+        .rc-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .5rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .rc-field label {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .4);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            display: block;
+            margin-bottom: .15rem;
+        }
+
+        .rc-field span {
+            font-size: .88rem;
+            font-weight: 600;
+        }
+
+        .rc-actions {
+            display: flex;
+            gap: .5rem;
+        }
+
+        .rc-actions .btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .no-data-msg {
+            padding: 3rem;
+            text-align: center;
+            color: rgba(255, 255, 255, .3);
+        }
+
+        /* SEARCH */
+        .search-bar {
+            padding: .55rem 1rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: .88rem;
+            width: 260px;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .search-bar:focus {
+            border-color: rgba(102, 126, 234, .5);
+        }
+
+        .search-bar::placeholder {
+            color: rgba(255, 255, 255, .3);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .78);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: #15152a;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 20px;
+            width: 92%;
+            max-width: 860px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, .6);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.25rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, .4);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-profile {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+
+        .user-info-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+            gap: .7rem;
+        }
+
+        .info-field label {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .4);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            display: block;
+            margin-bottom: .2rem;
+        }
+
+        .info-field span {
+            font-size: .87rem;
+            font-weight: 500;
+        }
+
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-section-title {
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: rgba(255, 255, 255, .4);
+            padding-bottom: .5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .83rem;
+        }
+
+        .mini-table th {
+            color: rgba(255, 255, 255, .35);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: .72rem;
+            padding: .4rem .6rem;
+            text-align: left;
+        }
+
+        .mini-table td {
+            padding: .55rem .6rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .empty-mini {
+            padding: 1rem;
+            text-align: center;
+            color: rgba(255, 255, 255, .25);
+            font-size: .85rem;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255, 255, 255, .1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .15);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">⚙️ Панель администратора</div>
+    <div class="nav-right">
+        <a href="/home">← Главная</a>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit" class="nav-btn">🚪 Выйти</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- СТАТИСТИКА -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-num" style="color:#a78bfa" th:text="${totalUsers}">0</div>
+            <div class="stat-label">Пользователей</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏦</div>
+            <div class="stat-num" style="color:#60a5fa" th:text="${totalAccounts}">0</div>
+            <div class="stat-label">Счетов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-num" style="color:#fbbf24" th:text="${totalLoans}">0</div>
+            <div class="stat-label">Кредитов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-num" style="color:#4ade80" th:text="${totalDeposits}">0</div>
+            <div class="stat-label">Депозитов</div>
+        </div>
+        <div class="stat-card warn-border">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-num" style="color:#fbbf24" th:text="${#lists.size(pendingLoans)}">0</div>
+            <div class="stat-label">Ожид. кредитов</div>
+        </div>
+        <div class="stat-card warn-border">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-num" style="color:#fbbf24" th:text="${#lists.size(pendingDeposits)}">0</div>
+            <div class="stat-label">Ожид. депозитов</div>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКИ -->
+    <div class="tabs">
+        <a th:href="@{/admin/tab/users}"
+           th:class="${tab=='users'} ? 'tab-btn active' : 'tab-btn'">
+            👥 Пользователи
+            <span class="tab-count" th:text="${totalUsers}"></span>
+        </a>
+        <a th:href="@{/admin/tab/requests}"
+           th:class="${tab=='requests'} ? 'tab-btn active' : 'tab-btn'">
+            🔔 Запросы
+            <span th:if="${totalPending > 0}" class="pending-count" th:text="${totalPending}"></span>
+            <span th:if="${totalPending > 0}" class="notif"></span>
+        </a>
+        <a th:href="@{/admin/tab/loans}"
+           th:class="${tab=='loans'} ? 'tab-btn active' : 'tab-btn'">
+            📋 Кредиты
+            <span class="tab-count" th:text="${totalLoans}"></span>
+        </a>
+        <a th:href="@{/admin/tab/deposits}"
+           th:class="${tab=='deposits'} ? 'tab-btn active' : 'tab-btn'">
+            💰 Депозиты
+            <span class="tab-count" th:text="${totalDeposits}"></span>
+        </a>
+        <a th:href="@{/admin/tab/accounts}"
+           th:class="${tab=='accounts'} ? 'tab-btn active' : 'tab-btn'">
+            🏦 Счета
+            <span class="tab-count" th:text="${totalAccounts}"></span>
+        </a>
+    </div>
+
+    <!-- ══ TAB: ПОЛЬЗОВАТЕЛИ ══ -->
+    <div th:if="${tab == 'users'}">
+        <div class="section-header">
+            <div class="section-title">👥 Все зарегистрированные пользователи</div>
+            <input type="text" id="userSearch" class="search-bar"
+                   placeholder="🔍 Поиск по имени / email..." oninput="filterUsers()">
+        </div>
+        <div class="table-wrap">
+            <table id="usersTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ФИО</th>
+                    <th>Email</th>
+                    <th>Телефон</th>
+                    <th>Роль</th>
+                    <th>Статус</th>
+                    <th>Регистрация</th>
+                    <th>Последний вход</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="9" class="empty">Пользователей нет</td>
+                </tr>
+                <tr th:each="u : ${users}" class="clickable-row"
+                    th:onclick="'openUserModal(' + ${u.id} + ')'">
+                    <td th:text="${u.id}"></td>
+                    <td>
+                        <div style="font-weight:600" th:text="${u.firstName + ' ' + u.lastName}"></div>
+                        <div style="font-size:.75rem;color:rgba(255,255,255,.4)" th:text="${u.passportNumber}"></div>
+                    </td>
+                    <td th:text="${u.email}"></td>
+                    <td th:text="${u.phoneNumber}"></td>
+                    <td>
+                        <th:block th:each="r : ${u.roles}">
+                                <span th:class="${r.name == 'ADMIN'} ? 'badge badge-admin' : 'badge badge-user'"
+                                      th:text="${r.name}"></span>
+                        </th:block>
+                        <span th:if="${u.roles.isEmpty()}" class="badge badge-inactive">нет роли</span>
+                    </td>
+                    <td>
+                        <span th:if="${u.isActive}" class="badge badge-active">✓ Активен</span>
+                        <span th:unless="${u.isActive}" class="badge badge-inactive">✗ Блок</span>
+                        <span th:if="${u.isVerified}" class="badge badge-verified"
+                              style="margin-left:4px">✓ Верифицирован</span>
+                    </td>
+                    <td style="font-size:.82rem"
+                        th:text="${u.createdAt != null} ? ${#temporals.format(u.createdAt,'dd.MM.yyyy HH:mm')} : '—'"></td>
+                    <td>
+                            <span th:if="${u.lastLoginAt != null}"
+                                  style="font-size:.82rem"
+                                  th:text="${#temporals.format(u.lastLoginAt,'dd.MM.yyyy HH:mm')}"></span>
+                        <span th:unless="${u.lastLoginAt != null}"
+                              style="font-size:.82rem;color:rgba(255,255,255,.3)">Никогда</span>
+                    </td>
+                    <td onclick="event.stopPropagation()">
+                        <div class="actions">
+                            <button class="btn btn-info"
+                                    th:onclick="'openUserModal(' + ${u.id} + ')'">👁 Детали
+                            </button>
+                            <!-- Убираем кнопку "Блок" для самого себя -->
+                            <form th:if="${u.email != #authentication.name}"
+                                  th:action="@{/admin/toggle-active/{id}(id=${u.id})}" method="post" class="inline">
+                                <button type="submit"
+                                        th:class="${u.isActive} ? 'btn btn-warn' : 'btn btn-success'"
+                                        th:text="${u.isActive} ? '🔒 Блок' : '🔓 Разблок'"></button>
+                            </form>
+                            <!-- Убираем смену роли для самого себя -->
+                            <form th:if="${u.email != #authentication.name}"
+                                  th:action="@{/admin/set-role/{id}(id=${u.id})}" method="post" class="inline">
+                                <select name="role" class="role-select">
+                                    <option th:each="r : ${roles}"
+                                            th:value="${r.name}"
+                                            th:text="${r.name}"
+                                            th:selected="${u.roles.contains(r)}"></option>
+                                </select>
+                                <button type="submit" class="btn btn-ghost">✓</button>
+                            </form>
+                            <!-- Убираем кнопку удаления для самого себя -->
+                            <form th:if="${u.email != #authentication.name}"
+                                  th:action="@{/admin/delete/{id}(id=${u.id})}" method="post" class="inline"
+                                  onsubmit="return confirm('Удалить пользователя? Это действие необратимо!')">
+                                <button type="submit" class="btn btn-danger">🗑</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ TAB: ЗАПРОСЫ ══ -->
+    <div th:if="${tab == 'requests'}">
+        <div class="section-header">
+            <div class="section-title">🔔 Входящие запросы на одобрение</div>
+            <span style="font-size:.85rem;color:rgba(255,255,255,.4)"
+                  th:text="'Всего ожидает: ' + (${#lists.size(pendingLoans)} + ${#lists.size(pendingDeposits)})"></span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(pendingLoans) and #lists.isEmpty(pendingDeposits)}" class="no-data-msg">
+            <div style="font-size:2.5rem;margin-bottom:1rem">✅</div>
+            <div style="font-size:1rem;font-weight:600">Все запросы обработаны</div>
+            <div style="font-size:.85rem;color:rgba(255,255,255,.3);margin-top:.5rem">Новых заявок нет</div>
+        </div>
+
+        <!-- Кредиты PENDING -->
+        <div th:if="${!#lists.isEmpty(pendingLoans)}" style="margin-bottom:2rem">
+            <div class="modal-section-title" style="margin-bottom:1rem">
+                📋 Заявки на кредит (<span th:text="${#lists.size(pendingLoans)}"></span>)
+            </div>
+            <div class="request-grid">
+                <div th:each="l : ${pendingLoans}" class="request-card loan-card">
+                    <div class="rc-header">
+                        <div>
+                            <div class="rc-title"
+                                 th:text="${l.user != null} ? ${l.user.firstName + ' ' + l.user.lastName} : '—'"></div>
+                            <div class="rc-type">Кредит • <span th:text="${l.loanNumber}"></span></div>
+                        </div>
+                        <span class="badge badge-pending">⏳ На рассмотрении</span>
+                    </div>
+                    <div class="rc-body">
+                        <div class="rc-field">
+                            <label>Сумма</label>
+                            <span th:text="${l.principalAmount + ' ' + l.currency}"></span>
+                        </div>
+                        <div class="rc-field">
+                            <label>Ставка</label>
+                            <span th:text="${l.interestRate + '%'}"></span>
+                        </div>
+                        <div class="rc-field">
+                            <label>Срок</label>
+                            <span th:text="${l.durationMonths + ' мес.'}"></span>
+                        </div>
+                        <div class="rc-field">
+                            <label>Дата заявки</label>
+                            <span th:text="${l.createdAt != null} ? ${#temporals.format(l.createdAt,'dd.MM.yyyy')} : '—'"></span>
+                        </div>
+                        <div class="rc-field" th:if="${l.user != null}">
+                            <label>Email</label>
+                            <span style="font-size:.8rem" th:text="${l.user.email}"></span>
+                        </div>
+                        <div class="rc-field" th:if="${l.user != null}">
+                            <label>Телефон</label>
+                            <span style="font-size:.8rem" th:text="${l.user.phoneNumber}"></span>
+                        </div>
+                    </div>
+                    <div class="rc-actions">
+                        <form th:action="@{/admin/loan/approve/{id}(id=${l.id})}" method="post" class="inline"
+                              style="flex:1">
+                            <button type="submit" class="btn btn-success" style="width:100%">✓ Одобрить</button>
+                        </form>
+                        <form th:action="@{/admin/loan/reject/{id}(id=${l.id})}" method="post" class="inline"
+                              style="flex:1">
+                            <button type="submit" class="btn btn-danger" style="width:100%">✗ Отклонить</button>
+                        </form>
+                        <button th:if="${l.user != null}" class="btn btn-info"
+                                th:onclick="'openUserModal(' + ${l.user.id} + ')'">👁
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Депозиты PENDING -->
+        <div th:if="${!#lists.isEmpty(pendingDeposits)}">
+            <div class="modal-section-title" style="margin-bottom:1rem">
+                💰 Заявки на депозит (<span th:text="${#lists.size(pendingDeposits)}"></span>)
+            </div>
+            <div class="request-grid">
+                <div th:each="d : ${pendingDeposits}" class="request-card deposit-card">
+                    <div class="rc-header">
+                        <div>
+                            <div class="rc-title"
+                                 th:text="${d.user != null} ? ${d.user.firstName + ' ' + d.user.lastName} : '—'"></div>
+                            <div class="rc-type">Депозит • <span th:text="${d.depositNumber}"></span></div>
+                        </div>
+                        <span class="badge badge-pending">⏳ На рассмотрении</span>
+                    </div>
+                    <div class="rc-body">
+                        <div class="rc-field">
+                            <label>Сумма</label>
+                            <span th:text="${d.amount + ' ' + d.currency}"></span>
+                        </div>
+                        <div class="rc-field">
+                            <label>Ставка</label>
+                            <span th:text="${d.interestRate + '%'}"></span>
+                        </div>
+                        <div class="rc-field">
+                            <label>Срок</label>
+                            <span th:text="${d.durationMonths + ' мес.'}"></span>
+                        </div>
+                        <div class="rc-field">
+                            <label>Дата заявки</label>
+                            <span th:text="${d.createdAt != null} ? ${#temporals.format(d.createdAt,'dd.MM.yyyy')} : '—'"></span>
+                        </div>
+                        <div class="rc-field" th:if="${d.user != null}">
+                            <label>Email</label>
+                            <span style="font-size:.8rem" th:text="${d.user.email}"></span>
+                        </div>
+                        <div class="rc-field" th:if="${d.user != null}">
+                            <label>Телефон</label>
+                            <span style="font-size:.8rem" th:text="${d.user.phoneNumber}"></span>
+                        </div>
+                    </div>
+                    <div class="rc-actions">
+                        <form th:action="@{/admin/deposit/approve/{id}(id=${d.id})}" method="post" class="inline"
+                              style="flex:1">
+                            <button type="submit" class="btn btn-success" style="width:100%">✓ Одобрить</button>
+                        </form>
+                        <form th:action="@{/admin/deposit/reject/{id}(id=${d.id})}" method="post" class="inline"
+                              style="flex:1">
+                            <button type="submit" class="btn btn-danger" style="width:100%">✗ Отклонить</button>
+                        </form>
+                        <button th:if="${d.user != null}" class="btn btn-info"
+                                th:onclick="'openUserModal(' + ${d.user.id} + ')'">👁
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TAB: КРЕДИТЫ ══ -->
+    <div th:if="${tab == 'loans'}">
+        <div class="section-header">
+            <div class="section-title">📋 Все кредиты</div>
+        </div>
+        <div class="table-wrap">
+            <table class="no-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Номер</th>
+                    <th>Клиент</th>
+                    <th>Сумма</th>
+                    <th>Ставка</th>
+                    <th>Срок</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(loans)}">
+                    <td colspan="9" class="empty">Кредитов нет</td>
+                </tr>
+                <tr th:each="l : ${loans}">
+                    <td th:text="${l.id}"></td>
+                    <td style="font-size:.8rem;color:rgba(255,255,255,.5)" th:text="${l.loanNumber}"></td>
+                    <td>
+                            <span th:if="${l.user != null}">
+                                <a style="color:#a78bfa;text-decoration:none;font-weight:600;cursor:pointer"
+                                   th:onclick="'openUserModal(' + ${l.user.id} + ')'"
+                                   th:text="${l.user.firstName + ' ' + l.user.lastName}"></a>
+                            </span>
+                        <span th:unless="${l.user != null}">—</span>
+                    </td>
+                    <td style="font-weight:600" th:text="${l.principalAmount + ' ' + l.currency}"></td>
+                    <td th:text="${l.interestRate + '%'}"></td>
+                    <td th:text="${l.durationMonths + ' мес.'}"></td>
+                    <td>
+                            <span th:class="${l.status.name() == 'PENDING'}  ? 'badge badge-pending'  :
+                                            (${l.status.name() == 'ACTIVE'}  ? 'badge badge-active'   :
+                                            (${l.status.name() == 'REJECTED'}? 'badge badge-rejected' : 'badge badge-closed'))"
+                                  th:text="${l.status.displayName}"></span>
+                    </td>
+                    <td style="font-size:.82rem"
+                        th:text="${l.createdAt != null} ? ${#temporals.format(l.createdAt,'dd.MM.yyyy')} : '—'"></td>
+                    <td>
+                        <div class="actions">
+                            <form th:if="${l.status.name() == 'PENDING'}"
+                                  th:action="@{/admin/loan/approve/{id}(id=${l.id})}" method="post" class="inline">
+                                <button type="submit" class="btn btn-success">✓</button>
+                            </form>
+                            <form th:if="${l.status.name() == 'PENDING'}"
+                                  th:action="@{/admin/loan/reject/{id}(id=${l.id})}" method="post" class="inline">
+                                <button type="submit" class="btn btn-warn">✗</button>
+                            </form>
+                            <form th:if="${l.status.name() == 'ACTIVE'}"
+                                  th:action="@{/admin/loan/close/{id}(id=${l.id})}" method="post" class="inline">
+                                <button type="submit" class="btn btn-warn">🔒 Закрыть</button>
+                            </form>
+                            <form th:action="@{/admin/loan/delete/{id}(id=${l.id})}" method="post" class="inline"
+                                  onsubmit="return confirm('Удалить кредит?')">
+                                <button type="submit" class="btn btn-danger">🗑</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ TAB: ДЕПОЗИТЫ ══ -->
+    <div th:if="${tab == 'deposits'}">
+        <div class="section-header">
+            <div class="section-title">💰 Все депозиты</div>
+        </div>
+        <div class="table-wrap">
+            <table class="no-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Номер</th>
+                    <th>Клиент</th>
+                    <th>Сумма</th>
+                    <th>Ставка</th>
+                    <th>Срок</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(deposits)}">
+                    <td colspan="9" class="empty">Депозитов нет</td>
+                </tr>
+                <tr th:each="d : ${deposits}">
+                    <td th:text="${d.id}"></td>
+                    <td style="font-size:.8rem;color:rgba(255,255,255,.5)" th:text="${d.depositNumber}"></td>
+                    <td>
+                            <span th:if="${d.user != null}">
+                                <a style="color:#a78bfa;text-decoration:none;font-weight:600;cursor:pointer"
+                                   th:onclick="'openUserModal(' + ${d.user.id} + ')'"
+                                   th:text="${d.user.firstName + ' ' + d.user.lastName}"></a>
+                            </span>
+                        <span th:unless="${d.user != null}">—</span>
+                    </td>
+                    <td style="font-weight:600" th:text="${d.amount + ' ' + d.currency}"></td>
+                    <td th:text="${d.interestRate + '%'}"></td>
+                    <td th:text="${d.durationMonths + ' мес.'}"></td>
+                    <td>
+                            <span th:class="${d.status != null and d.status.name() == 'PENDING'}  ? 'badge badge-pending'  :
+                                            (${d.status != null and d.status.name() == 'ACTIVE'}  ? 'badge badge-active'   :
+                                            (${d.status != null and d.status.name() == 'REJECTED'}? 'badge badge-rejected' : 'badge badge-closed'))"
+                                  th:text="${d.status != null} ? ${d.status.displayName} : '—'"></span>
+                    </td>
+                    <td style="font-size:.82rem"
+                        th:text="${d.createdAt != null} ? ${#temporals.format(d.createdAt,'dd.MM.yyyy')} : '—'"></td>
+                    <td>
+                        <div class="actions">
+                            <form th:if="${d.status != null and d.status.name() == 'PENDING'}"
+                                  th:action="@{/admin/deposit/approve/{id}(id=${d.id})}" method="post" class="inline">
+                                <button type="submit" class="btn btn-success">✓</button>
+                            </form>
+                            <form th:if="${d.status != null and d.status.name() == 'PENDING'}"
+                                  th:action="@{/admin/deposit/reject/{id}(id=${d.id})}" method="post" class="inline">
+                                <button type="submit" class="btn btn-warn">✗</button>
+                            </form>
+                            <form th:if="${d.status != null and d.status.name() == 'ACTIVE'}"
+                                  th:action="@{/admin/deposit/close/{id}(id=${d.id})}" method="post" class="inline">
+                                <button type="submit" class="btn btn-warn">🔒 Закрыть</button>
+                            </form>
+                            <form th:action="@{/admin/deposit/delete/{id}(id=${d.id})}" method="post" class="inline"
+                                  onsubmit="return confirm('Удалить депозит?')">
+                                <button type="submit" class="btn btn-danger">🗑</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ TAB: СЧЕТА ══ -->
+    <div th:if="${tab == 'accounts'}">
+        <div class="section-header">
+            <div class="section-title">🏦 Все счета</div>
+        </div>
+        <div class="table-wrap">
+            <table class="no-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Номер счёта</th>
+                    <th>Клиент</th>
+                    <th>Тип</th>
+                    <th>Баланс</th>
+                    <th>Валюта</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(accounts)}">
+                    <td colspan="8" class="empty">Счетов нет</td>
+                </tr>
+                <tr th:each="a : ${accounts}">
+                    <td th:text="${a.id}"></td>
+                    <td style="font-weight:600;font-family:monospace" th:text="${a.accountNumber}"></td>
+                    <td>
+                            <span th:if="${a.user != null}">
+                                <a style="color:#a78bfa;text-decoration:none;font-weight:600;cursor:pointer"
+                                   th:onclick="'openUserModal(' + ${a.user.id} + ')'"
+                                   th:text="${a.user.firstName + ' ' + a.user.lastName}"></a>
+                            </span>
+                        <span th:unless="${a.user != null}">—</span>
+                    </td>
+                    <td th:text="${a.accountType}"></td>
+                    <td style="color:#4ade80;font-weight:700" th:text="${a.balance}"></td>
+                    <td th:text="${a.currency}"></td>
+                    <td>
+                        <span th:if="${a.isActive}" class="badge badge-active">Активен</span>
+                        <span th:unless="${a.isActive}" class="badge badge-closed">Закрыт</span>
+                    </td>
+                    <td style="font-size:.82rem"
+                        th:text="${a.createdAt != null} ? ${#temporals.format(a.createdAt,'dd.MM.yyyy')} : '—'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeUserModal()">×</button>
+        <div class="modal-title">👤 Профиль пользователя</div>
+        <div id="modalContent">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterUsers() {
+        const input = document.getElementById('userSearch');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('usersTable');
+        const tr = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < tr.length; i++) {
+            const tds = tr[i].getElementsByTagName('td');
+            let txtValue = '';
+            // Ищем по имени (1), email (2), телефону (3)
+            if (tds.length > 3) {
+                txtValue += tds[1].textContent || tds[1].innerText;
+                txtValue += tds[2].textContent || tds[2].innerText;
+                txtValue += tds[3].textContent || tds[3].innerText;
+            }
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+
+    function openUserModal(id) {
+        document.getElementById('userModal').classList.add('open');
+        const content = document.getElementById('modalContent');
+        content.innerHTML = '<div class="spinner"></div>';
+
+        fetch('/admin/api/user/' + id)
+            .then(res => res.json())
+            .then(data => {
+                let rolesHtml = data.roles.map(r =>
+                    `<span class="badge ${r === 'ADMIN' ? 'badge-admin' : 'badge-user'}">${r}</span>`
+                ).join(' ');
+
+                let accountsHtml = '<div class="empty-mini">Счетов нет</div>';
+                if (data.accounts && data.accounts.length > 0) {
+                    accountsHtml = `<table class="mini-table">
+                        <thead><tr><th>Номер</th><th>Тип</th><th>Баланс</th><th>Вал</th><th>Статус</th></tr></thead>
+                        <tbody>${data.accounts.map(a => `
+                            <tr>
+                                <td style="font-family:monospace">${a.number}</td>
+                                <td>${a.type}</td>
+                                <td style="color:#4ade80">${a.balance}</td>
+                                <td>${a.currency}</td>
+                                <td>${a.active ? 'Активен' : 'Закрыт'}</td>
+                            </tr>
+                        `).join('')}</tbody></table>`;
+                }
+
+                let loansHtml = '<div class="empty-mini">Кредитов нет</div>';
+                if (data.loans && data.loans.length > 0) {
+                    loansHtml = `<table class="mini-table">
+                        <thead><tr><th>Номер</th><th>Сумма</th><th>Ставка</th><th>Статус</th></tr></thead>
+                        <tbody>${data.loans.map(l => `
+                            <tr>
+                                <td>${l.number}</td>
+                                <td>${l.amount} ${l.currency}</td>
+                                <td>${l.rate}%</td>
+                                <td><span class="badge ${l.status === 'PENDING' ? 'badge-pending' : (l.status === 'ACTIVE' ? 'badge-active' : 'badge-closed')}">${l.status}</span></td>
+                            </tr>
+                        `).join('')}</tbody></table>`;
+                }
+
+                let depositsHtml = '<div class="empty-mini">Депозитов нет</div>';
+                if (data.deposits && data.deposits.length > 0) {
+                    depositsHtml = `<table class="mini-table">
+                        <thead><tr><th>Номер</th><th>Сумма</th><th>Ставка</th><th>Статус</th></tr></thead>
+                        <tbody>${data.deposits.map(d => `
+                            <tr>
+                                <td>${d.number}</td>
+                                <td>${d.amount} ${d.currency}</td>
+                                <td>${d.rate}%</td>
+                                <td><span class="badge ${d.status === 'PENDING' ? 'badge-pending' : (d.status === 'ACTIVE' ? 'badge-active' : 'badge-closed')}">${d.status}</span></td>
+                            </tr>
+                        `).join('')}</tbody></table>`;
+                }
+
+                content.innerHTML = `
+                    <div class="user-profile">
+                        <div class="user-avatar">${data.firstName.charAt(0)}${data.lastName.charAt(0)}</div>
+                        <div class="user-info-grid">
+                            <div class="info-field"><label>ФИО</label><span>${data.firstName} ${data.lastName} ${data.patronymic || ''}</span></div>
+                            <div class="info-field"><label>Email</label><span>${data.email}</span></div>
+                            <div class="info-field"><label>Телефон</label><span>${data.phoneNumber}</span></div>
+                            <div class="info-field"><label>Паспорт</label><span>${data.passport || '—'}</span></div>
+                            <div class="info-field"><label>Роли</label><div>${rolesHtml}</div></div>
+                            <div class="info-field"><label>Статус</label>
+                                <span class="badge ${data.isActive ? 'badge-active' : 'badge-inactive'}">
+                                ${data.isActive ? 'Активен' : 'Заблокирован'}</span>
+                            </div>
+                            <div class="info-field"><label>Адрес</label><span>${data.address || '—'}</span></div>
+                            <div class="info-field"><label>Регистрация</label><span>${data.createdAt ? data.createdAt.replace('T', ' ').substring(0, 16) : '—'}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-section"><div class="modal-section-title">🏦 Счета</div>${accountsHtml}</div>
+                    <div class="modal-section"><div class="modal-section-title">📋 Кредиты</div>${loansHtml}</div>
+                    <div class="modal-section"><div class="modal-section-title">💰 Депозиты</div>${depositsHtml}</div>
+                `;
+            })
+            .catch(err => {
+                content.innerHTML = '<div style="color:#f87171;text-align:center">Ошибка загрузки данных</div>';
+                console.error(err);
+            });
+    }
+
+    function closeUserModal() {
+        document.getElementById('userModal').classList.remove('open');
+    }
+
+    document.getElementById('userModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('userModal')) closeUserModal();
+    });
+</script>
+
+</body>
+</html>

@@ -240,6 +240,7 @@
 <div class="header">
     <div class="header-logo">🏦 BankSystem</div>
     <div class="header-user">
+        <div id="idleTimerBadge" style="font-size:0.78rem;padding:0.25rem 0.65rem;border-radius:20px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#4ade80;font-weight:600;cursor:pointer;" onclick="resetIdleTimer()" title="Кликните чтобы сбросить таймер">⏱ <span id="idleTimerText">3:00</span></div>
         <div class="user-avatar" id="avatarInitial">?</div>
         <span class="user-name" id="userName">Загрузка...</span>
         <button class="logout-btn" onclick="logout()">Выйти</button>
@@ -255,12 +256,30 @@
         <div class="nav-item" onclick="showPanel('newAccount')"><span class="icon">➕</span> Открыть счёт</div>
         <div class="nav-item" onclick="showPanel('transfer')"><span class="icon">💸</span> Переводы</div>
         <div class="nav-item" onclick="showPanel('transactions')"><span class="icon">📊</span> История</div>
+        <div class="nav-item" onclick="showPanel('session')"><span class="icon">🔐</span> Сессия</div>
         <div class="sidebar-section" style="margin-top: 0.75rem;">Продукты</div>
         <div class="nav-item" onclick="window.location.href='loans.html'"><span class="icon">📋</span> Кредиты</div>
         <div class="nav-item" onclick="window.location.href='deposits.html'"><span class="icon">💰</span> Вклады</div>
         <div class="sidebar-section" style="margin-top: 0.75rem;">Учёба</div>
         <div class="nav-item" onclick="window.location.href='javaee.html'"><span class="icon">📚</span> Java EE</div>
         <div class="nav-item" onclick="window.location.href='index.html'"><span class="icon">🌐</span> Главная страница</div>
+
+        <script>
+            // Проверка роли пользователя для отображения админ панели
+            fetch('/api/auth/me', {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            }).then(r => r.json()).then(user => {
+                if (user && user.roles && user.roles.some(r => r.name === 'ADMIN')) {
+                    const sb = document.querySelector('.sidebar');
+                    const adminDiv = document.createElement('div');
+                    adminDiv.className = 'nav-item';
+                    adminDiv.style.color = '#fbbf24';
+                    adminDiv.innerHTML = '<span class="icon">⚙️</span> Админ панель';
+                    adminDiv.onclick = () => window.location.href = '/admin';
+                    sb.appendChild(adminDiv);
+                }
+            }).catch(e => console.error(e));
+        </script>
     </div>
 
     <!-- MAIN CONTENT -->
@@ -416,6 +435,72 @@
             </div>
         </div>
 
+        <!-- ══ SESSION PANEL ══ -->
+        <div class="panel" id="panel-session">
+            <div class="section-header"><h2>🔐 Информация о сессии</h2></div>
+
+            <!-- Таймер -->
+            <div class="card" style="margin-bottom:1rem;">
+                <h3 style="margin-bottom:1rem;">⏱ Таймер бездействия</h3>
+                <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+                    <div style="text-align:center;">
+                        <div id="sessionTimerBig" style="font-size:3rem;font-weight:900;font-variant-numeric:tabular-nums;color:#4ade80;">3:00</div>
+                        <div style="color:rgba(255,255,255,0.45);font-size:0.8rem;">до автовыхода</div>
+                    </div>
+                    <div style="flex:1;min-width:200px;">
+                        <div style="background:rgba(255,255,255,0.06);border-radius:8px;height:8px;overflow:hidden;margin-bottom:0.75rem;">
+                            <div id="sessionTimerBar" style="height:100%;background:linear-gradient(90deg,#4ade80,#667eea);border-radius:8px;transition:width 1s linear;width:100%;"></div>
+                        </div>
+                        <p style="color:rgba(255,255,255,0.55);font-size:0.85rem;line-height:1.5;">
+                            При бездействии в течение <b>3 минут</b> вы будете автоматически перенаправлены на страницу входа. Любое действие на странице сбрасывает таймер.
+                        </p>
+                        <button onclick="resetIdleTimer()" style="margin-top:0.75rem;padding:0.5rem 1.25rem;background:linear-gradient(135deg,#667eea,#764ba2);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                            🔄 Сбросить таймер
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Данные сессии -->
+            <div class="card" style="margin-bottom:1rem;">
+                <h3 style="margin-bottom:1rem;">👤 Данные текущей сессии</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.75rem;">
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;">
+                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:0.4rem;">Пользователь</div>
+                        <div id="sessUser" style="font-weight:700;">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;">
+                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:0.4rem;">Email</div>
+                        <div id="sessEmail" style="font-weight:700;">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;">
+                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:0.4rem;">Роль</div>
+                        <div id="sessRole" style="font-weight:700;">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;">
+                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:0.4rem;">Начало сессии</div>
+                        <div id="sessStart" style="font-weight:700;">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;">
+                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:0.4rem;">Последняя активность</div>
+                        <div id="sessLastActive" style="font-weight:700;">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;">
+                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:0.4rem;">Тип авторизации</div>
+                        <div id="sessAuthType" style="font-weight:700;">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- История входов -->
+            <div class="card">
+                <h3 style="margin-bottom:1rem;">📅 Последние входы</h3>
+                <div id="loginHistoryList" style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div class="loader">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+
     </div><!-- /main -->
 </div><!-- /layout -->
 
@@ -423,11 +508,14 @@
     const API = '/api';
     let accounts = [];
 
-    // ── Auth check
-    if (!localStorage.getItem('token')) window.location.href = 'index.html';
-
+    // ── Auth check: JWT или сессия
     const token = () => localStorage.getItem('token');
-    const authHdr = () => ({ 'Authorization': 'Bearer ' + token(), 'Content-Type': 'application/json' });
+    const authHdr = () => {
+        const hdrs = { 'Content-Type': 'application/json' };
+        const t = token();
+        if (t) hdrs['Authorization'] = 'Bearer ' + t;
+        return hdrs;
+    };
 
     // ── Init
     const uName = localStorage.getItem('userName') || 'Пользователь';
@@ -457,7 +545,7 @@
     async function loadAccounts() {
         try {
             const r = await fetch(`${API}/accounts`, { headers: authHdr() });
-            if (r.status === 401) { localStorage.clear(); window.location.href = 'login.html'; return; }
+            if (r.status === 401 || r.status === 403) { localStorage.clear(); window.location.href = '/login'; return; }
             if (!r.ok) { accounts = []; return; }
             accounts = await r.json();
         } catch (e) { accounts = []; }
@@ -624,11 +712,129 @@
         }
     }
 
-    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+    function logout() { localStorage.clear(); window.location.href = '/login'; }
 
     // ── Init load
     loadAccounts();
+
+    // ══════════════════════════════════════════════
+    //  IDLE TIMER — 3 минуты бездействия → выход
+    // ══════════════════════════════════════════════
+    const IDLE_TIMEOUT = 3 * 60; // секунды
+    let idleSeconds = IDLE_TIMEOUT;
+    let idleInterval;
+
+    function formatTime(s) {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerUI() {
+        const txt = formatTime(idleSeconds);
+        const el = document.getElementById('idleTimerText');
+        const bigEl = document.getElementById('sessionTimerBig');
+        const bar = document.getElementById('sessionTimerBar');
+        const badge = document.getElementById('idleTimerBadge');
+        if (el) el.textContent = txt;
+        if (bigEl) bigEl.textContent = txt;
+        const pct = (idleSeconds / IDLE_TIMEOUT) * 100;
+        if (bar) bar.style.width = pct + '%';
+        // цвет по оставшемуся времени
+        const color = idleSeconds > 60 ? '#4ade80' : idleSeconds > 30 ? '#fbbf24' : '#f87171';
+        if (bigEl) bigEl.style.color = color;
+        if (badge) badge.style.color = color;
+        if (bar) bar.style.background = `linear-gradient(90deg,${color},#667eea)`;
+        if (badge) badge.style.borderColor = color.replace(')', ',0.3)').replace('rgb', 'rgba');
+    }
+
+    function resetIdleTimer() {
+        idleSeconds = IDLE_TIMEOUT;
+        updateTimerUI();
+        // Обновляем "последняя активность"
+        const el = document.getElementById('sessLastActive');
+        if (el) el.textContent = new Date().toLocaleString('ru-RU');
+    }
+
+    function startIdleTimer() {
+        clearInterval(idleInterval);
+        idleInterval = setInterval(() => {
+            idleSeconds--;
+            updateTimerUI();
+            if (idleSeconds <= 0) {
+                clearInterval(idleInterval);
+                logout();
+            }
+        }, 1000);
+    }
+
+    // Сброс таймера при любом действии пользователя
+    ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll', 'click'].forEach(evt => {
+        document.addEventListener(evt, resetIdleTimer, { passive: true });
+    });
+
+    startIdleTimer();
+    updateTimerUI();
+
+    // ══════════════════════════════════════════════
+    //  SESSION INFO
+    // ══════════════════════════════════════════════
+    const SESSION_START = new Date();
+    let loginHistory = JSON.parse(localStorage.getItem('loginHistory') || '[]');
+
+    // Записываем текущий вход
+    loginHistory.unshift({ time: SESSION_START.toLocaleString('ru-RU'), user: localStorage.getItem('userName') || '—' });
+    if (loginHistory.length > 5) loginHistory = loginHistory.slice(0, 5);
+    localStorage.setItem('loginHistory', JSON.stringify(loginHistory));
+
+    function loadSessionInfo() {
+        const uName = localStorage.getItem('userName') || '—';
+        const jwt = localStorage.getItem('token');
+
+        document.getElementById('sessUser').textContent = uName;
+        document.getElementById('sessStart').textContent = SESSION_START.toLocaleString('ru-RU');
+        document.getElementById('sessLastActive').textContent = new Date().toLocaleString('ru-RU');
+        document.getElementById('sessAuthType').textContent = jwt ? '🔑 JWT (API)' : '🍪 Session Cookie';
+
+        // Email и роль из JWT
+        if (jwt) {
+            try {
+                const payload = JSON.parse(atob(jwt.split('.')[1]));
+                document.getElementById('sessEmail').textContent = payload.sub || '—';
+                document.getElementById('sessRole').textContent = payload.role || 'USER';
+            } catch (e) {
+                document.getElementById('sessEmail').textContent = uName;
+                document.getElementById('sessRole').textContent = 'USER';
+            }
+        } else {
+            document.getElementById('sessEmail').textContent = uName;
+            document.getElementById('sessRole').textContent = 'USER';
+        }
+
+        // История входов
+        const histList = document.getElementById('loginHistoryList');
+        if (histList) {
+            if (loginHistory.length === 0) {
+                histList.innerHTML = '<div style="color:rgba(255,255,255,0.35);">Нет данных</div>';
+            } else {
+                histList.innerHTML = loginHistory.map((h, i) => `
+                    <div style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;">
+                        <span style="width:24px;height:24px;border-radius:50%;background:${i===0?'linear-gradient(135deg,#667eea,#764ba2)':'rgba(255,255,255,0.1)'};display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;">${i+1}</span>
+                        <span style="flex:1;font-size:0.88rem;">${h.user}</span>
+                        <span style="font-size:0.8rem;color:rgba(255,255,255,0.4);">${h.time}</span>
+                        ${i===0?'<span style="font-size:0.72rem;padding:0.15rem 0.5rem;background:rgba(34,197,94,0.12);border-radius:10px;color:#4ade80;border:1px solid rgba(34,197,94,0.25)">Текущая</span>':''}
+                    </div>`).join('');
+            }
+        }
+    }
+
+    // Переопределяем showPanel для загрузки данных сессии
+    const _origShowPanel = showPanel;
+    showPanel = function(name) {
+        _origShowPanel(name);
+        if (name === 'session') loadSessionInfo();
+    };
+
 </script>
 </body>
 </html>
-

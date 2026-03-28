@@ -1,94 +1,476 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="ru">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Профиль — BankSystem</title>
     <style>
-        :root { --primary: #667eea; --secondary: #764ba2; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; }
-        nav {
-            background: rgba(13,13,26,0.97); padding: 1rem 2rem;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .logo {
-            font-size: 1.3rem; font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), #f093fb);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        nav a { color: rgba(255,255,255,0.6); text-decoration: none; margin-left: 1rem; transition: color 0.3s; }
-        nav a:hover { color: #fff; }
-        .container { max-width: 600px; margin: 3rem auto; padding: 0 2rem; }
-        .profile-card {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 18px; padding: 2.5rem; text-align: center;
-        }
-        .avatar {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; font-weight: 900; margin: 0 auto 1.25rem;
-        }
-        h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.4rem; }
-        .role-badge {
-            display: inline-block;
-            background: rgba(102,126,234,0.2); border: 1px solid rgba(102,126,234,0.3);
-            color: #a78bfa; padding: 0.3rem 0.8rem; border-radius: 20px;
-            font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;
-            text-transform: uppercase; margin-bottom: 2rem;
-        }
-        .info-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
-            font-size: 0.9rem;
-        }
-        .info-row:last-child { border-bottom: none; }
-        .info-label { color: rgba(255,255,255,0.45); font-weight: 600; }
-        .info-value { color: #fff; font-weight: 500; }
-        .btn-back {
-            display: inline-block; margin-top: 2rem;
-            padding: 0.8rem 2rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff; border-radius: 10px; text-decoration: none;
-            font-weight: 700; transition: all 0.3s;
-        }
-        .btn-back:hover { transform: translateY(-2px); }
+        :root{--primary:#667eea;--secondary:#764ba2;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh;}
+
+        nav{background:rgba(10,10,20,.97);padding:1rem 2rem;display:flex;
+            justify-content:space-between;align-items:center;
+            border-bottom:1px solid rgba(255,255,255,.08);
+            position:sticky;top:0;z-index:100;}
+        .logo{font-size:1.25rem;font-weight:800;
+              background:linear-gradient(135deg,#667eea,#f093fb);
+              -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .nav-links{display:flex;align-items:center;gap:1rem;}
+        .nav-links a{color:rgba(255,255,255,.55);text-decoration:none;font-size:.9rem;}
+        .nav-links a:hover{color:#fff;}
+        .nav-links button{background:none;border:none;color:rgba(255,255,255,.55);
+                          cursor:pointer;font-size:.9rem;}
+        .nav-links button:hover{color:#fff;}
+
+        /* SESSION BAR */
+        #sessionBar{background:rgba(102,126,234,.1);border-bottom:1px solid rgba(102,126,234,.2);
+                    padding:.5rem 2rem;display:flex;justify-content:space-between;
+                    align-items:center;font-size:.82rem;}
+        #sessionBar.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);}
+        #sessionBar.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);
+                           animation:blink 1s infinite;}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.6}}
+        #sessionTimer{font-weight:700;font-size:1rem;color:#a78bfa;}
+        #sessionBar.warn #sessionTimer{color:#fbbf24;}
+        #sessionBar.danger #sessionTimer{color:#f87171;}
+        .progress-wrap{width:140px;height:6px;background:rgba(255,255,255,.1);
+                       border-radius:3px;overflow:hidden;}
+        #progressBar{height:100%;background:#667eea;border-radius:3px;transition:width .5s,background .5s;}
+
+        .container{max-width:920px;margin:2rem auto;padding:0 1.5rem;}
+
+        /* PROFILE HEADER */
+        .profile-header{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                        border-radius:20px;padding:2rem;
+                        display:flex;gap:1.75rem;align-items:flex-start;
+                        margin-bottom:1.5rem;flex-wrap:wrap;}
+        .avatar{width:90px;height:90px;border-radius:50%;flex-shrink:0;
+                background:linear-gradient(135deg,#667eea,#764ba2);
+                display:flex;align-items:center;justify-content:center;
+                font-size:2.2rem;font-weight:800;position:relative;}
+        .avatar-tick{position:absolute;bottom:2px;right:2px;width:22px;height:22px;
+                     border-radius:50%;background:#10b981;border:2px solid #0f0f1a;
+                     display:flex;align-items:center;justify-content:center;font-size:.65rem;}
+        .profile-info{flex:1;min-width:200px;}
+        .profile-name{font-size:1.6rem;font-weight:800;margin-bottom:.4rem;}
+        .profile-email{color:rgba(255,255,255,.5);font-size:.9rem;margin-bottom:.75rem;}
+        .badges{display:flex;gap:.4rem;flex-wrap:wrap;}
+        .badge{padding:.2rem .65rem;border-radius:20px;font-size:.75rem;font-weight:700;display:inline-block;}
+        .b-admin   {background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+        .b-user    {background:rgba(102,126,234,.15);color:#a78bfa;border:1px solid rgba(102,126,234,.3);}
+        .b-active  {background:rgba(16,185,129,.15);color:#4ade80;border:1px solid rgba(16,185,129,.3);}
+        .b-blocked {background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);}
+        .b-verified{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3);}
+        .b-session {background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+
+        /* SESSION CARD */
+        .session-card{background:rgba(102,126,234,.07);border:1px solid rgba(102,126,234,.2);
+                      border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+        .card-section-title{font-size:.78rem;font-weight:700;text-transform:uppercase;
+                            letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:1rem;}
+        .sess-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1rem;}
+        .sess-field label{font-size:.72rem;color:rgba(255,255,255,.4);text-transform:uppercase;
+                          letter-spacing:.05em;display:block;margin-bottom:.25rem;}
+        .sess-field span{font-size:.9rem;font-weight:600;}
+
+        /* STATS */
+        .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
+        .stat-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                  border-radius:14px;padding:1.25rem;text-align:center;}
+        .stat-num{font-size:1.8rem;font-weight:800;line-height:1;}
+        .stat-lbl{font-size:.78rem;color:rgba(255,255,255,.4);margin-top:.3rem;
+                  text-transform:uppercase;letter-spacing:.05em;}
+
+        /* INFO GRID */
+        .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+                   gap:1rem;margin-bottom:1.5rem;}
+        .info-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                   border-radius:14px;padding:1.25rem;}
+        .info-card-title{font-size:.75rem;font-weight:700;text-transform:uppercase;
+                         letter-spacing:.06em;color:rgba(255,255,255,.35);margin-bottom:.75rem;}
+        .info-row{display:flex;justify-content:space-between;padding:.4rem 0;
+                  border-bottom:1px solid rgba(255,255,255,.05);font-size:.88rem;}
+        .info-row:last-child{border-bottom:none;}
+        .info-label{color:rgba(255,255,255,.45);}
+        .info-value{font-weight:600;text-align:right;max-width:60%;}
+
+        /* TABLES */
+        .section-title{font-size:.9rem;font-weight:700;text-transform:uppercase;
+                       letter-spacing:.06em;color:rgba(255,255,255,.35);margin-bottom:.75rem;}
+        .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+                  border-radius:12px;overflow:hidden;margin-bottom:1.5rem;}
+        table{width:100%;border-collapse:collapse;}
+        th{background:rgba(255,255,255,.05);padding:.7rem 1rem;text-align:left;
+           font-size:.75rem;color:rgba(255,255,255,.4);font-weight:700;
+           text-transform:uppercase;letter-spacing:.05em;}
+        td{padding:.7rem 1rem;border-top:1px solid rgba(255,255,255,.05);font-size:.87rem;}
+        .no-data{padding:1.5rem;text-align:center;color:rgba(255,255,255,.25);font-size:.85rem;}
+
+        /* STATUS BADGES в таблицах */
+        .st-pending {background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+        .st-active  {background:rgba(16,185,129,.15);color:#4ade80;border:1px solid rgba(16,185,129,.3);}
+        .st-rejected{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);}
+        .st-closed  {background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2);}
+
+        /* BUTTONS */
+        .btn{padding:.65rem 1.5rem;border-radius:10px;border:none;cursor:pointer;
+             font-size:.9rem;font-weight:700;transition:all .2s;
+             text-decoration:none;display:inline-block;}
+        .btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;}
+        .btn-primary:hover{transform:translateY(-2px);opacity:.9;}
+        .btn-ghost{background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);
+                   border:1px solid rgba(255,255,255,.1);}
+        .btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff;}
+        .btn-danger{background:rgba(239,68,68,.15);color:#f87171;
+                    border:1px solid rgba(239,68,68,.3);}
+        .btn-danger:hover{background:rgba(239,68,68,.25);}
+        .actions-row{display:flex;gap:.75rem;flex-wrap:wrap;}
+
+        /* TIMEOUT OVERLAY */
+        .t-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+                   z-index:9999;align-items:center;justify-content:center;
+                   backdrop-filter:blur(8px);}
+        .t-overlay.show{display:flex;}
+        .t-modal{background:#1a1a2e;border:1px solid rgba(239,68,68,.3);
+                 border-radius:20px;padding:2.5rem;text-align:center;
+                 max-width:400px;width:90%;}
+        .t-icon{font-size:3rem;margin-bottom:1rem;}
+        .t-title{font-size:1.3rem;font-weight:800;margin-bottom:.5rem;color:#f87171;}
+        .t-msg{color:rgba(255,255,255,.6);margin-bottom:1.5rem;}
+        #tCount{font-size:2rem;font-weight:800;color:#fbbf24;display:block;margin-bottom:1.5rem;}
+        .t-btns{display:flex;gap:.75rem;justify-content:center;}
+
+        ::-webkit-scrollbar{width:6px;}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
     </style>
 </head>
 <body>
+
 <nav>
     <div class="logo">🏦 BankSystem</div>
-    <div>
+    <div class="nav-links">
         <a href="/home">🏠 Главная</a>
-        <a href="/logout">Выйти</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin" style="color:#fbbf24;">⚙️ Админ</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit">🚪 Выйти</button>
+        </form>
     </div>
 </nav>
-<div class="container">
-    <div class="profile-card">
-        <div class="avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">U</div>
-        <h1 th:text="${username}">Пользователь</h1>
-        <div class="role-badge">🔐 ROLE_USER</div>
-        <div class="info-row">
-            <span class="info-label">Email / логин</span>
-            <span class="info-value" th:text="${username}">—</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Статус сессии</span>
-            <span class="info-value">✅ Активна</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Авторизация</span>
-            <span class="info-value">Spring Security + JWT</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Java EE тақырыбы #12</span>
-            <span class="info-value">Session механизм</span>
-        </div>
-        <a href="/home" class="btn-back">← Главная</a>
+
+<!-- SESSION BAR -->
+<div id="sessionBar">
+    <div style="color:rgba(255,255,255,.6);">
+        🔐 Сессия активна &nbsp;|&nbsp; Автовыход через: <strong id="sessionTimer">3:00</strong>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="progress-wrap"><div id="progressBar" style="width:100%"></div></div>
+        <span style="font-size:.78rem;color:rgba(255,255,255,.4);">бездействия</span>
     </div>
 </div>
+
+<div class="container">
+
+    <!-- PROFILE HEADER -->
+    <div class="profile-header">
+        <div class="avatar">
+            <span th:if="${user != null}" th:text="${#strings.substring(user.firstName, 0, 1).toUpperCase()}">U</span>
+            <span th:unless="${user != null}" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">U</span>
+            <span class="avatar-tick" th:if="${user != null and user.isVerified}">✓</span>
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <th:block th:if="${user != null}" th:text="${user.firstName + ' ' + user.lastName}">Пользователь</th:block>
+                <th:block th:unless="${user != null}" th:text="${username}">Пользователь</th:block>
+            </div>
+            <div class="profile-email" th:text="${username}">email@example.com</div>
+            <div class="badges">
+                <th:block th:each="r : ${roles}">
+                    <span th:class="${r.name == 'ADMIN'} ? 'badge b-admin' : 'badge b-user'"
+                          th:text="${r.name}"></span>
+                </th:block>
+                <th:block th:if="${user != null}">
+                    <span th:if="${user.isActive}" class="badge b-active">✓ Активен</span>
+                    <span th:unless="${user.isActive}" class="badge b-blocked">✗ Заблокирован</span>
+                    <span th:if="${user.isVerified}" class="badge b-verified">✓ Верифицирован</span>
+                </th:block>
+                <span class="badge b-session">🔐 Сессия активна</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SESSION INFO -->
+    <div class="session-card">
+        <div class="card-section-title">🕐 Информация о сессии</div>
+        <div class="sess-grid">
+            <div class="sess-field">
+                <label>Текущий пользователь</label>
+                <span th:text="${username}">—</span>
+            </div>
+            <div class="sess-field">
+                <label>Последний вход</label>
+                <th:block th:if="${user != null and user.lastLoginAt != null}">
+                    <span th:text="${#temporals.format(user.lastLoginAt, 'dd.MM.yyyy HH:mm')}">—</span>
+                </th:block>
+                <th:block th:unless="${user != null and user.lastLoginAt != null}">
+                    <span style="color:rgba(255,255,255,.35)">Нет данных</span>
+                </th:block>
+            </div>
+            <div class="sess-field">
+                <label>Дата регистрации</label>
+                <th:block th:if="${user != null and user.createdAt != null}">
+                    <span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">—</span>
+                </th:block>
+                <th:block th:unless="${user != null and user.createdAt != null}">
+                    <span>—</span>
+                </th:block>
+            </div>
+            <div class="sess-field">
+                <label>Таймаут бездействия</label>
+                <span id="inactivityLeft" style="color:#a78bfa;">3:00</span>
+            </div>
+            <div class="sess-field">
+                <label>Аутентификация</label>
+                <span>Spring Security</span>
+            </div>
+            <div class="sess-field">
+                <label>Механизм сессии</label>
+                <span>HTTP Session + Cookie</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-bar">
+        <div class="stat-box">
+            <div class="stat-num" style="color:#60a5fa"
+                 th:text="${accounts != null} ? ${#lists.size(accounts)} : 0">0</div>
+            <div class="stat-lbl">🏦 Счетов</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-num" style="color:#fbbf24"
+                 th:text="${loans != null} ? ${#lists.size(loans)} : 0">0</div>
+            <div class="stat-lbl">📋 Кредитов</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-num" style="color:#4ade80"
+                 th:text="${deposits != null} ? ${#lists.size(deposits)} : 0">0</div>
+            <div class="stat-lbl">💰 Депозитов</div>
+        </div>
+    </div>
+
+    <!-- PERSONAL INFO -->
+    <div th:if="${user != null}" class="info-grid">
+        <div class="info-card">
+            <div class="info-card-title">👤 Личные данные</div>
+            <div class="info-row">
+                <span class="info-label">Имя</span>
+                <span class="info-value" th:text="${user.firstName}">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Фамилия</span>
+                <span class="info-value" th:text="${user.lastName}">—</span>
+            </div>
+            <div class="info-row" th:if="${user.patronymic != null}">
+                <span class="info-label">Отчество</span>
+                <span class="info-value" th:text="${user.patronymic}">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Дата рождения</span>
+                <span class="info-value"
+                      th:text="${user.dateOfBirth != null} ? ${#temporals.format(user.dateOfBirth,'dd.MM.yyyy')} : '—'">—</span>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-title">📞 Контакты</div>
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value" th:text="${user.email}">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Телефон</span>
+                <span class="info-value" th:text="${user.phoneNumber}">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Адрес</span>
+                <span class="info-value" th:text="${user.address}">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Паспорт</span>
+                <span class="info-value" th:text="${user.passportNumber}">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCOUNTS TABLE -->
+    <th:block th:if="${accounts != null and !#lists.isEmpty(accounts)}">
+        <div class="section-title">🏦 Мои счета</div>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr><th>Номер счёта</th><th>Тип</th><th>Баланс</th><th>Валюта</th><th>Статус</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="a : ${accounts}">
+                        <td style="font-size:.82rem;color:rgba(255,255,255,.6)" th:text="${a.accountNumber}"></td>
+                        <td th:text="${a.accountType}"></td>
+                        <td style="font-weight:700" th:text="${a.balance}"></td>
+                        <td th:text="${a.currency}"></td>
+                        <td>
+                            <span th:if="${a.isActive}" class="badge st-active">Активен</span>
+                            <span th:unless="${a.isActive}" class="badge st-closed">Закрыт</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </th:block>
+
+    <!-- LOANS TABLE -->
+    <th:block th:if="${loans != null and !#lists.isEmpty(loans)}">
+        <div class="section-title">📋 Мои кредиты</div>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr><th>Номер</th><th>Сумма</th><th>Ставка</th><th>Срок</th><th>Статус</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="l : ${loans}">
+                        <td style="font-size:.82rem;color:rgba(255,255,255,.6)" th:text="${l.loanNumber}"></td>
+                        <td style="font-weight:700" th:text="${l.principalAmount + ' ' + l.currency}"></td>
+                        <td th:text="${l.interestRate + '%'}"></td>
+                        <td th:text="${l.durationMonths + ' мес.'}"></td>
+                        <td>
+                            <span th:if="${l.status.name() == 'PENDING'}"  class="badge st-pending"  th:text="${l.status.displayName}"></span>
+                            <span th:if="${l.status.name() == 'ACTIVE'}"   class="badge st-active"   th:text="${l.status.displayName}"></span>
+                            <span th:if="${l.status.name() == 'APPROVED'}" class="badge st-active"   th:text="${l.status.displayName}"></span>
+                            <span th:if="${l.status.name() == 'REJECTED'}" class="badge st-rejected" th:text="${l.status.displayName}"></span>
+                            <span th:if="${l.status.name() == 'CLOSED'}"   class="badge st-closed"   th:text="${l.status.displayName}"></span>
+                            <span th:if="${l.status.name() == 'DEFAULTED'}" class="badge st-rejected" th:text="${l.status.displayName}"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </th:block>
+
+    <!-- DEPOSITS TABLE -->
+    <th:block th:if="${deposits != null and !#lists.isEmpty(deposits)}">
+        <div class="section-title">💰 Мои депозиты</div>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr><th>Номер</th><th>Сумма</th><th>Ставка</th><th>Срок</th><th>Статус</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="d : ${deposits}">
+                        <td style="font-size:.82rem;color:rgba(255,255,255,.6)" th:text="${d.depositNumber}"></td>
+                        <td style="font-weight:700" th:text="${d.amount + ' ' + d.currency}"></td>
+                        <td th:text="${d.interestRate + '%'}"></td>
+                        <td th:text="${d.durationMonths + ' мес.'}"></td>
+                        <td>
+                            <th:block th:if="${d.status != null}">
+                                <span th:if="${d.status.name() == 'PENDING'}"  class="badge st-pending"  th:text="${d.status.displayName}"></span>
+                                <span th:if="${d.status.name() == 'ACTIVE'}"   class="badge st-active"   th:text="${d.status.displayName}"></span>
+                                <span th:if="${d.status.name() == 'REJECTED'}" class="badge st-rejected" th:text="${d.status.displayName}"></span>
+                                <span th:if="${d.status.name() == 'CLOSED'}"   class="badge st-closed"   th:text="${d.status.displayName}"></span>
+                            </th:block>
+                            <span th:unless="${d.status != null}" class="badge st-closed">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </th:block>
+
+    <!-- ACTIONS -->
+    <div class="actions-row" style="margin-bottom:2rem;">
+        <a href="/home" class="btn btn-primary">🏠 На главную</a>
+        <a href="/dashboard.html" class="btn btn-ghost">🏦 Личный кабинет</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-danger">🚪 Выйти из системы</button>
+        </form>
+    </div>
+
+</div>
+
+<!-- TIMEOUT MODAL -->
+<div class="t-overlay" id="tOverlay">
+    <div class="t-modal">
+        <div class="t-icon">⏰</div>
+        <div class="t-title">Сессия завершается</div>
+        <div class="t-msg">Из-за бездействия вы будете перенаправлены на страницу входа через:</div>
+        <span id="tCount">30</span>
+        <div class="t-btns">
+            <button onclick="resetTimer()" class="btn btn-primary">✓ Остаться</button>
+            <a href="/login" class="btn btn-ghost">→ Выйти</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const TOTAL = 180, WARN = 30;
+let remaining = TOTAL;
+let ticker = null, warnTicker = null;
+
+const timerEl   = document.getElementById('sessionTimer');
+const inactEl   = document.getElementById('inactivityLeft');
+const bar       = document.getElementById('progressBar');
+const sBar      = document.getElementById('sessionBar');
+const overlay   = document.getElementById('tOverlay');
+const countEl   = document.getElementById('tCount');
+
+function fmt(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+function render(){
+    const d = fmt(remaining);
+    timerEl.textContent = d;
+    if(inactEl) inactEl.textContent = d;
+    bar.style.width = (remaining/TOTAL*100)+'%';
+    sBar.classList.remove('warn','danger');
+    if(remaining <= 10){
+        bar.style.background='#ef4444'; sBar.classList.add('danger');
+    } else if(remaining <= WARN){
+        bar.style.background='#f59e0b'; sBar.classList.add('warn');
+    } else {
+        bar.style.background='#667eea';
+    }
+}
+
+function startWarnCountdown(){
+    let c = WARN; countEl.textContent = c;
+    if(warnTicker) clearInterval(warnTicker);
+    warnTicker = setInterval(()=>{ c--; countEl.textContent=c; if(c<=0) clearInterval(warnTicker); }, 1000);
+}
+
+ticker = setInterval(()=>{
+    remaining--;
+    render();
+    if(remaining === WARN){ overlay.classList.add('show'); startWarnCountdown(); }
+    if(remaining <= 0){ clearInterval(ticker); window.location.href='/login?timeout'; }
+}, 1000);
+
+function resetTimer(){
+    remaining = TOTAL;
+    overlay.classList.remove('show');
+    if(warnTicker) clearInterval(warnTicker);
+    render();
+}
+
+['mousemove','keydown','click','scroll','touchstart'].forEach(e=>{
+    document.addEventListener(e, ()=>{
+        if(remaining < TOTAL){
+            remaining = TOTAL;
+            overlay.classList.remove('show');
+            if(warnTicker) clearInterval(warnTicker);
+            render();
+        }
+    }, {passive:true});
+});
+
+render();
+</script>
 </body>
 </html>
-

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="ru">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,52 +9,123 @@
     <style>
         :root { --primary: #667eea; --secondary: #764ba2; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e2e8f0; min-height: 100vh; }
+
+        /* NAV */
         nav {
-            background: rgba(13,13,26,0.97); padding: 1rem 2rem;
+            background: rgba(10,10,20,0.97); padding: 1rem 2rem;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky; top: 0; z-index: 100;
         }
         .logo {
             font-size: 1.3rem; font-weight: 800;
             background: linear-gradient(135deg, var(--primary), #f093fb);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        nav a { color: rgba(255,255,255,0.6); text-decoration: none; margin-left: 1rem; transition: color 0.3s; }
-        nav a:hover { color: #fff; }
-        .container { max-width: 900px; margin: 3rem auto; padding: 0 2rem; text-align: center; }
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+        .nav-right a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+        .nav-right a:hover { color: #fff; }
+        .nav-right a.admin-link { color: #f59e0b; }
+        .nav-right a.admin-link:hover { color: #fbbf24; }
+        .nav-right button { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 0.9rem; transition: color .2s; }
+        .nav-right button:hover { color: #fff; }
+
+        /* SESSION TIMER BAR */
+        #sessionBar {
+            background: linear-gradient(90deg, rgba(102,126,234,0.12), rgba(240,147,251,0.08));
+            border-bottom: 1px solid rgba(102,126,234,0.18);
+            padding: 0.45rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.8rem;
+        }
+        #sessionBar.warn { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); }
+        #sessionBar.danger { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.35); animation: blink 1s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.65} }
+        #sessionTimer { font-weight: 700; color: #a78bfa; }
+        #sessionBar.warn #sessionTimer { color: #fbbf24; }
+        #sessionBar.danger #sessionTimer { color: #f87171; }
+        .session-progress { width: 120px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        #sessionProgressBar { height: 100%; background: #667eea; transition: width .5s, background .5s; border-radius: 3px; }
+
+        /* MAIN */
+        .container { max-width: 960px; margin: 0 auto; padding: 3rem 2rem; text-align: center; }
         h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; }
         h1 span {
             background: linear-gradient(135deg, var(--primary), #f093fb);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        p { color: rgba(255,255,255,0.6); margin-bottom: 2.5rem; font-size: 1rem; }
-        .cards {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.25rem; margin-bottom: 2rem;
-        }
+        .subtitle { color: rgba(255,255,255,0.5); margin-bottom: 2.5rem; font-size: 1rem; }
+
+        /* CARDS */
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
         .card {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px; padding: 1.75rem 1.25rem;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 1.75rem 1.25rem;
             text-decoration: none; color: #fff; transition: all 0.3s;
+            display: block;
         }
-        .card:hover { border-color: rgba(102,126,234,0.4); transform: translateY(-4px); background: rgba(102,126,234,0.1); }
+        .card:hover { border-color: rgba(102,126,234,0.4); transform: translateY(-4px); background: rgba(102,126,234,0.1); box-shadow: 0 12px 32px rgba(102,126,234,0.15); }
         .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
         .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
-        .card p { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin: 0; }
+        .card p { font-size: 0.82rem; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.4; }
+        .card.admin-card { border-color: rgba(245,158,11,0.25); }
+        .card.admin-card:hover { border-color: rgba(245,158,11,0.7); background: rgba(245,158,11,0.08); box-shadow: 0 12px 32px rgba(245,158,11,0.1); }
+        .card.danger-card { border-color: rgba(239,68,68,0.15); }
+        .card.danger-card:hover { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.07); }
+
+        /* TIMEOUT MODAL */
+        .timeout-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .timeout-overlay.show { display: flex; }
+        .timeout-modal {
+            background: #1a1a2e; border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 20px; padding: 2.5rem; text-align: center;
+            max-width: 400px; width: 90%;
+        }
+        .timeout-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .timeout-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.5rem; color: #f87171; }
+        .timeout-msg { color: rgba(255,255,255,0.55); margin-bottom: 1.5rem; font-size: 0.9rem; }
+        #timeoutCount { font-size: 2.5rem; font-weight: 800; color: #fbbf24; display: block; margin-bottom: 1rem; }
+        .modal-btns { display: flex; gap: 0.75rem; justify-content: center; }
+        .btn-primary { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; border: none; padding: 0.65rem 1.5rem; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 700; transition: all .2s; text-decoration: none; }
+        .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+        .btn-ghost { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); padding: 0.65rem 1.5rem; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: all .2s; }
+        .btn-ghost:hover { background: rgba(255,255,255,0.12); color: #fff; }
     </style>
 </head>
 <body>
+
 <nav>
     <div class="logo">🏦 BankSystem</div>
-    <div>
+    <div class="nav-right">
+        <a href="/admin" class="admin-link">⚙️ Админ панель</a>
         <a href="/profile">👤 Профиль</a>
-        <a href="/logout">Выйти</a>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">🚪 Выйти</button>
+        </form>
     </div>
 </nav>
+
+<!-- SESSION TIMER BAR -->
+<div id="sessionBar">
+    <div style="color:rgba(255,255,255,0.55);">
+        🔐 Сессия активна &nbsp;|&nbsp; Автовыход через: <span id="sessionTimer">3:00</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div class="session-progress"><div id="sessionProgressBar" style="width:100%"></div></div>
+        <a href="/profile" style="color:rgba(255,255,255,0.45);font-size:0.75rem;text-decoration:none;">Сессия →</a>
+    </div>
+</div>
+
 <div class="container">
     <h1>Привет, <span th:text="${username}">Пользователь</span>! 👋</h1>
-    <p>Управляйте своими финансами — выберите нужный раздел</p>
+    <p class="subtitle">Добро пожаловать в BankSystem — управляйте финансами легко и безопасно</p>
+
     <div class="cards">
         <a href="/dashboard.html" class="card">
             <div class="card-icon">🏦</div>
@@ -71,21 +144,113 @@
         </a>
         <a href="/javaee.html" class="card">
             <div class="card-icon">📚</div>
-            <h3>Java EE</h3>
+            <h3>Java EE темы</h3>
             <p>Лаб. жұмысы № 6-7 — интерактив</p>
         </a>
         <a href="/profile" class="card">
             <div class="card-icon">👤</div>
-            <h3>Профиль</h3>
-            <p>Настройки аккаунта</p>
+            <h3>Профиль & Сессия</h3>
+            <p>Настройки аккаунта, информация о сессии</p>
         </a>
-        <a href="/logout" class="card" style="border-color: rgba(239,68,68,0.2);">
-            <div class="card-icon">🚪</div>
-            <h3>Выйти</h3>
-            <p>Завершить сеанс</p>
+        <a href="/admin" class="card admin-card">
+            <div class="card-icon">⚙️</div>
+            <h3>Админ панель</h3>
+            <p>Управление пользователями и запросами</p>
+        </a>
+        <a href="/admin/tab/requests" class="card admin-card">
+            <div class="card-icon">🔔</div>
+            <h3>Запросы</h3>
+            <p>Одобрение кредитов и депозитов</p>
         </a>
     </div>
 </div>
+
+<!-- INACTIVITY TIMEOUT MODAL -->
+<div class="timeout-overlay" id="timeoutOverlay">
+    <div class="timeout-modal">
+        <div class="timeout-icon">⏰</div>
+        <div class="timeout-title">Сессия завершается</div>
+        <div class="timeout-msg">Из-за бездействия вы будете перенаправлены на страницу входа</div>
+        <span id="timeoutCount">30</span>
+        <div class="modal-btns">
+            <button onclick="resetInactivity()" class="btn-primary">✓ Продолжить</button>
+            <a href="/home" class="btn-ghost">→ Остаться</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const TIMEOUT_SEC = 180;
+    const WARN_SEC    = 30;
+    let remaining = TIMEOUT_SEC;
+    let countdown = null;
+    let countdownOverlay = null;
+
+    const timerEl     = document.getElementById('sessionTimer');
+    const progressBar = document.getElementById('sessionProgressBar');
+    const sessionBar  = document.getElementById('sessionBar');
+    const overlay     = document.getElementById('timeoutOverlay');
+    const countEl     = document.getElementById('timeoutCount');
+
+    function fmt(s) {
+        return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+    }
+
+    function updateUI() {
+        timerEl.textContent = fmt(remaining);
+        progressBar.style.width = ((remaining / TIMEOUT_SEC) * 100) + '%';
+        sessionBar.classList.remove('warn','danger');
+        if (remaining <= 10) {
+            progressBar.style.background = '#ef4444';
+            sessionBar.classList.add('danger');
+        } else if (remaining <= WARN_SEC) {
+            progressBar.style.background = '#f59e0b';
+            sessionBar.classList.add('warn');
+        } else {
+            progressBar.style.background = '#667eea';
+        }
+    }
+
+    countdown = setInterval(() => {
+        remaining--;
+        updateUI();
+        if (remaining === WARN_SEC) {
+            overlay.classList.add('show');
+            let cnt = WARN_SEC;
+            countEl.textContent = cnt;
+            countdownOverlay = setInterval(() => {
+                cnt--;
+                countEl.textContent = cnt;
+                if (cnt <= 0) clearInterval(countdownOverlay);
+            }, 1000);
+        }
+        if (remaining <= 0) {
+            clearInterval(countdown);
+            window.location.href = '/login?timeout';
+        }
+    }, 1000);
+
+    function resetInactivity() {
+        remaining = TIMEOUT_SEC;
+        overlay.classList.remove('show');
+        if (countdownOverlay) clearInterval(countdownOverlay);
+        updateUI();
+    }
+
+    ['mousemove','keydown','click','scroll'].forEach(evt => {
+        document.addEventListener(evt, () => {
+            if (remaining < TIMEOUT_SEC) {
+                remaining = TIMEOUT_SEC;
+                overlay.classList.remove('show');
+                if (countdownOverlay) clearInterval(countdownOverlay);
+                updateUI();
+            }
+        });
+    });
+
+    updateUI();
+</script>
+
 </body>
 </html>
 

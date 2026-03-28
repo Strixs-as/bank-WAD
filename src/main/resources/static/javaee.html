@@ -3,773 +3,580 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java EE — Лаб. жұмысы № 6-7 | BankSystem</title>
+    <title>Java EE Шпаргалка — BankSystem</title>
     <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --accent: #f093fb;
-            --dark: #1a1a2e;
-            --dark2: #16213e;
-            --card: rgba(255,255,255,0.05);
-            --border: rgba(255,255,255,0.08);
-            --text: rgba(255,255,255,0.85);
-            --muted: rgba(255,255,255,0.45);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--dark);
-            color: #fff;
-            min-height: 100vh;
-        }
+        :root { --p: #667eea; --s: #764ba2; --acc: #f093fb; --bg: #1a1a2e; --card: rgba(255,255,255,0.04); --brd: rgba(255,255,255,0.08); --m: rgba(255,255,255,0.45); }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:#fff; min-height:100vh; }
+        nav { background:rgba(13,13,26,.97); padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--brd); position:sticky; top:0; z-index:100; }
+        .logo { font-size:1.3rem; font-weight:800; background:linear-gradient(135deg,var(--p),var(--acc)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        nav a { color:var(--m); text-decoration:none; margin-left:.75rem; font-size:.9rem; padding:.35rem .7rem; border-radius:8px; transition:.3s; }
+        nav a:hover { color:#fff; background:rgba(255,255,255,.08); }
 
-        /* NAV */
-        nav {
-            background: rgba(13,13,26,0.97);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .nav-logo {
-            font-size: 1.3rem; font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        nav a {
-            color: var(--muted); text-decoration: none; font-size: 0.9rem;
-            padding: 0.4rem 0.8rem; border-radius: 8px; transition: all 0.3s;
-        }
-        nav a:hover { color: #fff; background: rgba(255,255,255,0.08); }
-        nav .back { color: #a78bfa; }
+        .hero { background:linear-gradient(135deg,#16213e,#0a1628); padding:3rem 2rem 2rem; text-align:center; position:relative; }
+        .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 50%,rgba(102,126,234,.12) 0%,transparent 70%); }
+        .hero-c { position:relative; z-index:1; }
+        .badge-top { display:inline-block; background:rgba(102,126,234,.15); border:1px solid rgba(102,126,234,.3); color:#a78bfa; padding:.3rem .9rem; border-radius:20px; font-size:.78rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:.8rem; }
+        .hero h1 { font-size:clamp(1.6rem,4vw,2.6rem); font-weight:900; margin-bottom:.5rem; }
+        .hero h1 span { background:linear-gradient(135deg,var(--p),var(--acc)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .hero p { color:var(--m); font-size:.95rem; max-width:600px; margin:0 auto; line-height:1.6; }
 
-        /* HERO */
-        .hero {
-            background: linear-gradient(135deg, var(--dark2) 0%, #0a1628 100%);
-            padding: 3.5rem 2rem 2.5rem;
-            text-align: center;
-            position: relative; overflow: hidden;
-        }
-        .hero::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(ellipse at 50% 50%, rgba(102,126,234,0.12) 0%, transparent 70%);
-        }
-        .hero-content { position: relative; z-index: 1; }
-        .badge {
-            display: inline-block;
-            background: rgba(102,126,234,0.15);
-            border: 1px solid rgba(102,126,234,0.3);
-            color: #a78bfa; padding: 0.35rem 1rem;
-            border-radius: 20px; font-size: 0.8rem; font-weight: 700;
-            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;
-        }
-        .hero h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900; margin-bottom: 0.75rem; }
-        .hero h1 span {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .hero p { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto 1.5rem; line-height: 1.6; }
+        .wrap { max-width:1100px; margin:0 auto; padding:2rem; }
 
-        /* TABS */
-        .tab-nav {
-            display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
-            padding: 1.25rem 2rem; background: rgba(0,0,0,0.2);
-            border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 99;
-        }
-        .tab-btn {
-            padding: 0.5rem 1.1rem; border-radius: 20px; border: 1px solid var(--border);
-            background: transparent; color: var(--muted); font-size: 0.82rem; font-weight: 600;
-            cursor: pointer; transition: all 0.25s;
-        }
-        .tab-btn:hover { border-color: var(--primary); color: #fff; }
-        .tab-btn.active {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff; border-color: transparent;
-        }
+        /* CHEAT SHEET CARD */
+        .cheat { background:var(--card); border:1px solid var(--brd); border-radius:16px; margin-bottom:1.5rem; overflow:hidden; transition:border-color .3s; }
+        .cheat:hover { border-color:rgba(102,126,234,.3); }
+        .cheat-head { display:flex; align-items:center; gap:1rem; padding:1.25rem 1.5rem; cursor:pointer; user-select:none; }
+        .cheat-head:hover { background:rgba(255,255,255,.02); }
+        .num { width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg,var(--p),var(--s)); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:.95rem; flex-shrink:0; }
+        .cheat-title { font-size:1.05rem; font-weight:700; flex:1; }
+        .cheat-tags { display:flex; gap:.35rem; flex-wrap:wrap; }
+        .tag { padding:.15rem .55rem; border-radius:10px; font-size:.7rem; font-weight:600; background:rgba(102,126,234,.15); color:#a78bfa; }
+        .tag-g { background:rgba(34,197,94,.12); color:#86efac; }
+        .tag-y { background:rgba(245,158,11,.12); color:#fcd34d; }
+        .tag-r { background:rgba(239,68,68,.12); color:#fca5a5; }
+        .arrow { font-size:1.2rem; color:var(--m); transition:transform .3s; }
+        .cheat.open .arrow { transform:rotate(180deg); }
 
-        /* CONTENT */
-        .content { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .cheat-body { display:none; padding:0 1.5rem 1.5rem; }
+        .cheat.open .cheat-body { display:block; }
 
-        /* TOPIC CARDS */
-        .topics-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.25rem;
-        }
-        .topic-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px; padding: 1.5rem;
-            transition: all 0.3s; cursor: pointer;
-        }
-        .topic-card:hover {
-            border-color: rgba(102,126,234,0.4);
-            background: rgba(102,126,234,0.08);
-            transform: translateY(-4px);
-        }
-        .topic-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.85rem; }
-        .topic-num {
-            width: 42px; height: 42px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 1rem; flex-shrink: 0;
-        }
-        .topic-title { font-size: 1.05rem; font-weight: 700; }
-        .topic-desc { color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
-        .topic-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.85rem; }
-        .tag {
-            padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;
-            background: rgba(102,126,234,0.15); color: #a78bfa;
-        }
-        .tag.green { background: rgba(34,197,94,0.12); color: #86efac; }
-        .tag.yellow { background: rgba(245,158,11,0.12); color: #fcd34d; }
-        .tag.red { background: rgba(239,68,68,0.12); color: #fca5a5; }
+        .desc { color:var(--m); font-size:.88rem; line-height:1.6; margin-bottom:.75rem; }
+        .desc b, .desc strong { color:#e2e8f0; }
 
-        /* CODE BLOCK */
-        pre {
-            background: #0d0d1a; border: 1px solid var(--border);
-            border-radius: 10px; padding: 1.25rem; overflow-x: auto;
-            font-size: 0.83rem; line-height: 1.6; margin: 0.75rem 0;
-            color: #e2e8f0;
-        }
-        .keyword { color: #c084fc; }
-        .string { color: #86efac; }
-        .comment { color: #6b7280; font-style: italic; }
-        .annotation { color: #67e8f9; }
-        .type { color: #fcd34d; }
+        pre { background:#0d0d1a; border:1px solid var(--brd); border-radius:10px; padding:1.1rem 1.25rem; overflow-x:auto; font-size:.8rem; line-height:1.65; color:#e2e8f0; margin:.6rem 0; }
+        .kw { color:#c084fc; } .str { color:#86efac; } .cm { color:#6b7280; font-style:italic; } .an { color:#67e8f9; } .tp { color:#fcd34d; }
 
-        /* SECTION TITLE */
-        .section-title {
-            display: flex; align-items: center; gap: 0.75rem;
-            font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;
-        }
-        .section-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.75rem; }
+        .file-label { display:inline-block; font-size:.72rem; color:var(--m); background:rgba(255,255,255,.05); border:1px solid var(--brd); padding:.15rem .55rem; border-radius:6px; margin-bottom:.3rem; font-family:monospace; }
 
-        /* INTERACTIVE DEMO */
-        .demo-box {
-            background: var(--dark2);
-            border: 1px solid var(--border); border-radius: 14px;
-            overflow: hidden; margin-bottom: 1.5rem;
-        }
-        .demo-header {
-            padding: 1rem 1.25rem;
-            background: rgba(255,255,255,0.03);
-            border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .demo-title { font-weight: 700; font-size: 0.95rem; }
-        .demo-badge { font-size: 0.75rem; color: var(--muted); }
-        .demo-body { padding: 1.25rem; }
-        .demo-input-row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
-        .demo-field { flex: 1; min-width: 140px; }
-        .demo-field label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.4rem; }
-        .demo-field input, .demo-field select {
-            width: 100%; padding: 0.65rem 0.9rem;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border); border-radius: 8px;
-            color: #fff; font-size: 0.9rem;
-        }
-        .demo-field input:focus, .demo-field select:focus { outline: none; border-color: var(--primary); }
-        .demo-btn {
-            padding: 0.65rem 1.25rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff; border: none; border-radius: 8px;
-            font-size: 0.9rem; font-weight: 700; cursor: pointer; white-space: nowrap;
-            transition: all 0.25s; align-self: flex-end;
-        }
-        .demo-btn:hover { transform: translateY(-2px); }
-        .demo-output {
-            margin-top: 1rem; padding: 1rem; border-radius: 8px;
-            background: rgba(0,0,0,0.3); font-family: monospace; font-size: 0.83rem;
-            color: #86efac; min-height: 40px; white-space: pre-wrap; word-break: break-all;
-        }
+        .live-btn { display:inline-block; margin-top:.5rem; padding:.4rem .9rem; background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.25); border-radius:8px; color:#4ade80; font-size:.82rem; font-weight:600; text-decoration:none; cursor:pointer; transition:.2s; }
+        .live-btn:hover { background:rgba(34,197,94,.22); }
 
-        /* MVC DIAGRAM */
-        .mvc-diagram {
-            display: flex; align-items: center; gap: 0; flex-wrap: wrap;
-            justify-content: center; margin: 1.5rem 0;
-        }
-        .mvc-box {
-            padding: 1rem 1.25rem; border-radius: 10px; text-align: center;
-            min-width: 120px;
-        }
-        .mvc-box.client { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
-        .mvc-box.controller { background: rgba(102,126,234,0.15); border: 1px solid rgba(102,126,234,0.3); color: #a78bfa; }
-        .mvc-box.service { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.25); color: #86efac; }
-        .mvc-box.repo { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
-        .mvc-box.db { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); color: #93c5fd; }
-        .mvc-box h4 { font-size: 0.85rem; font-weight: 700; }
-        .mvc-box p { font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem; }
-        .mvc-arrow { font-size: 1.5rem; color: var(--muted); padding: 0 0.25rem; }
+        .info { background:rgba(102,126,234,.08); border:1px solid rgba(102,126,234,.25); border-left:4px solid var(--p); border-radius:8px; padding:.85rem 1.1rem; margin:.6rem 0; font-size:.85rem; color:#e2e8f0; line-height:1.6; }
 
-        /* LIFECYCLE */
-        .lifecycle {
-            display: flex; gap: 0; overflow: hidden; border-radius: 10px;
-            border: 1px solid var(--border); margin: 1.25rem 0;
-        }
-        .lc-step {
-            flex: 1; padding: 1rem 0.75rem; text-align: center;
-            border-right: 1px solid var(--border);
-        }
-        .lc-step:last-child { border-right: none; }
-        .lc-step .lc-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
-        .lc-step h4 { font-size: 0.85rem; font-weight: 700; color: var(--primary); }
-        .lc-step p { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
-
-        /* ROLES TABLE */
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th { padding: 0.75rem 1rem; background: rgba(102,126,234,0.15); color: #a78bfa; text-align: left; font-weight: 700; }
-        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.03); }
-
-        /* HIDDEN/SHOWN TABS */
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-
-        /* CHECKLIST */
-        .checklist { list-style: none; }
-        .checklist li {
-            display: flex; align-items: flex-start; gap: 0.75rem;
-            padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.92rem;
-        }
-        .checklist li:last-child { border-bottom: none; }
-        .check-icon { color: #22c55e; font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-
-        .info-box {
-            background: rgba(102,126,234,0.08);
-            border: 1px solid rgba(102,126,234,0.25);
-            border-left: 4px solid var(--primary);
-            border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0;
-            font-size: 0.9rem; color: var(--text); line-height: 1.6;
-        }
-
-        @media(max-width: 600px) {
-            .tab-nav { padding: 1rem; gap: 0.4rem; }
-            .tab-btn { font-size: 0.75rem; padding: 0.4rem 0.75rem; }
-            .mvc-diagram { flex-direction: column; }
-            .mvc-arrow { transform: rotate(90deg); }
-            .lifecycle { flex-direction: column; }
-            .lc-step { border-right: none; border-bottom: 1px solid var(--border); }
-        }
+        footer { text-align:center; padding:2rem; border-top:1px solid var(--brd); color:var(--m); font-size:.82rem; margin-top:2rem; }
     </style>
 </head>
 <body>
 
 <nav>
-    <div class="nav-logo">🏦 BankSystem</div>
-    <div style="display:flex; gap:0.5rem; align-items:center;">
-        <a href="index.html" class="back">← Главная</a>
+    <div class="logo">🏦 BankSystem — Шпаргалка</div>
+    <div>
+        <a href="/home">← Главная</a>
         <a href="dashboard.html">Кабинет</a>
+        <a href="loans.html">Кредиты</a>
+        <a href="deposits.html">Депозиты</a>
     </div>
 </nav>
 
 <div class="hero">
-    <div class="hero-content">
-        <div class="badge">Зертханалық жұмыс № 6-7</div>
-        <h1>Java EE — <span>толық нұсқаулық</span></h1>
-        <p>Spring Boot REST қосымшасын толық веб‑қосымшаға айналдыру.<br>
-           Barлық 15 тақырып іс жүзінде жүзеге асырылды.</p>
+    <div class="hero-c">
+        <div class="badge-top">Зертханалық жұмыс № 6-7</div>
+        <h1>Java EE — <span>15 тақырып шпаргалкасы</span></h1>
+        <p>Әр тақырыптың кодпен байланысы — BankSystem жобасы негізінде</p>
     </div>
 </div>
 
-<!-- TABS -->
-<div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('all')">📋 Барлығы</button>
-    <button class="tab-btn" onclick="switchTab('servlet')">🔧 Servlet</button>
-    <button class="tab-btn" onclick="switchTab('spring')">🌱 Spring</button>
-    <button class="tab-btn" onclick="switchTab('security')">🔐 Security</button>
-    <button class="tab-btn" onclick="switchTab('demo')">⚡ Демо</button>
-    <button class="tab-btn" onclick="switchTab('mvc')">🏗 MVC</button>
+<div class="wrap">
+
+<!-- ══════ 1 ══════ -->
+<div class="cheat open">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">1</div>
+        <div class="cheat-title">Java EE деген не</div>
+        <div class="cheat-tags"><span class="tag">Java SE/EE/ME</span><span class="tag tag-g">JDK 17</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Java EE</b> — серверлік веб-қосымшалар жасауға арналған платформа. Біздің жоба <b>Spring Boot 3.2.3 + Java 17</b> негізінде жасалды.</p>
+        <div class="file-label">BankSystemApplication.java</div>
+<pre><span class="an">@SpringBootApplication</span>        <span class="cm">// = @Configuration + @EnableAutoConfiguration + @ComponentScan</span>
+<span class="an">@ServletComponentScan</span>          <span class="cm">// @WebServlet аннотацияларын тіркейді</span>
+<span class="kw">public class</span> <span class="tp">BankSystemApplication</span> {
+    <span class="kw">public static void</span> main(<span class="tp">String</span>[] args) {
+        <span class="tp">SpringApplication</span>.run(<span class="tp">BankSystemApplication</span>.<span class="kw">class</span>, args);
+    }
+}</pre>
+        <div class="info">📌 Java SE — негізгі Java, Java EE — enterprise (Spring Boot), Java ME — мобильді. JDK = жазу, JRE = іске қосу.</div>
+    </div>
 </div>
 
-<div class="content">
-
-    <!-- === ALL TOPICS === -->
-    <div class="tab-panel active" id="tab-all">
-        <div class="section-title">📚 Java EE барлық тақырыптары</div>
-        <p class="section-sub">Лаб. жұмысы № 6-7 бойынша 15 тақырып — барлығы жүзеге асырылды</p>
-        <div class="topics-grid">
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">1</div><div class="topic-title">Java EE деген не</div></div>
-                <p class="topic-desc">Серверлік веб-қосымшаларға арналған Java платформасы. SE (негізгі), EE (enterprise), ME (мобильді) платформалары. JDK — жазу, JRE — іске қосу.</p>
-                <div class="topic-tags"><span class="tag">Java SE/EE/ME</span><span class="tag green">JDK 17</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">2</div><div class="topic-title">Сервлеттер (Servlet)</div></div>
-                <p class="topic-desc">Веб серверде жұмыс істейтін Java класс. HTTP сұраулары мен жауаптарын өңдейді. Lifecycle: init() → service() → destroy().</p>
-                <div class="topic-tags"><span class="tag">@WebServlet</span><span class="tag yellow">HttpServlet</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">3</div><div class="topic-title">HTTP GET / POST</div></div>
-                <p class="topic-desc">GET — мәлімет алу (параметрлер URL-де), POST — мәлімет жіберу (параметрлер body-де). REST-те GET/POST/PUT/DELETE қолданылады.</p>
-                <div class="topic-tags"><span class="tag green">GET</span><span class="tag">POST</span><span class="tag yellow">PUT</span><span class="tag red">DELETE</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">4</div><div class="topic-title">Git — версия бақылау</div></div>
-                <p class="topic-desc">Проектті сақтау және өзгерістерді бақылау жүйесі. Командалар: git clone, git add, git commit, git push.</p>
-                <div class="topic-tags"><span class="tag">GitHub</span><span class="tag green">Strixs-as/bank-WAD</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">5</div><div class="topic-title">Maven / Gradle</div></div>
-                <p class="topic-desc">Проект басқару құралы. pom.xml арқылы тәуелділіктерді жүктейді, build жасайды. spring-boot-starter-* артефактілер қолданылады.</p>
-                <div class="topic-tags"><span class="tag">pom.xml</span><span class="tag yellow">Maven 3.6+</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">6</div><div class="topic-title">Thymeleaf / JSP</div></div>
-                <p class="topic-desc">HTML шаблон жүйесі. Сервер жағынан HTML генерациялайды. login.html, register.html, home.html, profile.html беттері Thymeleaf арқылы жасалды.</p>
-                <div class="topic-tags"><span class="tag">Thymeleaf</span><span class="tag green">Model/View</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">7</div><div class="topic-title">Spring Framework</div></div>
-                <p class="topic-desc">Ең танымал Java framework. Dependency Injection, аннотациялар, модульдік архитектура. Spring Core, MVC, Security, Data JPA.</p>
-                <div class="topic-tags"><span class="tag">@Component</span><span class="tag green">@Autowired</span><span class="tag yellow">IoC</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">8</div><div class="topic-title">MVC архитектурасы</div></div>
-                <p class="topic-desc">Model-View-Controller. Client → DispatcherServlet → Controller → Service → Repository → DB. @Controller JSON емес, HTML қайтарады.</p>
-                <div class="topic-tags"><span class="tag">@Controller</span><span class="tag green">@RestController</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">9</div><div class="topic-title">JDBC</div></div>
-                <p class="topic-desc">Java арқылы дерекқорға тікелей қосылу. Connection → Statement → executeQuery() → ResultSet. DatabaseInitializer класында қолданылды.</p>
-                <div class="topic-tags"><span class="tag">Connection</span><span class="tag yellow">ResultSet</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">10</div><div class="topic-title">Connection Pool</div></div>
-                <p class="topic-desc">Дерекқор байланыстарын қайта пайдалану. HikariCP — Spring Boot-тың стандартты пул менеджері. Жылдам және ресурсты үнемдейді.</p>
-                <div class="topic-tags"><span class="tag green">HikariCP</span><span class="tag">@Bean DataSource</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">11</div><div class="topic-title">Hibernate / ORM</div></div>
-                <p class="topic-desc">Java объектілерін SQL кестелеріне байланыстырады. @Entity, @Table, @OneToMany, @ManyToOne. SQL аз жазылады, CRUD оңай.</p>
-                <div class="topic-tags"><span class="tag">@Entity</span><span class="tag green">@OneToMany</span><span class="tag yellow">JPA</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">12</div><div class="topic-title">Spring Security</div></div>
-                <p class="topic-desc">Авторизация и аутентификация. BCryptPasswordEncoder, JWT-фильтр, сессия. Рөлдер: ROLE_USER, ROLE_ADMIN, ROLE_MANAGER.</p>
-                <div class="topic-tags"><span class="tag">BCrypt</span><span class="tag green">JWT</span><span class="tag yellow">ROLE_USER</span><span class="tag red">ROLE_ADMIN</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">13</div><div class="topic-title">REST API / Web Services</div></div>
-                <p class="topic-desc">@RestController арқылы JSON қайтарады. /api/auth, /api/accounts, /api/transactions, /api/cards, /api/loans, /api/deposits.</p>
-                <div class="topic-tags"><span class="tag">@RestController</span><span class="tag green">JSON</span><span class="tag yellow">@RequestBody</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">14</div><div class="topic-title">JUnit тестілеу</div></div>
-                <p class="topic-desc">Java тест framework. assertEquals() — күтілген мәнді тексеру. assertThrows() — ерекше жағдайды тексеру. @SpringBootTest.</p>
-                <div class="topic-tags"><span class="tag">@Test</span><span class="tag green">assertEquals</span><span class="tag yellow">@SpringBootTest</span></div>
-            </div>
-            <div class="topic-card">
-                <div class="topic-header"><div class="topic-num">15</div><div class="topic-title">Deploy / Tomcat</div></div>
-                <p class="topic-desc">Spring Boot Embedded Apache Tomcat — бөлек серверсіз іске қосылады. Порт 8080. WAR орнына JAR: java -jar target/*.jar</p>
-                <div class="topic-tags"><span class="tag">Tomcat 10</span><span class="tag green">Port 8080</span><span class="tag yellow">Embedded</span></div>
-            </div>
-        </div>
+<!-- ══════ 2 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">2</div>
+        <div class="cheat-title">Сервлеттер (Servlet) — doGet / doPost</div>
+        <div class="cheat-tags"><span class="tag">@WebServlet</span><span class="tag">HttpServlet</span><span class="tag tag-g">GET/POST</span></div>
+        <div class="arrow">▼</div>
     </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Servlet</b> — HTTP сұраулар қабылдайтын Java класс. Lifecycle: <code>init() → service() → destroy()</code></p>
+        <div class="file-label">servlet/BankInfoServlet.java</div>
+<pre><span class="an">@WebServlet</span>(<span class="str">"/servlet/info"</span>)
+<span class="kw">public class</span> <span class="tp">BankInfoServlet</span> <span class="kw">extends</span> <span class="tp">HttpServlet</span> {
 
-    <!-- === SERVLET === -->
-    <div class="tab-panel" id="tab-servlet">
-        <div class="section-title">🔧 Сервлеттер (Servlet)</div>
-        <p class="section-sub">Тақырыптар 2-3: HttpServlet, HTTP әдістері, lifecycle</p>
-
-        <div class="info-box">
-            <strong>Servlet</strong> — веб серверде жұмыс істейтін Java класс. HTTP сұраулары мен жауаптарын өңдейді.
-            Spring Boot ішінде DispatcherServlet барлық сұрауларды бағыттайды.
-        </div>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">Servlet Lifecycle</h3>
-        <div class="lifecycle">
-            <div class="lc-step">
-                <div class="lc-icon">🚀</div>
-                <h4>init()</h4>
-                <p>Сервлет жасалғанда бір рет шақырылады. Ресурстарды инициализациялайды.</p>
-            </div>
-            <div class="lc-step">
-                <div class="lc-icon">⚙️</div>
-                <h4>service()</h4>
-                <p>Әр HTTP сұрауда шақырылады. doGet() немесе doPost()-қа бағыттайды.</p>
-            </div>
-            <div class="lc-step">
-                <div class="lc-icon">🔚</div>
-                <h4>destroy()</h4>
-                <p>Сервер тоқтағанда ресурстарды босатады.</p>
-            </div>
-        </div>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">HelloServlet мысалы (проекттен)</h3>
-<pre><span class="annotation">@WebServlet</span>(<span class="string">"/hello"</span>)
-<span class="keyword">public class</span> <span class="type">HelloServlet</span> <span class="keyword">extends</span> HttpServlet {
-
-    <span class="comment">// GET /hello?name=Naiman → "Hello, Naiman!"</span>
-    <span class="annotation">@Override</span>
-    <span class="keyword">protected void</span> doGet(HttpServletRequest req, HttpServletResponse resp)
-            <span class="keyword">throws</span> IOException {
-        String name = req.getParameter(<span class="string">"name"</span>);
-        resp.setContentType(<span class="string">"text/plain;charset=UTF-8"</span>);
-        resp.getWriter().println(<span class="string">"Hello, "</span> + (name != <span class="keyword">null</span> ? name : <span class="string">"World"</span>) + <span class="string">"!"</span>);
+    <span class="an">@Override</span>
+    <span class="kw">protected void</span> doGet(<span class="tp">HttpServletRequest</span> req, <span class="tp">HttpServletResponse</span> resp) {
+        resp.setContentType(<span class="str">"application/json"</span>);
+        resp.getWriter().println(<span class="str">"{\"bank\": \"BankSystem\", \"method\": \"GET\"}"</span>);
     }
 
-    <span class="comment">// POST /hello — JSON жауап</span>
-    <span class="annotation">@Override</span>
-    <span class="keyword">protected void</span> doPost(HttpServletRequest req, HttpServletResponse resp)
-            <span class="keyword">throws</span> IOException {
-        resp.setContentType(<span class="string">"application/json"</span>);
-        resp.getWriter().println(<span class="string">"{\"message\": \"POST received\", \"status\": \"ok\"}"</span>);
+    <span class="an">@Override</span>
+    <span class="kw">protected void</span> doPost(<span class="tp">HttpServletRequest</span> req, <span class="tp">HttpServletResponse</span> resp) {
+        <span class="cm">// POST — мәлімет жіберу (тіркелу, логин)</span>
+        resp.getWriter().println(<span class="str">"{\"status\": \"received\", \"method\": \"POST\"}"</span>);
     }
 }</pre>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">HTTP әдістері</h3>
-        <table>
-            <tr><th>Метод</th><th>Мақсаты</th><th>REST мысалы</th><th>Servlet</th></tr>
-            <tr><td><span class="tag green">GET</span></td><td>Деректерді алу</td><td>GET /api/accounts</td><td>doGet()</td></tr>
-            <tr><td><span class="tag">POST</span></td><td>Жаңа объект жасау</td><td>POST /api/accounts</td><td>doPost()</td></tr>
-            <tr><td><span class="tag yellow">PUT</span></td><td>Объектіні жаңарту</td><td>PUT /api/cards/1/block</td><td>doPut()</td></tr>
-            <tr><td><span class="tag red">DELETE</span></td><td>Объектіні жою</td><td>DELETE /api/deposits/1</td><td>doDelete()</td></tr>
-        </table>
+        <a class="live-btn" href="/servlet/info" target="_blank">▶ Тірі демо: /servlet/info</a>
+        <div class="info">📌 GET — мәлімет алу. POST — мәлімет жіберу. PUT — жаңарту. DELETE — жою.</div>
     </div>
+</div>
 
-    <!-- === SPRING === -->
-    <div class="tab-panel" id="tab-spring">
-        <div class="section-title">🌱 Spring Framework</div>
-        <p class="section-sub">Тақырыптар 7, 11: Spring MVC, Hibernate ORM, Dependency Injection</p>
-
-        <div class="info-box">
-            <strong>Spring IoC Container</strong> — @Component аннотациясымен белгіленген класстарды автоматты түрде жасайды және байланыстырады (<em>Dependency Injection</em>).
-        </div>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">Dependency Injection мысалы</h3>
-<pre><span class="annotation">@Service</span>
-<span class="keyword">public class</span> <span class="type">AccountService</span> {
-
-    <span class="comment">// Spring автоматты түрде AccountRepository-ді inject етеді</span>
-    <span class="keyword">private final</span> <span class="type">AccountRepository</span> accountRepository;
-    <span class="keyword">private final</span> <span class="type">UserRepository</span> userRepository;
-
-    <span class="comment">// Constructor injection (ең жақсы тәсіл)</span>
-    <span class="keyword">public</span> AccountService(<span class="type">AccountRepository</span> accountRepo,
-                          <span class="type">UserRepository</span> userRepo) {
-        <span class="keyword">this</span>.accountRepository = accountRepo;
-        <span class="keyword">this</span>.userRepository = userRepo;
-    }
-}</pre>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">Hibernate @Entity мысалы</h3>
-<pre><span class="annotation">@Entity</span>
-<span class="annotation">@Table</span>(name = <span class="string">"accounts"</span>)
-<span class="keyword">public class</span> <span class="type">Account</span> {
-
-    <span class="annotation">@Id</span>
-    <span class="annotation">@GeneratedValue</span>(strategy = GenerationType.IDENTITY)
-    <span class="keyword">private</span> <span class="type">Long</span> id;
-
-    <span class="annotation">@Column</span>(unique = <span class="keyword">true</span>, nullable = <span class="keyword">false</span>)
-    <span class="keyword">private</span> <span class="type">String</span> accountNumber;  <span class="comment">// ACC-00000001</span>
-
-    <span class="annotation">@Enumerated</span>(EnumType.STRING)
-    <span class="keyword">private</span> <span class="type">AccountType</span> accountType;  <span class="comment">// CHECKING | SAVINGS | INVESTMENT</span>
-
-    <span class="annotation">@ManyToOne</span>
-    <span class="annotation">@JoinColumn</span>(name = <span class="string">"user_id"</span>)
-    <span class="keyword">private</span> <span class="type">User</span> user;  <span class="comment">// иесі</span>
-
-    <span class="annotation">@OneToMany</span>(mappedBy = <span class="string">"account"</span>, cascade = CascadeType.ALL)
-    <span class="keyword">private</span> <span class="type">Set&lt;Card&gt;</span> cards;  <span class="comment">// шотқа байланысты карталар</span>
-}</pre>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">Spring Data JPA Repository</h3>
-<pre><span class="annotation">@Repository</span>
-<span class="keyword">public interface</span> <span class="type">AccountRepository</span>
-        <span class="keyword">extends</span> <span class="type">JpaRepository</span>&lt;<span class="type">Account</span>, <span class="type">Long</span>&gt; {
-
-    <span class="comment">// Spring автоматты түрде SQL жасайды!</span>
-    <span class="type">List</span>&lt;<span class="type">Account</span>&gt; findByUserId(<span class="type">Long</span> userId);
-    <span class="type">Optional</span>&lt;<span class="type">Account</span>&gt; findByAccountNumber(<span class="type">String</span> number);
-    <span class="type">boolean</span> existsByAccountNumber(<span class="type">String</span> number);
-}</pre>
+<!-- ══════ 3 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">3</div>
+        <div class="cheat-title">Git / GitHub — версия бақылау</div>
+        <div class="cheat-tags"><span class="tag">git push</span><span class="tag">git commit</span><span class="tag tag-y">GitHub</span></div>
+        <div class="arrow">▼</div>
     </div>
-
-    <!-- === SECURITY === -->
-    <div class="tab-panel" id="tab-security">
-        <div class="section-title">🔐 Spring Security + JWT</div>
-        <p class="section-sub">Тақырып 12: авторизация, аутентификация, рөлдер, сессия</p>
-
-        <div class="info-box">
-            <strong>JWT (JSON Web Token)</strong> — пайдаланушының авторизациясын тексеру үшін қолданылатын токен.
-            Кіргеннен кейін токен жасалады және кейінгі сұрауларда <code>Authorization: Bearer &lt;token&gt;</code> заголовогіне қосылады.
-        </div>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">SecurityConfig (проекттен)</h3>
-<pre><span class="annotation">@Configuration</span>
-<span class="annotation">@EnableWebSecurity</span>
-<span class="keyword">public class</span> <span class="type">SecurityConfig</span> {
-
-    <span class="annotation">@Bean</span>
-    <span class="keyword">public</span> <span class="type">SecurityFilterChain</span> filterChain(<span class="type">HttpSecurity</span> http) <span class="keyword">throws</span> Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> auth
-                <span class="comment">// Барлығына ашық</span>
-                .requestMatchers(<span class="string">"/api/auth/**"</span>, <span class="string">"/login.html"</span>, <span class="string">"/register.html"</span>)
-                    .permitAll()
-                <span class="comment">// Тек ADMIN</span>
-                .requestMatchers(<span class="string">"/api/admin/**"</span>).hasRole(<span class="string">"ADMIN"</span>)
-                <span class="comment">// USER немесе ADMIN</span>
-                .requestMatchers(<span class="string">"/api/accounts/**"</span>).hasAnyRole(<span class="string">"USER"</span>, <span class="string">"ADMIN"</span>)
-                .anyRequest().permitAll()
-            );
-        <span class="keyword">return</span> http.build();
-    }
-
-    <span class="annotation">@Bean</span>
-    <span class="keyword">public</span> <span class="type">PasswordEncoder</span> passwordEncoder() {
-        <span class="keyword">return new</span> <span class="type">BCryptPasswordEncoder</span>(); <span class="comment">// пароль шифрлау</span>
-    }
-}</pre>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">Рөлдер жүйесі</h3>
-        <table>
-            <tr><th>Рөл</th><th>Қолжетімділік</th><th>Мысал</th></tr>
-            <tr><td><span class="tag green">ROLE_USER</span></td><td>Барлық банктік операциялар</td><td>Шот ашу, аудару</td></tr>
-            <tr><td><span class="tag red">ROLE_ADMIN</span></td><td>USER + басқару</td><td>Кредит мақұлдау</td></tr>
-            <tr><td><span class="tag yellow">ROLE_MANAGER</span></td><td>Мониторинг</td><td>Статистика</td></tr>
-        </table>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">CustomUserDetailsService</h3>
-<pre><span class="annotation">@Service</span>
-<span class="keyword">public class</span> <span class="type">CustomUserDetailsService</span>
-        <span class="keyword">implements</span> <span class="type">UserDetailsService</span> {
-
-    <span class="keyword">private final</span> <span class="type">UserRepository</span> userRepository;
-
-    <span class="annotation">@Override</span>
-    <span class="keyword">public</span> <span class="type">UserDetails</span> loadUserByUsername(<span class="type">String</span> email)
-            <span class="keyword">throws</span> UsernameNotFoundException {
-        <span class="type">User</span> user = userRepository.findByEmail(email)
-                .orElseThrow(() -> <span class="keyword">new</span> <span class="type">UsernameNotFoundException</span>(<span class="string">"Not found"</span>));
-        <span class="keyword">return</span> <span class="type">UserDetailsImpl</span>.build(user);
-    }
-}</pre>
+    <div class="cheat-body">
+        <p class="desc">Жоба <b>GitHub</b>-қа push жасалды: <b>Strixs-as/bank-WAD</b></p>
+<pre><span class="cm"># Негізгі командалар:</span>
+git init                           <span class="cm"># жаңа репозиторий</span>
+git add .                          <span class="cm"># барлық файлдарды stage</span>
+git commit -m <span class="str">"feat: add loans"</span>   <span class="cm"># коммит</span>
+git push -u origin main            <span class="cm"># GitHub-қа жіберу</span>
+git pull                           <span class="cm"># GitHub-тан алу</span>
+git clone &lt;url&gt;                    <span class="cm"># клондау</span></pre>
+        <a class="live-btn" href="https://github.com/Strixs-as/bank-WAD" target="_blank">▶ GitHub репозиторий</a>
     </div>
+</div>
 
-    <!-- === DEMO === -->
-    <div class="tab-panel" id="tab-demo">
-        <div class="section-title">⚡ Интерактивті демо</div>
-        <p class="section-sub">Тікелей API эндпоинттерін тексеріңіз</p>
-
-        <!-- DEMO 1: Servlet hello -->
-        <div class="demo-box">
-            <div class="demo-header">
-                <div class="demo-title">🔧 Servlet демо — GET /servlet/hello</div>
-                <div class="demo-badge">Тақырып #2 — Servlet lifecycle</div>
-            </div>
-            <div class="demo-body">
-                <div class="demo-input-row">
-                    <div class="demo-field">
-                        <label>Аты-жөніңіз</label>
-                        <input type="text" id="helloName" placeholder="Naiman" value="Naiman">
-                    </div>
-                    <button class="demo-btn" onclick="demoHello()">Жіберу GET</button>
-                </div>
-                <div class="demo-output" id="helloOutput">Нәтиже осында шығады...</div>
-            </div>
-        </div>
-
-        <!-- DEMO 2: REST CRUD -->
-        <div class="demo-box">
-            <div class="demo-header">
-                <div class="demo-title">🌐 REST API демо — CRUD /api/demo/items</div>
-                <div class="demo-badge">Тақырып #13 — Web Services REST</div>
-            </div>
-            <div class="demo-body">
-                <div class="demo-input-row">
-                    <div class="demo-field">
-                        <label>Аты</label>
-                        <input type="text" id="itemName" placeholder="Java EE тақырыбы">
-                    </div>
-                    <div class="demo-field">
-                        <label>Сипаттама</label>
-                        <input type="text" id="itemDesc" placeholder="Сипаттама...">
-                    </div>
-                    <button class="demo-btn" onclick="demoPost()">POST қосу</button>
-                    <button class="demo-btn" style="background: rgba(34,197,94,0.3); color:#86efac;" onclick="demoGetAll()">GET барлығы</button>
-                </div>
-                <div class="demo-output" id="restOutput">Нәтиже осында шығады...</div>
-            </div>
-        </div>
-
-        <!-- DEMO 3: JDBC -->
-        <div class="demo-box">
-            <div class="demo-header">
-                <div class="demo-title">🗄 JDBC байланыс ақпараты — GET /api/demo/jdbc/connection</div>
-                <div class="demo-badge">Тақырып #9 — JDBC + Connection Pool</div>
-            </div>
-            <div class="demo-body">
-                <button class="demo-btn" onclick="demoJdbc()">JDBC ақпаратын алу</button>
-                <div class="demo-output" id="jdbcOutput">Нәтиже осында шығады...</div>
-            </div>
-        </div>
-
-        <!-- DEMO 4: MVC info -->
-        <div class="demo-box">
-            <div class="demo-header">
-                <div class="demo-title">🏗 MVC архитектурасы — GET /api/demo/mvc-info</div>
-                <div class="demo-badge">Тақырып #8 — Spring MVC</div>
-            </div>
-            <div class="demo-body">
-                <button class="demo-btn" onclick="demoMvc()">MVC ақпаратын алу</button>
-                <div class="demo-output" id="mvcOutput">Нәтиже осында шығады...</div>
-            </div>
-        </div>
+<!-- ══════ 4 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">4</div>
+        <div class="cheat-title">Maven / pom.xml — тәуелділіктер</div>
+        <div class="cheat-tags"><span class="tag">pom.xml</span><span class="tag tag-g">Maven</span></div>
+        <div class="arrow">▼</div>
     </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Maven</b> — проект басқару құралы. <code>pom.xml</code> файлында барлық тәуелділіктер жазылады.</p>
+        <div class="file-label">pom.xml</div>
+<pre><span class="cm">&lt;!-- Spring Boot Web --&gt;</span>
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;<span class="str">spring-boot-starter-web</span>&lt;/artifactId&gt;
+&lt;/dependency&gt;
 
-    <!-- === MVC === -->
-    <div class="tab-panel" id="tab-mvc">
-        <div class="section-title">🏗 MVC архитектурасы</div>
-        <p class="section-sub">Тақырып #8: Model-View-Controller схемасы</p>
+<span class="cm">&lt;!-- Spring Security --&gt;</span>
+&lt;artifactId&gt;<span class="str">spring-boot-starter-security</span>&lt;/artifactId&gt;
 
-        <div class="info-box">
-            <strong>MVC</strong> — бағдарламаны үш бөлікке бөледі:<br>
-            <strong>Model</strong> — деректер (Entity, DTO)<br>
-            <strong>View</strong> — беттер (HTML + Thymeleaf)<br>
-            <strong>Controller</strong> — логика (@Controller, @RestController)
-        </div>
+<span class="cm">&lt;!-- Thymeleaf --&gt;</span>
+&lt;artifactId&gt;<span class="str">spring-boot-starter-thymeleaf</span>&lt;/artifactId&gt;
 
-        <h3 style="margin: 1.5rem 0 0.75rem; color: #a78bfa;">Spring MVC сұрау өңдеу схемасы</h3>
-        <div class="mvc-diagram">
-            <div class="mvc-box client"><h4>🌐 Client</h4><p>Браузер / Postman</p></div>
-            <div class="mvc-arrow">→</div>
-            <div class="mvc-box controller"><h4>⚙️ DispatcherServlet</h4><p>Сұрауды бағыттайды</p></div>
-            <div class="mvc-arrow">→</div>
-            <div class="mvc-box controller"><h4>🎮 Controller</h4><p>@RestController</p></div>
-            <div class="mvc-arrow">→</div>
-            <div class="mvc-box service"><h4>💼 Service</h4><p>Бизнес логика</p></div>
-            <div class="mvc-arrow">→</div>
-            <div class="mvc-box repo"><h4>📦 Repository</h4><p>JpaRepository</p></div>
-            <div class="mvc-arrow">→</div>
-            <div class="mvc-box db"><h4>🗄 Database</h4><p>SQL Server</p></div>
-        </div>
+<span class="cm">&lt;!-- JPA + Hibernate --&gt;</span>
+&lt;artifactId&gt;<span class="str">spring-boot-starter-data-jpa</span>&lt;/artifactId&gt;
 
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">@Controller vs @RestController</h3>
-<pre><span class="comment">// @Controller — HTML бет қайтарады (Thymeleaf)</span>
-<span class="annotation">@Controller</span>
-<span class="keyword">public class</span> <span class="type">HomeController</span> {
-    <span class="annotation">@GetMapping</span>(<span class="string">"/home"</span>)
-    <span class="keyword">public</span> <span class="type">String</span> home(<span class="type">Model</span> model, <span class="type">Authentication</span> auth) {
-        model.addAttribute(<span class="string">"username"</span>, auth.getName());
-        <span class="keyword">return</span> <span class="string">"home"</span>; <span class="comment">// templates/home.html</span>
+<span class="cm">&lt;!-- SQL Server --&gt;</span>
+&lt;artifactId&gt;<span class="str">mssql-jdbc</span>&lt;/artifactId&gt;
+
+<span class="cm">&lt;!-- JWT токен --&gt;</span>
+&lt;artifactId&gt;<span class="str">jjwt-api</span>&lt;/artifactId&gt;</pre>
+        <div class="info">📌 mvnw compile — компиляция, mvnw test — тесттер, mvnw spring-boot:run — іске қосу.</div>
+    </div>
+</div>
+
+<!-- ══════ 5 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">5</div>
+        <div class="cheat-title">Thymeleaf — серверлік HTML шаблондар</div>
+        <div class="cheat-tags"><span class="tag">Thymeleaf</span><span class="tag">th:each</span><span class="tag">th:if</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Thymeleaf</b> — сервер жағынан HTML генерациялайды. JSP орнына қолданылады.</p>
+        <div class="file-label">templates/home.html</div>
+<pre><span class="cm">&lt;!-- Пайдаланушы атын көрсету --&gt;</span>
+&lt;h1&gt;Привет, &lt;span <span class="an">th:text=</span><span class="str">"${username}"</span>&gt;Guest&lt;/span&gt;! 👋&lt;/h1&gt;
+
+<span class="cm">&lt;!-- Тізім шығару --&gt;</span>
+&lt;tr <span class="an">th:each=</span><span class="str">"u : ${users}"</span>&gt;
+    &lt;td <span class="an">th:text=</span><span class="str">"${u.firstName}"</span>&gt;&lt;/td&gt;
+    &lt;td <span class="an">th:text=</span><span class="str">"${u.email}"</span>&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+<span class="cm">&lt;!-- Шарт --&gt;</span>
+&lt;span <span class="an">th:if=</span><span class="str">"${u.isActive}"</span> class="badge"&gt;Активен&lt;/span&gt;
+
+<span class="cm">&lt;!-- Тек ADMIN көре алады --&gt;</span>
+&lt;a <span class="an">sec:authorize=</span><span class="str">"hasRole('ADMIN')"</span> href="/admin"&gt;Админ&lt;/a&gt;</pre>
+        <a class="live-btn" href="/login">▶ /login — Thymeleaf бет</a>
+    </div>
+</div>
+
+<!-- ══════ 6 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">6</div>
+        <div class="cheat-title">Spring Framework — DI, IoC, аннотациялар</div>
+        <div class="cheat-tags"><span class="tag">@Component</span><span class="tag">@Service</span><span class="tag">@Autowired</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Spring</b> — DI (Dependency Injection) негізгі принципі. Объектілерді автоматты жасайды.</p>
+<pre><span class="an">@Service</span>                             <span class="cm">// Spring Bean (бизнес логика)</span>
+<span class="kw">public class</span> <span class="tp">AuthService</span> {
+
+    <span class="kw">private final</span> <span class="tp">UserRepository</span> userRepo;
+    <span class="kw">private final</span> <span class="tp">PasswordEncoder</span> encoder;
+
+    <span class="cm">// Constructor Injection — Spring автоматты жасайды</span>
+    <span class="kw">public</span> AuthService(<span class="tp">UserRepository</span> userRepo, <span class="tp">PasswordEncoder</span> encoder) {
+        <span class="kw">this</span>.userRepo = userRepo;
+        <span class="kw">this</span>.encoder = encoder;
     }
 }
 
-<span class="comment">// @RestController — JSON қайтарады (API)</span>
-<span class="annotation">@RestController</span>
-<span class="annotation">@RequestMapping</span>(<span class="string">"/api/accounts"</span>)
-<span class="keyword">public class</span> <span class="type">AccountResource</span> {
-    <span class="annotation">@GetMapping</span>
-    <span class="keyword">public</span> <span class="type">ResponseEntity</span>&lt;<span class="type">List</span>&lt;<span class="type">Account</span>&gt;&gt; getAll() {
-        <span class="keyword">return</span> ResponseEntity.ok(accountService.getAll());
+<span class="cm">// Аннотация түрлері:</span>
+<span class="an">@Component</span>    <span class="cm">// жалпы bean</span>
+<span class="an">@Service</span>      <span class="cm">// бизнес логика</span>
+<span class="an">@Repository</span>   <span class="cm">// дерекқор</span>
+<span class="an">@Controller</span>   <span class="cm">// HTML бет</span>
+<span class="an">@RestController</span> <span class="cm">// JSON API</span>
+<span class="an">@Configuration</span> <span class="cm">// баптау</span></pre>
+    </div>
+</div>
+
+<!-- ══════ 7 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">7</div>
+        <div class="cheat-title">Spring MVC — Model-View-Controller</div>
+        <div class="cheat-tags"><span class="tag">@Controller</span><span class="tag">@RestController</span><span class="tag tag-y">MVC</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>MVC</b>: Model (Entity) → View (HTML/JSON) → Controller (логика)</p>
+<pre><span class="cm">// ── @Controller — HTML бет қайтарады (Thymeleaf) ──</span>
+<span class="an">@Controller</span>
+<span class="kw">public class</span> <span class="tp">HomeController</span> {
+    <span class="an">@GetMapping</span>(<span class="str">"/home"</span>)
+    <span class="kw">public</span> <span class="tp">String</span> home(<span class="tp">Model</span> model, <span class="tp">Authentication</span> auth) {
+        model.addAttribute(<span class="str">"username"</span>, auth.getName());
+        <span class="kw">return</span> <span class="str">"home"</span>;  <span class="cm">// → templates/home.html</span>
+    }
+}
+
+<span class="cm">// ── @RestController — JSON қайтарады (API) ──</span>
+<span class="an">@RestController</span>
+<span class="an">@RequestMapping</span>(<span class="str">"/api/accounts"</span>)
+<span class="kw">public class</span> <span class="tp">AccountResource</span> {
+    <span class="an">@GetMapping</span>
+    <span class="kw">public</span> <span class="tp">ResponseEntity</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Account</span>&gt;&gt; getAll() {
+        <span class="kw">return</span> <span class="tp">ResponseEntity</span>.ok(accountService.getAll());
     }
 }</pre>
-
-        <h3 style="margin: 1.5rem 0 0.5rem; color: #a78bfa;">Проект орындаған тексеру тізімі ✅</h3>
-        <ul class="checklist">
-            <li><span class="check-icon">✅</span><span>@Controller + Thymeleaf беттері (login, register, home, profile)</span></li>
-            <li><span class="check-icon">✅</span><span>@RestController JSON API (/api/**)</span></li>
-            <li><span class="check-icon">✅</span><span>UserDetailsService + loadUserByUsername()</span></li>
-            <li><span class="check-icon">✅</span><span>BCryptPasswordEncoder — пароль шифрлау</span></li>
-            <li><span class="check-icon">✅</span><span>JWT токен генерация және тексеру</span></li>
-            <li><span class="check-icon">✅</span><span>@Entity + @Repository + JPA (Hibernate)</span></li>
-            <li><span class="check-icon">✅</span><span>HikariCP Connection Pool</span></li>
-            <li><span class="check-icon">✅</span><span>JDBC DatabaseInitializer</span></li>
-            <li><span class="check-icon">✅</span><span>HttpServlet Hello демо</span></li>
-            <li><span class="check-icon">✅</span><span>Роли: ROLE_USER, ROLE_ADMIN, ROLE_MANAGER</span></li>
-            <li><span class="check-icon">✅</span><span>pom.xml тәуелділіктер (Maven)</span></li>
-            <li><span class="check-icon">✅</span><span>Spring Boot Embedded Tomcat (порт 8080)</span></li>
-            <li><span class="check-icon">✅</span><span>GitHub репозиторийіне push жасалды</span></li>
-        </ul>
+<pre><span class="cm">// Архитектура ағыны:</span>
+Client → DispatcherServlet → Controller → Service → Repository → Database
+                                                                    ↓
+Client ← JSON/HTML       ← Controller ← Service ← Repository ← SQL Server</pre>
+        <a class="live-btn" href="/api/demo/mvc-info" target="_blank">▶ /api/demo/mvc-info</a>
     </div>
+</div>
+
+<!-- ══════ 8 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">8</div>
+        <div class="cheat-title">MVC Архитектурасы — жоба құрылымы</div>
+        <div class="cheat-tags"><span class="tag">Model</span><span class="tag">View</span><span class="tag">Controller</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc">BankSystem жобасының <b>MVC</b> бойынша құрылымы:</p>
+<pre><span class="cm">// MODEL — деректер (Entity)</span>
+entity/User.java          <span class="cm">// пайдаланушы</span>
+entity/Account.java       <span class="cm">// банк шоты</span>
+entity/Loan.java          <span class="cm">// кредит</span>
+entity/Deposit.java       <span class="cm">// депозит</span>
+
+<span class="cm">// VIEW — көрініс</span>
+templates/login.html      <span class="cm">// Thymeleaf — кіру беті</span>
+templates/home.html       <span class="cm">// Thymeleaf — басты бет</span>
+templates/admin.html      <span class="cm">// Thymeleaf — админ панель</span>
+static/dashboard.html     <span class="cm">// JS — жеке кабинет</span>
+
+<span class="cm">// CONTROLLER — логика</span>
+controller/AuthController.java   <span class="cm">// тіркелу/кіру</span>
+controller/HomeController.java   <span class="cm">// /home, /profile</span>
+controller/AdminController.java  <span class="cm">// админ панель</span>
+resource/AccountResource.java    <span class="cm">// REST API</span></pre>
+    </div>
+</div>
+
+<!-- ══════ 9 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">9</div>
+        <div class="cheat-title">JDBC — дерекқорға тікелей қосылу</div>
+        <div class="cheat-tags"><span class="tag">JDBC</span><span class="tag">DriverManager</span><span class="tag tag-g">SQL Server</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>JDBC</b> — Java арқылы SQL Server-ге тікелей қосылу.</p>
+        <div class="file-label">DatabaseInitializer.java</div>
+<pre><span class="cm">// 1. Connection — байланыс ашу</span>
+<span class="tp">Connection</span> conn = <span class="tp">DriverManager</span>.getConnection(
+    <span class="str">"jdbc:sqlserver://localhost:1433;encrypt=false"</span>,
+    <span class="str">"sa"</span>, <span class="str">"sa"</span>
+);
+
+<span class="cm">// 2. Statement — SQL сұрау</span>
+<span class="tp">Statement</span> stmt = conn.createStatement();
+stmt.executeUpdate(<span class="str">"CREATE DATABASE BankSystem"</span>);
+
+<span class="cm">// 3. PreparedStatement — параметрлі сұрау</span>
+<span class="tp">PreparedStatement</span> ps = conn.prepareStatement(
+    <span class="str">"SELECT * FROM users WHERE email = ?"</span>
+);
+ps.setString(1, <span class="str">"admin@bank.kz"</span>);
+
+<span class="cm">// 4. ResultSet — нәтижені оқу</span>
+<span class="tp">ResultSet</span> rs = ps.executeQuery();
+<span class="kw">while</span> (rs.next()) {
+    <span class="tp">String</span> name = rs.getString(<span class="str">"first_name"</span>);
+}</pre>
+        <a class="live-btn" href="/api/demo/jdbc/connection" target="_blank">▶ /api/demo/jdbc/connection</a>
+    </div>
+</div>
+
+<!-- ══════ 10 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">10</div>
+        <div class="cheat-title">Connection Pool — HikariCP</div>
+        <div class="cheat-tags"><span class="tag">HikariCP</span><span class="tag tag-g">Pool Size: 10</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Connection Pool</b> — байланысты қайта пайдалану, жылдам + ресурс үнемдейді.</p>
+        <div class="file-label">application-sqlserver.properties</div>
+<pre><span class="cm"># HikariCP баптау</span>
+spring.datasource.hikari.maximum-pool-size=<span class="str">10</span>      <span class="cm"># макс байланыс</span>
+spring.datasource.hikari.minimum-idle=<span class="str">2</span>            <span class="cm"># мин бос</span>
+spring.datasource.hikari.connection-timeout=<span class="str">30000</span>  <span class="cm"># 30с күту</span>
+spring.datasource.hikari.idle-timeout=<span class="str">600000</span>       <span class="cm"># 10мин бос</span>
+spring.datasource.hikari.max-lifetime=<span class="str">1800000</span>      <span class="cm"># 30мин өмір</span></pre>
+        <div class="info">📌 Pool жоқ: әр сұрау → жаңа байланыс ашу → баяу. Pool бар: байланыс дайын → жылдам. Альтернативалар: C3P0, DBCP2.</div>
+        <a class="live-btn" href="/api/demo/pool-info" target="_blank">▶ /api/demo/pool-info</a>
+    </div>
+</div>
+
+<!-- ══════ 11 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">11</div>
+        <div class="cheat-title">Hibernate / ORM / JPA — Entity</div>
+        <div class="cheat-tags"><span class="tag">@Entity</span><span class="tag">@ManyToOne</span><span class="tag tag-g">Hibernate</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Hibernate ORM</b> — Java объектілерін SQL кестелеріне байланыстырады. SQL аз жазылады.</p>
+        <div class="file-label">entity/User.java</div>
+<pre><span class="an">@Entity</span>
+<span class="an">@Table</span>(name = <span class="str">"users"</span>)
+<span class="kw">public class</span> <span class="tp">User</span> {
+
+    <span class="an">@Id</span>
+    <span class="an">@GeneratedValue</span>(strategy = <span class="tp">GenerationType</span>.IDENTITY)
+    <span class="kw">private</span> <span class="tp">Long</span> id;
+
+    <span class="kw">private</span> <span class="tp">String</span> firstName;
+    <span class="kw">private</span> <span class="tp">String</span> email;
+    <span class="kw">private</span> <span class="tp">String</span> password;
+
+    <span class="an">@ManyToMany</span>(fetch = <span class="tp">FetchType</span>.EAGER)
+    <span class="an">@JoinTable</span>(name = <span class="str">"user_roles"</span>)
+    <span class="kw">private</span> <span class="tp">Set</span>&lt;<span class="tp">Role</span>&gt; roles;
+}
+
+<span class="cm">// ddl-auto=update → Hibernate автоматически создаёт таблицы</span>
+<span class="cm">// User → users, Account → accounts, Loan → loans</span></pre>
+    </div>
+</div>
+
+<!-- ══════ 12 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">12</div>
+        <div class="cheat-title">Spring Security — авторизация, сессия</div>
+        <div class="cheat-tags"><span class="tag">BCrypt</span><span class="tag">ROLE_ADMIN</span><span class="tag tag-r">Security</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Spring Security</b> — кіру, рөлдер, пароль шифрлау, сессия.</p>
+        <div class="file-label">config/SecurityConfig.java</div>
+<pre><span class="an">@Configuration</span>
+<span class="an">@EnableWebSecurity</span>
+<span class="kw">public class</span> <span class="tp">SecurityConfig</span> {
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="tp">SecurityFilterChain</span> filterChain(<span class="tp">HttpSecurity</span> http) {
+        http
+            .authorizeHttpRequests(auth -&gt; auth
+                .requestMatchers(<span class="str">"/login"</span>, <span class="str">"/register"</span>).permitAll()
+                .requestMatchers(<span class="str">"/admin/**"</span>).hasRole(<span class="str">"ADMIN"</span>)
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -&gt; form
+                .loginPage(<span class="str">"/login"</span>)
+                .defaultSuccessUrl(<span class="str">"/home"</span>, <span class="kw">true</span>)
+            );
+        <span class="kw">return</span> http.build();
+    }
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="tp">PasswordEncoder</span> passwordEncoder() {
+        <span class="kw">return new</span> <span class="tp">BCryptPasswordEncoder</span>();  <span class="cm">// пароль шифрлау</span>
+    }
+}</pre>
+        <div class="info">📌 Сессия: кіргеннен кейін cookie жасалады → пайдаланушы авторизацияланған күйде қалады.</div>
+    </div>
+</div>
+
+<!-- ══════ 13 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">13</div>
+        <div class="cheat-title">REST API / Web Services — JSON</div>
+        <div class="cheat-tags"><span class="tag">REST</span><span class="tag">JWT</span><span class="tag tag-g">JSON</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>REST API</b> — HTTP әдістері арқылы JSON қайтарады. JWT токен арқылы аутентификация.</p>
+        <div class="file-label">resource/AccountResource.java</div>
+<pre><span class="an">@RestController</span>
+<span class="an">@RequestMapping</span>(<span class="str">"/api/accounts"</span>)
+<span class="kw">public class</span> <span class="tp">AccountResource</span> {
+
+    <span class="an">@GetMapping</span>                  <span class="cm">// GET    /api/accounts</span>
+    <span class="kw">public</span> <span class="tp">List</span>&lt;<span class="tp">Account</span>&gt; getAll() { ... }
+
+    <span class="an">@PostMapping</span>                 <span class="cm">// POST   /api/accounts</span>
+    <span class="kw">public</span> <span class="tp">Account</span> create() { ... }
+
+    <span class="an">@PutMapping</span>(<span class="str">"/{id}"</span>)          <span class="cm">// PUT    /api/accounts/1</span>
+    <span class="kw">public</span> <span class="tp">Account</span> update() { ... }
+
+    <span class="an">@DeleteMapping</span>(<span class="str">"/{id}"</span>)       <span class="cm">// DELETE /api/accounts/1</span>
+    <span class="kw">public void</span> delete() { ... }
+}
+
+<span class="cm">// JWT аутентификация:</span>
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...</pre>
+        <a class="live-btn" href="/api/demo/hello?name=BankSystem" target="_blank">▶ /api/demo/hello</a>
+        <a class="live-btn" href="/api/demo/items" target="_blank">▶ /api/demo/items</a>
+    </div>
+</div>
+
+<!-- ══════ 14 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">14</div>
+        <div class="cheat-title">Тестілеу — JUnit 5</div>
+        <div class="cheat-tags"><span class="tag">JUnit 5</span><span class="tag">@Test</span><span class="tag tag-y">Mockito</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>JUnit</b> — Java тест framework. Жобада 4 тест класс бар.</p>
+        <div class="file-label">test/AuthServiceTest.java</div>
+<pre><span class="an">@SpringBootTest</span>
+<span class="kw">class</span> <span class="tp">AuthServiceTest</span> {
+
+    <span class="an">@Test</span>
+    <span class="kw">void</span> testRegister() {
+        <span class="cm">// Arrange — дайындау</span>
+        <span class="tp">RegisterRequest</span> req = <span class="kw">new</span> <span class="tp">RegisterRequest</span>(<span class="str">"test@mail.com"</span>, <span class="str">"pass123"</span>);
+
+        <span class="cm">// Act — орындау</span>
+        <span class="tp">User</span> user = authService.register(req);
+
+        <span class="cm">// Assert — тексеру</span>
+        assertNotNull(user.getId());
+        assertEquals(<span class="str">"test@mail.com"</span>, user.getEmail());
+    }
+}
+
+<span class="cm">// Тест файлдары:</span>
+<span class="cm">// AccountServiceTest.java — шот тесттері</span>
+<span class="cm">// AuthServiceTest.java    — авторизация тесттері</span>
+<span class="cm">// JwtUtilTest.java        — JWT тесттері</span>
+<span class="cm">// JavaEEDemoTest.java     — демо тесттері</span></pre>
+    </div>
+</div>
+
+<!-- ══════ 15 ══════ -->
+<div class="cheat">
+    <div class="cheat-head" onclick="toggle(this)">
+        <div class="num">15</div>
+        <div class="cheat-title">Deploy — Tomcat, серверге орналастыру</div>
+        <div class="cheat-tags"><span class="tag">Tomcat 10</span><span class="tag">Port 8080</span><span class="tag tag-g">Spring Boot</span></div>
+        <div class="arrow">▼</div>
+    </div>
+    <div class="cheat-body">
+        <p class="desc"><b>Spring Boot</b> — ішіне Tomcat кіріктірілген, бөлек сервер қажет емес.</p>
+<pre><span class="cm">// Embedded Tomcat — порт 8080</span>
+<span class="cm">// application-sqlserver.properties:</span>
+server.port=<span class="str">8080</span>
+
+<span class="cm">// Автоматты браузер ашу:</span>
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="tp">StartupBrowserOpener</span> <span class="kw">implements</span> <span class="tp">ApplicationListener</span>&lt;<span class="tp">ApplicationReadyEvent</span>&gt; {
+    <span class="an">@Override</span>
+    <span class="kw">public void</span> onApplicationEvent(<span class="tp">ApplicationReadyEvent</span> event) {
+        <span class="tp">Desktop</span>.getDesktop().browse(<span class="kw">new</span> <span class="tp">URI</span>(<span class="str">"http://localhost:8080"</span>));
+    }
+}
+
+<span class="cm">// Deploy қадамдары:</span>
+<span class="cm">// 1. mvnw package       → JAR файл жасау</span>
+<span class="cm">// 2. java -jar app.jar  → іске қосу</span>
+<span class="cm">// 3. http://localhost:8080 → сайт ашылады</span></pre>
+    </div>
+</div>
+
+<!-- ═══ ИТОГ ═══ -->
+<div style="background:rgba(102,126,234,.06);border:1px solid rgba(102,126,234,.2);border-radius:14px;padding:1.5rem;margin-top:1rem;">
+    <h3 style="font-size:1.1rem;margin-bottom:.75rem;background:linear-gradient(135deg,var(--p),var(--acc));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">✅ Тексеру тізімі</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.4rem .75rem;font-size:.85rem;">
+        <div>✅ @SpringBootApplication — іске қосу</div>
+        <div>✅ @WebServlet — Servlet демо</div>
+        <div>✅ GitHub — push жасалды</div>
+        <div>✅ pom.xml — Maven тәуелділіктер</div>
+        <div>✅ Thymeleaf — HTML шаблондар</div>
+        <div>✅ Spring DI — @Service, @Autowired</div>
+        <div>✅ MVC — Controller/Service/Repository</div>
+        <div>✅ Жоба құрылымы — entity/controller/...</div>
+        <div>✅ JDBC — DatabaseInitializer</div>
+        <div>✅ HikariCP — Connection Pool</div>
+        <div>✅ Hibernate JPA — @Entity</div>
+        <div>✅ Spring Security — BCrypt, роли</div>
+        <div>✅ REST API — GET/POST/PUT/DELETE</div>
+        <div>✅ JUnit 5 — тесттер жазылды</div>
+        <div>✅ Embedded Tomcat — порт 8080</div>
+    </div>
+</div>
 
 </div>
 
-<footer style="text-align:center; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); font-size: 0.85rem; margin-top: 2rem;">
-    © 2026 BankSystem | Макеш Найман — ВТиПО-33 | makeshnaiman@gmail.com
-</footer>
+<footer>© 2026 BankSystem | Макеш Найман — ВТиПО-33 | makeshnaiman@gmail.com</footer>
 
 <script>
-function switchTab(name) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    event.target.classList.add('active');
-}
-
-async function demoHello() {
-    const name = document.getElementById('helloName').value || 'World';
-    const out = document.getElementById('helloOutput');
-    out.textContent = 'Жіберілуде...';
-    try {
-        const r = await fetch(`/servlet/hello?name=${encodeURIComponent(name)}`);
-        const t = await r.text();
-        out.textContent = `✅ Статус: ${r.status}\n\n${t}`;
-    } catch(e) {
-        out.textContent = '❌ Қосылу қатесі: ' + e.message;
-    }
-}
-
-async function demoPost() {
-    const name = document.getElementById('itemName').value;
-    const desc = document.getElementById('itemDesc').value;
-    const out = document.getElementById('restOutput');
-    if (!name) { out.textContent = '⚠️ Аты бос болмасын'; return; }
-    out.textContent = 'Жіберілуде...';
-    try {
-        const r = await fetch('/api/demo/items', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({name, description: desc})
-        });
-        const d = await r.json();
-        out.textContent = `✅ POST ${r.status}\n\n${JSON.stringify(d, null, 2)}`;
-    } catch(e) {
-        out.textContent = '❌ Қате: ' + e.message;
-    }
-}
-
-async function demoGetAll() {
-    const out = document.getElementById('restOutput');
-    out.textContent = 'Жіберілуде...';
-    try {
-        const r = await fetch('/api/demo/items');
-        const d = await r.json();
-        out.textContent = `✅ GET ${r.status}\n\n${JSON.stringify(d, null, 2)}`;
-    } catch(e) {
-        out.textContent = '❌ Қате: ' + e.message;
-    }
-}
-
-async function demoJdbc() {
-    const out = document.getElementById('jdbcOutput');
-    out.textContent = 'Жіберілуде...';
-    try {
-        const r = await fetch('/api/demo/jdbc/connection');
-        const d = await r.json();
-        out.textContent = `✅ GET ${r.status}\n\n${JSON.stringify(d, null, 2)}`;
-    } catch(e) {
-        out.textContent = '❌ Қате: ' + e.message;
-    }
-}
-
-async function demoMvc() {
-    const out = document.getElementById('mvcOutput');
-    out.textContent = 'Жіберілуде...';
-    try {
-        const r = await fetch('/api/demo/mvc-info');
-        const d = await r.json();
-        out.textContent = `✅ GET ${r.status}\n\n${JSON.stringify(d, null, 2)}`;
-    } catch(e) {
-        out.textContent = '❌ Қате: ' + e.message;
-    }
+function toggle(el) {
+    el.closest('.cheat').classList.toggle('open');
 }
 </script>
 </body>

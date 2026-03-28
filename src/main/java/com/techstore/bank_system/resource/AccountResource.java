@@ -4,14 +4,19 @@ import com.techstore.bank_system.dto.CreateAccountRequest;
 import com.techstore.bank_system.entity.Account;
 import com.techstore.bank_system.entity.AccountType;
 import com.techstore.bank_system.entity.CurrencyType;
+import com.techstore.bank_system.entity.User;
+import com.techstore.bank_system.repository.UserRepository;
 import com.techstore.bank_system.service.AccountService;
 import com.techstore.bank_system.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -23,12 +28,19 @@ public class AccountResource {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @PostMapping
-    public ResponseEntity<?> createAccount(@RequestHeader("Authorization") String authHeader,
-                                           @RequestBody CreateAccountRequest request) {
+    public ResponseEntity<?> createAccount(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody CreateAccountRequest request) {
         try {
-            String token = extractToken(authHeader);
-            Long userId = jwtUtil.extractUserId(token);
+            Long userId = resolveUserId(authHeader);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("{\"message\": \"Необходима авторизация\"}");
+            }
 
             AccountType accountType = AccountType.valueOf(request.getAccountType().toUpperCase());
 
@@ -36,12 +48,7 @@ public class AccountResource {
                     : request.getCurrencyStr() != null ? request.getCurrencyStr() : "RUB";
             CurrencyType currency = CurrencyType.valueOf(currencyRaw.toUpperCase());
 
-            Account account = accountService.createAccount(
-                    userId,
-                    accountType,
-                    currency,
-                    request.getInitialDeposit()
-            );
+            Account account = accountService.createAccount(userId, accountType, currency, request.getInitialDeposit());
             return ResponseEntity.status(HttpStatus.CREATED).body(account);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -53,10 +60,14 @@ public class AccountResource {
     }
 
     @GetMapping
-    public ResponseEntity<?> getUserAccounts(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getUserAccounts(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
-            String token = extractToken(authHeader);
-            Long userId = jwtUtil.extractUserId(token);
+            Long userId = resolveUserId(authHeader);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("{\"message\": \"Необходима авторизация\"}");
+            }
             List<Account> accounts = accountService.getUserAccounts(userId);
             return ResponseEntity.ok(accounts);
         } catch (Exception e) {
@@ -69,19 +80,33 @@ public class AccountResource {
     public ResponseEntity<?> getAccount(@PathVariable String accountNumber) {
         try {
             return accountService.getAccountByNumber(accountNumber)
-                    .map(ResponseEntity::ok)
+                    .map(a -> ResponseEntity.ok((Object) a))
                     .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body((Account) null)); // Simple cast to satisfy type inference if needed, or body(null)
+                            .body("{\"message\": \"Счёт не найден\"}"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("{\"message\": \"" + e.getMessage() + "\"}");
         }
     }
 
-    private String extractToken(String authHeader) {
+    /**
+     * Определяет userId: сначала из JWT, потом из Spring Security сессии.
+     */
+    private Long resolveUserId(String authHeader) {
+        // 1. Попытка из JWT
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+            try {
+                String token = authHeader.substring(7);
+                return jwtUtil.extractUserId(token);
+            } catch (Exception ignored) {}
         }
-        throw new RuntimeException("Missing or invalid authorization header");
+        // 2. Fallback на Spring Security сессию
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            String email = auth.getName();
+            Optional<User> user = userRepository.findByEmail(email);
+            return user.map(User::getId).orElse(null);
+        }
+        return null;
     }
 }

@@ -39,23 +39,19 @@ public class User {
     @JsonIgnore
     private String password;
 
-    @NotBlank(message = "Номер паспорта обязателен")
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = true)
     private String passportNumber;
 
-    @NotBlank(message = "Номер телефона обязателен")
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = true)
     private String phoneNumber;
 
-    @NotNull(message = "Дата рождения обязательна")
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate dateOfBirth;
 
     @Column(nullable = true)
     private String patronymic;
 
-    @NotBlank(message = "Адрес обязателен")
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String address;
 
     @Column(nullable = false)

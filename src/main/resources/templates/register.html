@@ -60,65 +60,57 @@
     <h1>Регистрация</h1>
     <p class="sub">Заполните все поля для создания аккаунта</p>
 
-    <!-- Global errors -->
-    <div th:if="${#fields.hasGlobalErrors()}" class="global-error">
-        <span th:each="err : ${#fields.globalErrors()}" th:text="${err}"></span>
+    <!-- Error message -->
+    <div th:if="${error}" class="global-error">
+        <span th:text="${error}"></span>
     </div>
 
-    <form th:action="@{/register}" th:object="${user}" method="post">
+    <form action="/register" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <div class="form-grid">
             <div class="form-group">
                 <label for="firstName">Имя *</label>
-                <input type="text" id="firstName" th:field="*{firstName}"
-                       placeholder="Айбек" th:classappend="${#fields.hasErrors('firstName')} ? 'error-field'" required/>
-                <span class="field-error" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></span>
+                <input type="text" id="firstName" name="firstName"
+                       placeholder="Айбек" required/>
             </div>
             <div class="form-group">
                 <label for="lastName">Фамилия *</label>
-                <input type="text" id="lastName" th:field="*{lastName}"
-                       placeholder="Сейткали" th:classappend="${#fields.hasErrors('lastName')} ? 'error-field'" required/>
-                <span class="field-error" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></span>
+                <input type="text" id="lastName" name="lastName"
+                       placeholder="Сейткали" required/>
             </div>
             <div class="form-group full">
                 <label for="patronymic">Отчество</label>
-                <input type="text" id="patronymic" th:field="*{patronymic}" placeholder="Необязательно"/>
+                <input type="text" id="patronymic" name="patronymic" placeholder="Необязательно"/>
             </div>
             <div class="form-group full">
                 <label for="email">Email *</label>
-                <input type="email" id="email" th:field="*{email}"
-                       placeholder="example@mail.com" th:classappend="${#fields.hasErrors('email')} ? 'error-field'" required/>
-                <span class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                <input type="email" id="email" name="email"
+                       placeholder="example@mail.com" required/>
             </div>
             <div class="form-group">
-                <label for="phoneNumber">Телефон *</label>
-                <input type="tel" id="phoneNumber" th:field="*{phoneNumber}"
-                       placeholder="+77001234567" th:classappend="${#fields.hasErrors('phoneNumber')} ? 'error-field'" required/>
-                <span class="field-error" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></span>
+                <label for="phoneNumber">Телефон</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber"
+                       placeholder="+77001234567"/>
             </div>
             <div class="form-group">
-                <label for="passportNumber">Паспорт *</label>
-                <input type="text" id="passportNumber" th:field="*{passportNumber}"
-                       placeholder="N12345678" th:classappend="${#fields.hasErrors('passportNumber')} ? 'error-field'" required/>
-                <span class="field-error" th:if="${#fields.hasErrors('passportNumber')}" th:errors="*{passportNumber}"></span>
+                <label for="passportNumber">Паспорт</label>
+                <input type="text" id="passportNumber" name="passportNumber"
+                       placeholder="N12345678"/>
             </div>
             <div class="form-group">
-                <label for="dateOfBirth">Дата рождения *</label>
-                <input type="date" id="dateOfBirth" th:field="*{dateOfBirth}"
-                       th:classappend="${#fields.hasErrors('dateOfBirth')} ? 'error-field'" required/>
-                <span class="field-error" th:if="${#fields.hasErrors('dateOfBirth')}" th:errors="*{dateOfBirth}"></span>
+                <label for="dateOfBirth">Дата рождения</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth"/>
             </div>
             <div class="form-group">
-                <label for="address">Адрес *</label>
-                <input type="text" id="address" th:field="*{address}"
-                       placeholder="г. Алматы, ул. ..." th:classappend="${#fields.hasErrors('address')} ? 'error-field'" required/>
-                <span class="field-error" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></span>
+                <label for="address">Адрес</label>
+                <input type="text" id="address" name="address"
+                       placeholder="г. Алматы, ул. ..."/>
             </div>
             <div class="form-group full">
                 <label for="password">Пароль * (мин. 6 символов)</label>
-                <input type="password" id="password" th:field="*{password}"
-                       placeholder="Введите пароль" th:classappend="${#fields.hasErrors('password')} ? 'error-field'"
+                <input type="password" id="password" name="password"
+                       placeholder="Введите пароль"
                        required minlength="6"/>
-                <span class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
             </div>
         </div>
         <button type="submit" class="btn">Зарегистрироваться</button>
@@ -129,4 +121,3 @@
 </div>
 </body>
 </html>
-

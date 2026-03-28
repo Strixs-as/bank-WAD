@@ -1,5 +1,6 @@
 package com.techstore.bank_system.repository;
 import com.techstore.bank_system.entity.Deposit;
+import com.techstore.bank_system.entity.DepositStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.NoResultException;
@@ -34,6 +35,12 @@ public class DepositRepository extends GenericRepository<Deposit, Long> {
     @Transactional(readOnly = true)
     public List<Deposit> findActiveDeposits() {
         return entityManager.createQuery("SELECT d FROM Deposit d WHERE d.closedAt IS NULL ORDER BY d.endDate ASC", Deposit.class)
+                .getResultList();
+    }
+    @Transactional(readOnly = true)
+    public List<Deposit> findByStatus(DepositStatus status) {
+        return entityManager.createQuery("SELECT d FROM Deposit d WHERE d.status = :status ORDER BY d.createdAt DESC", Deposit.class)
+                .setParameter("status", status)
                 .getResultList();
     }
 }

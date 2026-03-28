@@ -28,6 +28,9 @@ public class LoanService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public Loan createLoanApplication(Long userId,
                                      BigDecimal amount,
                                      Integer durationMonths,
@@ -60,31 +63,52 @@ public class LoanService {
 
     @Transactional
     public Loan approveLoan(Long loanId) {
-        Optional<Loan> loanOpt = loanRepository.findById(loanId);
-        if (loanOpt.isEmpty()) {
-            throw new RuntimeException("Заявка не найдена");
-        }
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new IllegalArgumentException("Кредит не найден"));
 
-        Loan loan = loanOpt.get();
-        if (!loan.getStatus().equals(LoanStatus.PENDING)) {
-            throw new RuntimeException("Заявка уже обработана");
+        if (loan.getStatus() != LoanStatus.PENDING) {
+            throw new IllegalStateException("Кредит уже обработан");
         }
 
         loan.setStatus(LoanStatus.APPROVED);
-        loan.setApprovedAt(LocalDateTime.now());
-        return loanRepository.save(loan);
-    }
+        // Зачисляем средства на счет
+        Account account = loan.getAccount();
+        account.setBalance(account.getBalance().add(loan.getPrincipalAmount()));
+        accountRepository.save(account);
 
-    @Transactional
-    public Loan rejectLoan(Long loanId) {
-        Optional<Loan> loanOpt = loanRepository.findById(loanId);
-        if (loanOpt.isEmpty()) {
-            throw new RuntimeException("Заявка не найдена");
+        loanRepository.save(loan);
+
+        if (loan.getUser() != null && loan.getUser().getEmail() != null) {
+            emailService.sendEmail(
+                    loan.getUser().getEmail(),
+                    "Кредит одобрен / Loan Approved",
+                    "Ваша заявка на кредит на сумму " + loan.getPrincipalAmount() + " была одобрена.\nYour loan application for " + loan.getPrincipalAmount() + " has been approved."
+            );
         }
 
-        Loan loan = loanOpt.get();
+        return loan;
+    }
+
+    public Loan rejectLoan(Long loanId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new IllegalArgumentException("Кредит не найден"));
+
+        if (loan.getStatus() != LoanStatus.PENDING) {
+            throw new IllegalStateException("Кредит уже обработан");
+        }
+
         loan.setStatus(LoanStatus.REJECTED);
-        return loanRepository.save(loan);
+        loanRepository.save(loan);
+
+        if (loan.getUser() != null && loan.getUser().getEmail() != null) {
+            emailService.sendEmail(
+                    loan.getUser().getEmail(),
+                    "Кредит отклонен / Loan Rejected",
+                    "К сожалению, ваша заявка на кредит была отклонена.\nUnfortunately, your loan application has been rejected."
+            );
+        }
+
+        return loan;
     }
 
     @Transactional

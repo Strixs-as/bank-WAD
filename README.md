@@ -1,6 +1,6 @@
-﻿# 🏦 Bank System — Банковская Система
+﻿# 🏦 Bank System — Расширенная Банковская Система
 
-Полнофункциональная банковская система с REST API и веб-интерфейсом, разработанная на **Spring Boot 3** + **SQL Server**.
+Полнофункциональная банковская система с REST API, веб-интерфейсом на Thymeleaf и полноправной админ-панелью. Разработана на **Spring Boot 3** + **Microsoft SQL Server**.
 
 ---
 
@@ -8,54 +8,67 @@
 
 | Модуль | Функциональность |
 |---|---|
-| 👤 Пользователи | Регистрация, вход, JWT-авторизация, роли (USER, ADMIN, MANAGER) |
-| 🏦 Счета | Открытие счетов (Checking, Savings, Investment), мультивалютность (USD, EUR, RUB) |
-| 💸 Переводы | Переводы между счетами, история транзакций |
-| 💳 Карты | Выпуск дебетовых/кредитных карт, управление статусом |
-| 📋 Кредиты | Оформление кредитов, расчёт процентов, график платежей |
-| 💰 Вклады | Открытие депозитов, автоматический расчёт процентов |
+| 👤 **Авторизация и Роли** | Регистрация, вход, JWT + Сессии, разделение доступа (USER, ADMIN) |
+| 🏦 **Управление Счетами** | Открытие текущих, сберегательных и инвестиционных счетов в разных валютах (USD, EUR, RUB) |
+| 💸 **Денежные Операции** | Внутренние переводы, пополнение, снятие, история всех транзакций |
+| 💳 **Пластиковые Карты** | Выпуск карт привязанных к счету, блокировка, разблокировка и деактивация |
+| 📋 **Кредитование** | Подача заявок на кредиты, рассмотрение и утверждение заявок через админ-панель |
+| 💰 **Вклады (Депозиты)** | Открытие срочных вкладов с автоматическим расчётом процентной ставки |
+| 🛡 **Админ-панель** | Мониторинг всех пользователей онлайн, управление счетами пользователей, одобрение/отклонение запросов |
 
 ---
 
 ## 🛠 Технологии
 
-- **Backend**: Spring Boot 3.2, Spring Data JPA, Hibernate 6
-- **Database**: Microsoft SQL Server 2022
-- **Security**: JWT (JJWT 0.12), BCrypt
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Build**: Maven 3.6+
-- **Java**: 17+
+**Backend Core:**
+- Java 17+, Spring Boot 3.2
+- Spring Web MVC & REST
+- Spring Security (JWT + HTTP Sessions)
+- Spring Data JPA + Hibernate 6
+
+**База данных:**
+- Microsoft SQL Server 2022
+- HikariCP Connection Pool
+
+**Frontend:**
+- Thymeleaf (шаблонизатор HTML)
+- HTML5, CSS3, Vanilla JS
+- Клиентская валидация и взаимодействие с REST API
 
 ---
 
 ## 🚀 Быстрый старт
 
 ### Минимальные требования
-- Java JDK 17+
-- Maven 3.6+
-- Microsoft SQL Server (локально)
+- **Java JDK 17+**
+- **Maven 3.6+**
+- **Microsoft SQL Server** (локально установлен)
 
-### Запуск за 3 шага
+### Запуск проекта
 
-```bash
-# 1. Клонировать репозиторий
-git clone https://github.com/Strixs-as/bank-WAD.git
-cd bank-WAD
+1. **Клонируйте репозиторий:**
+   ```bash
+   git clone https://github.com/Strixs-as/bank-WAD.git
+   cd bank_system
+   ```
 
-# 2. Собрать проект
-./mvnw clean package -DskipTests
+2. **Соберите проект:**
+   ```bash
+   ./mvnw clean package -DskipTests
+   ```
 
-# 3. Запустить (SQL Server должен быть запущен)
-java -Dspring.profiles.active=sqlserver -jar target/bank_system-1.0-SNAPSHOT.jar
-```
+3. **Запустите приложение:**
+   ```bash
+   java -Dspring.profiles.active=sqlserver -jar target/bank_system-1.0-SNAPSHOT.jar
+   ```
 
-Откройте браузер: **http://localhost:8080**
+> 🌐 Откройте приложение в браузере: **http://localhost:8080**
 
 ---
 
 ## ⚙️ Конфигурация SQL Server
 
-Настройки в `src/main/resources/application-sqlserver.properties`:
+Убедитесь, что параметры в `src/main/resources/application-sqlserver.properties` совпадают с вашими учетными данными:
 
 ```properties
 spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=BankSystem;encrypt=false;trustServerCertificate=true
@@ -63,225 +76,72 @@ spring.datasource.username=sa
 spring.datasource.password=sa
 ```
 
-> ⚠️ Убедитесь, что SQL Server запущен, TCP/IP включён, логин `sa` активен.
-> База данных `BankSystem` создаётся автоматически при первом запуске.
+> ⚠️ **Важно:** База данных `BankSystem` создаётся и инициализируется автоматически при первом запуске (спасибо компоненту `DatabaseInitializer`). Убедитесь, что служба SQL Server запущена и TCP/IP подключение включено.
 
 ---
 
-## 🔌 REST API
+## 🔌 Как работает REST API
 
-Base URL: `http://localhost:8080`
+Вы можете взаимодействовать с системой через сторонние программы (например, Postman).
+Защищённые эндпоинты требуют передачи токена: `Authorization: Bearer <JWT_TOKEN>`.
 
-Все защищённые эндпоинты требуют заголовок:
-```
-Authorization: Bearer <JWT_TOKEN>
-```
+### 🔐 Аутентификация `/api/auth`
+- `POST /register` — Регистрация нового клиента
+- `POST /login` — Вход и получение JWT токена
 
----
+### 🏦 Счета `/api/accounts`
+- `POST /` — Создать счёт (`CHECKING`, `SAVINGS`, `INVESTMENT`)
+- `GET /` — Список всех доступных счетов
 
-### 🔐 Аутентификация — `/api/auth`
+### 💸 Транзакции `/api/transactions`
+- `POST /deposit` — Пополнение баланса
+- `POST /withdraw` — Снятие средств
+- `POST /transfer` — Перевод между активными счетами
+- `GET /account/{id}` — Выписка (история совершенных операций)
 
-| Метод | URL | Описание | Auth |
-|---|---|---|---|
-| `POST` | `/api/auth/register` | Регистрация нового пользователя | ❌ |
-| `POST` | `/api/auth/login` | Вход, получение JWT токена | ❌ |
+### 📋 Заявки `/api/loans` и `/api/deposits`
+- **Кредиты**: `POST /` (оформление заявок), `PUT /{id}/approve` (одобрение админом).
+- **Депозиты**: `POST /` (открытие вкладов), `PUT /{id}/close` (досрочное закрытие).
 
-#### POST `/api/auth/register`
-```json
-// Request
-{
-  "firstName": "Иван",
-  "lastName": "Иванов",
-  "email": "ivan@example.com",
-  "password": "secret123"
-}
-
-// Response 201
-{
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "message": "Успешно"
-}
-```
-
-#### POST `/api/auth/login`
-```json
-// Request
-{
-  "email": "ivan@example.com",
-  "password": "secret123"
-}
-
-// Response 200
-{
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "message": "Успешно"
-}
-```
+> 📦 Готовая коллекция Postman для тестирования: [`docs/BankSystem.postman_collection.json`](docs/BankSystem.postman_collection.json)
 
 ---
 
-### 🏦 Счета — `/api/accounts`
+## 📁 Структура веб-приложения (MVC)
 
-| Метод | URL | Описание | Auth |
-|---|---|---|---|
-| `POST` | `/api/accounts` | Создать новый счёт | ✅ |
-| `GET` | `/api/accounts` | Получить все счета пользователя | ✅ |
-| `GET` | `/api/accounts/{accountNumber}` | Получить счёт по номеру | ✅ |
+В дополнение к REST API проект реализует классическую монолитную архитектуру MVC:
 
-#### POST `/api/accounts`
-```json
-// Request
-{
-  "accountType": "CHECKING",   // CHECKING | SAVINGS | INVESTMENT
-  "currency": "RUB",           // RUB | USD | EUR
-  "initialDeposit": 1000.00
-}
-
-// Response 201 — объект Account
-```
-
----
-
-### 💸 Транзакции — `/api/transactions`
-
-| Метод | URL | Описание | Auth |
-|---|---|---|---|
-| `POST` | `/api/transactions/transfer` | Перевод между счетами | ✅ |
-| `POST` | `/api/transactions/deposit` | Пополнение счёта | ✅ |
-| `POST` | `/api/transactions/withdraw` | Снятие со счёта | ✅ |
-| `GET` | `/api/transactions/account/{accountId}` | История транзакций счёта | ✅ |
-
-#### POST `/api/transactions/transfer`
-```json
-// Request
-{
-  "fromAccountNumber": "ACC-00000001",
-  "toAccountNumber": "ACC-00000002",
-  "amount": 500.00,
-  "description": "Перевод"
-}
-```
-
-#### POST `/api/transactions/deposit`
-```json
-// Request
-{
-  "accountNumber": "ACC-00000001",
-  "amount": 1000.00,
-  "description": "Пополнение"
-}
-```
-
----
-
-### 💳 Карты — `/api/cards`
-
-| Метод | URL | Описание | Auth |
-|---|---|---|---|
-| `POST` | `/api/cards/create/{accountId}` | Выпустить карту для счёта | ✅ |
-| `GET` | `/api/cards` | Все карты пользователя | ✅ |
-| `GET` | `/api/cards/active` | Активные карты пользователя | ✅ |
-| `PUT` | `/api/cards/{cardId}/block` | Заблокировать карту | ✅ |
-| `PUT` | `/api/cards/{cardId}/unblock` | Разблокировать карту | ✅ |
-| `PUT` | `/api/cards/{cardId}/deactivate` | Деактивировать карту | ✅ |
-
----
-
-### 📋 Кредиты — `/api/loans`
-
-| Метод | URL | Описание | Auth |
-|---|---|---|---|
-| `POST` | `/api/loans` | Подать заявку на кредит | ✅ |
-| `GET` | `/api/loans` | Кредиты пользователя | ✅ |
-| `PUT` | `/api/loans/{loanId}/approve` | Одобрить кредит | ✅ |
-| `PUT` | `/api/loans/{loanId}/reject` | Отклонить кредит | ✅ |
-| `PUT` | `/api/loans/{loanId}/disburse` | Выдать кредит | ✅ |
-
-#### POST `/api/loans`
-```json
-// Request
-{
-  "amount": 50000.00,
-  "durationMonths": 12,
-  "currency": "RUB",
-  "accountId": 1
-}
-```
-
----
-
-### 💰 Вклады — `/api/deposits`
-
-| Метод | URL | Описание | Auth |
-|---|---|---|---|
-| `POST` | `/api/deposits` | Открыть вклад | ✅ |
-| `GET` | `/api/deposits` | Вклады пользователя | ✅ |
-| `PUT` | `/api/deposits/{depositId}/close` | Закрыть вклад | ✅ |
-
-#### POST `/api/deposits`
-```json
-// Request
-{
-  "amount": 10000.00,
-  "durationMonths": 6,
-  "currency": "RUB",
-  "accountId": 1
-}
-```
-
----
-
-### 📝 Типичный сценарий работы с API
-
-```
-1. POST /api/auth/register  → получить токен
-2. POST /api/accounts       → создать счёт (в ответе — accountNumber и id)
-3. POST /api/transactions/deposit → пополнить счёт
-4. POST /api/cards/create/{accountId} → выпустить карту
-5. POST /api/loans          → подать заявку на кредит
-6. POST /api/deposits       → открыть вклад
-```
-
-> 📦 Готовая коллекция Postman: [`docs/BankSystem.postman_collection.json`](docs/BankSystem.postman_collection.json)
-
----
-
-## 📁 Структура проекта
-
-```
+```text
 bank_system/
+├── docs/                 # Документация, шпаргалки и Postman-коллекции
 ├── src/main/java/com/techstore/bank_system/
-│   ├── BankSystemApplication.java      — точка входа
-│   ├── DatabaseInitializer.java        — создаёт БД до старта JPA
-│   ├── resource/                       — REST контроллеры (API)
-│   │   ├── AuthResource.java           — /api/auth
-│   │   ├── AccountResource.java        — /api/accounts
-│   │   ├── TransactionResource.java    — /api/transactions
-│   │   ├── CardResource.java           — /api/cards
-│   │   ├── LoanResource.java           — /api/loans
-│   │   └── DepositResource.java        — /api/deposits
-│   ├── entity/                         — JPA сущности
-│   ├── repository/                     — Spring Data репозитории
-│   ├── service/                        — бизнес-логика
-│   ├── dto/                            — DTO объекты
-│   └── util/                           — JWT, DataInitializer
+│   ├── controller/       # Web (MVC) контроллеры, отдающие HTML
+│   ├── resource/         # REST API контроллеры, отдающие JSON
+│   ├── service/          # Бизнес-логика приложения
+│   ├── repository/       # Доступ к БД через Spring Data
+│   ├── entity/           # JPA Сущности таблиц БД
+│   ├── dto/              # Классы передачи данных
+│   ├── config/           # Настройки безопасности веб-интерфейса и API
+│   └── util/             # Автоматическая инициализация и утилиты
 └── src/main/resources/
-    ├── application.properties
-    ├── application-sqlserver.properties
-    └── static/                         — HTML/CSS/JS фронтенд
+    ├── templates/        # HTML страницы Thymeleaf (home, login, register, admin, profile)
+    ├── static/           # Статика (CSS, скрипты)
+    └── application*.properties # Настройки профилей среды
 ```
 
 ---
 
 ## 📄 Лицензия
 
-MIT License — свободное использование.
+MIT License — свободное использование в образовательных целях.
 
 ---
 
-## 👤 Автор
+## 👤 Разработчик
 
-**Макеш Найман** — ВТиПО-33  
+**Макеш Найман** — Студент ВТиПО-33  
 GitHub: [Strixs-as](https://github.com/Strixs-as)  
 Email: [makeshnaiman@gmail.com](mailto:makeshnaiman@gmail.com)
+
+*Учебный проект включает в себя лабораторные работы по дисциплинам Web Application Development (WAD) и Java EE.*
 

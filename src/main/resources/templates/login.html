@@ -44,6 +44,22 @@
         .link-row a:hover { text-decoration: underline; }
         .back { display: block; text-align: center; margin-top: 0.75rem; color: rgba(255,255,255,0.35); font-size: 0.82rem; text-decoration: none; }
         .back:hover { color: #fff; }
+        .hint-box {
+            margin-top: 1.5rem; padding: 1rem;
+            background: rgba(102,126,234,0.08); border: 1px solid rgba(102,126,234,0.25);
+            border-radius: 10px; font-size: 0.83rem;
+        }
+        .hint-title { font-weight: 700; color: #a78bfa; margin-bottom: 0.5rem; font-size: 0.85rem; }
+        .hint-row { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
+        .hint-label { color: rgba(255,255,255,0.45); }
+        .hint-val { color: #e2e8f0; font-weight: 600; cursor: pointer; }
+        .hint-val:hover { color: #a78bfa; }
+        .hint-sep { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 0.6rem 0; }
+        .admin-badge {
+            display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px;
+            background: rgba(245,158,11,0.15); color: #fbbf24;
+            border: 1px solid rgba(245,158,11,0.3); font-size: 0.72rem; font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -55,6 +71,7 @@
     <!-- Spring Security error/logout messages -->
     <div th:if="${param.error}" class="alert alert-error">⚠️ Неверный email или пароль</div>
     <div th:if="${param.logout}" class="alert alert-success">✅ Вы успешно вышли из системы</div>
+    <div th:if="${param.registered}" class="alert alert-success">✅ Регистрация прошла успешно! Войдите в систему</div>
 
     <form th:action="@{/login}" method="post">
         <label for="username">Email</label>
@@ -69,7 +86,32 @@
 
     <div class="link-row">Нет аккаунта? <a href="/register">Зарегистрироваться</a></div>
     <a href="/index.html" class="back">← Вернуться на главную</a>
+
+    <!-- Подсказка с данными для входа -->
+    <div class="hint-box">
+        <div class="hint-title">🔑 Данные для входа</div>
+        <div class="hint-row">
+            <span class="hint-label">Роль</span>
+            <span class="admin-badge">ADMIN</span>
+        </div>
+        <div class="hint-row">
+            <span class="hint-label">Email</span>
+            <span class="hint-val" onclick="fillAdmin()" title="Нажмите чтобы заполнить">admin@bank.kz ✎</span>
+        </div>
+        <div class="hint-row">
+            <span class="hint-label">Пароль</span>
+            <span class="hint-val" onclick="fillAdmin()" title="Нажмите чтобы заполнить">admin123 ✎</span>
+        </div>
+        <hr class="hint-sep"/>
+        <div style="text-align:center;color:rgba(255,255,255,0.35);font-size:0.78rem;">
+            После входа нажмите <strong style="color:#a78bfa;">⚙️ Админ панель</strong> в навигации
+        </div>
+    </div>
 </div>
-</body>
-</html>
+<script>
+    function fillAdmin() {
+        document.getElementById('username').value = 'admin@bank.kz';
+        document.getElementById('password').value = 'admin123';
+    }
+</script>
 

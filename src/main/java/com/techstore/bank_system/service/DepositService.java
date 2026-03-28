@@ -30,6 +30,9 @@ public class DepositService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public Deposit createDeposit(Long userId,
                                 BigDecimal amount,
                                 Integer durationMonths,
@@ -126,5 +129,58 @@ public class DepositService {
     private String generateDepositNumber() {
         Random random = new Random();
         return "DEP" + System.currentTimeMillis() + random.nextInt(1000);
+    }
+
+    public Deposit approveDeposit(Long depositId) {
+        Deposit deposit = depositRepository.findById(depositId)
+                .orElseThrow(() -> new IllegalArgumentException("Депозит не найден"));
+
+        if (deposit.getStatus() != DepositStatus.PENDING) {
+            throw new IllegalStateException("Депозит уже обработан");
+        }
+
+        deposit.setStatus(DepositStatus.ACTIVE);
+
+        depositRepository.save(deposit);
+
+        Account account = deposit.getAccount();
+        if (account.getUser() != null && account.getUser().getEmail() != null) {
+            emailService.sendEmail(
+                    account.getUser().getEmail(),
+                    "Депозит открыт / Deposit Opened",
+                    "Ваш депозит на сумму " + deposit.getAmount() + " был успешно открыт.\nYour deposit for " + deposit.getAmount() + " has been successfully opened."
+            );
+        }
+
+        return deposit;
+    }
+
+    public Deposit rejectDeposit(Long depositId) {
+        Deposit deposit = depositRepository.findById(depositId)
+                .orElseThrow(() -> new IllegalArgumentException("Депозит не найден"));
+
+        if (deposit.getStatus() != DepositStatus.PENDING) {
+            throw new IllegalStateException("Депозит уже обработан");
+        }
+
+        deposit.setStatus(DepositStatus.CLOSED);
+
+        // Return money to account
+        Account account = deposit.getAccount();
+        account.setBlockedAmount(account.getBlockedAmount().subtract(deposit.getAmount()));
+        account.updateAvailableBalance();
+        accountRepository.save(account);
+
+        depositRepository.save(deposit);
+
+        if (account.getUser() != null && account.getUser().getEmail() != null) {
+            emailService.sendEmail(
+                    account.getUser().getEmail(),
+                    "Депозит отклонен / Deposit Rejected",
+                    "Ваша заявка на открытие депозита была отклонена. Средства разблокированы.\nYour deposit application was rejected. Funds have been unlocked."
+            );
+        }
+
+        return deposit;
     }
 }

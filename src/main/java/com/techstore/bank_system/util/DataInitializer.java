@@ -4,10 +4,12 @@ import com.techstore.bank_system.entity.*;
 import com.techstore.bank_system.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component("appDataInitializer")
@@ -17,39 +19,62 @@ public class DataInitializer implements CommandLineRunner {
     private RoleRepository roleRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private ExchangeRateRepository exchangeRateRepository;
 
     @Override
     @Transactional
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         initializeRoles();
+        initializeAdminUser();
         initializeExchangeRates();
     }
 
     private void initializeRoles() {
         if (roleRepository.findByName("USER").isEmpty()) {
-            Role userRole = Role.builder()
-                    .name("USER")
-                    .description("Обычный пользователь банка")
-                    .build();
-            roleRepository.save(userRole);
+            roleRepository.save(Role.builder().name("USER").description("Обычный пользователь банка").build());
         }
-
         if (roleRepository.findByName("ADMIN").isEmpty()) {
-            Role adminRole = Role.builder()
-                    .name("ADMIN")
-                    .description("Администратор системы")
-                    .build();
-            roleRepository.save(adminRole);
+            roleRepository.save(Role.builder().name("ADMIN").description("Администратор системы").build());
+        }
+        if (roleRepository.findByName("MANAGER").isEmpty()) {
+            roleRepository.save(Role.builder().name("MANAGER").description("Менеджер банка").build());
+        }
+    }
+
+    private void initializeAdminUser() {
+        // Если admin уже существует — пропускаем
+        if (userRepository.findByEmail("admin@bank.kz").isPresent()) {
+            return;
         }
 
-        if (roleRepository.findByName("MANAGER").isEmpty()) {
-            Role managerRole = Role.builder()
-                    .name("MANAGER")
-                    .description("Менеджер банка")
-                    .build();
-            roleRepository.save(managerRole);
-        }
+        Role adminRole = roleRepository.findByName("ADMIN")
+                .orElseThrow(() -> new RuntimeException("Роль ADMIN не найдена"));
+
+        User admin = User.builder()
+                .firstName("Admin")
+                .lastName("System")
+                .patronymic("Administrator")
+                .email("admin@bank.kz")
+                .password(passwordEncoder.encode("admin123"))
+                .passportNumber("ADMIN000001")
+                .phoneNumber("+70000000000")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .address("г. Алматы, ул. Банковская, 1")
+                .isActive(true)
+                .isVerified(true)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        admin.getRoles().add(adminRole);
+        userRepository.save(admin);
+
+        System.out.println("✅ Администратор создан: admin@bank.kz / admin123");
     }
 
     private void initializeExchangeRates() {

@@ -43,6 +43,10 @@ public class Deposit {
     private LocalDateTime createdAt = LocalDateTime.now();
     @Column
     private LocalDateTime closedAt;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private DepositStatus status = DepositStatus.PENDING;
     @Column(precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal accruedInterest = BigDecimal.ZERO;
