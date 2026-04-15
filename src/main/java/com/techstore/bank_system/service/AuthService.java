@@ -30,6 +30,12 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private LoginNotificationService loginNotificationService;
+
+    @Autowired
+    private AccountLockoutService accountLockoutService;
+
     public AuthResponse register(RegisterRequest request) {
         // Проверка существующего пользователя по email
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -114,7 +120,32 @@ public class AuthService {
         }
 
         User user = userOpt.get();
+
+        // 1) Проверяем блокировку
+        try {
+            accountLockoutService.assertNotLocked(user);
+        } catch (AccountLockoutService.AccountLockedException e) {
+            return AuthResponse.builder()
+                    .message(e.getMessage())
+                    .build();
+        }
+
+        // 2) Проверяем пароль
         if (!PasswordUtil.checkPassword(request.getPassword(), user.getPassword())) {
+            // фиксируем неудачу (и при достижении лимита отправляем письмо с кодом)
+            try {
+                accountLockoutService.onLoginFailure(user, "API", "JWT login");
+            } catch (Exception e) {
+                System.err.println("❌ accountLockoutService.onLoginFailure failed: " + e.getMessage());
+            }
+
+            // После onLoginFailure аккаунт мог стать заблокированным
+            if (accountLockoutService.isLocked(user)) {
+                return AuthResponse.builder()
+                        .message("Аккаунт заблокирован после неудачных попыток. Мы отправили код на email.")
+                        .build();
+            }
+
             return AuthResponse.builder()
                     .message("Неверный email или пароль")
                     .build();
@@ -126,8 +157,22 @@ public class AuthService {
                     .build();
         }
 
+        // Успех логина — сбрасываем неудачные попытки
+        try {
+            accountLockoutService.onLoginSuccess(user);
+        } catch (Exception e) {
+            System.err.println("❌ accountLockoutService.onLoginSuccess failed: " + e.getMessage());
+        }
+
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
+
+        // Уведомление о входе (письмо пользователю + опционально админу)
+        try {
+            loginNotificationService.notifyLogin(user.getEmail(), "API", "JWT login");
+        } catch (Exception e) {
+            System.err.println("❌ loginNotificationService.notifyLogin failed: " + e.getMessage());
+        }
 
         String role = user.getRoles().isEmpty() ? "USER" : user.getRoles().iterator().next().getName();
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), role);
@@ -140,5 +185,16 @@ public class AuthService {
                 .role(role)
                 .message("Вход выполнен")
                 .build();
+    }
+
+    public void requestUnlockCode(String email, String ip, String userAgent) {
+        if (email == null || email.isBlank()) return;
+        userRepository.findByEmail(email).ifPresent(user -> {
+            accountLockoutService.sendUnlockCodeEmail(user, ip, userAgent);
+        });
+    }
+
+    public void confirmUnlockCode(String email, String code) {
+        accountLockoutService.unlockByCode(email, code);
     }
 }

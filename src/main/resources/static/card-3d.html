@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D карта — BankSystem</title>
+  <style>
+    :root{
+      --bg:#0d0d1a;
+      --card:#121226;
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.55);
+      --border:rgba(255,255,255,.10);
+      --accent1:#667eea;
+      --accent2:#764ba2;
+      --good:#4ade80;
+
+      /* NEW: material & 3D thickness */
+      --thickness: 12px;
+      --shineX: 35%;
+      --shineY: 22%;
+      --shine: .55;
+      --grain: .10;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Segoe UI,system-ui,-apple-system,sans-serif;
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(102,126,234,.18), transparent 60%),
+                  radial-gradient(1000px 700px at 90% 30%, rgba(240,147,251,.16), transparent 60%),
+                  var(--bg);
+      color:#fff;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+    }
+    .wrap{width:min(1100px, 100%); display:grid; grid-template-columns: 1.05fr .95fr; gap:18px; align-items:stretch;}
+    @media(max-width: 980px){.wrap{grid-template-columns:1fr;}}
+
+    .panel{
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+
+    .header{
+      padding:16px 18px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .title{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900;
+    }
+    .pill{font-size:12px; color:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); padding:6px 10px; border-radius:999px;}
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      padding:8px 12px;
+      border-radius:12px;
+      font-weight:700;
+    }
+    .btn:hover{background:rgba(255,255,255,.10)}
+
+    .left{display:flex; flex-direction:column;}
+    .stage{padding:22px; display:flex; align-items:center; justify-content:center; min-height:460px;}
+
+    /* 3D stage */
+    .scene{ perspective: 1200px; }
+    .card3d{
+      width: 420px;
+      height: 260px;
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(12deg) rotateY(-18deg);
+      transition: transform .18s ease;
+      will-change: transform;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select:none;
+      touch-action: none;
+      filter: drop-shadow(0 28px 60px rgba(0,0,0,.55));
+    }
+    .card3d:active{cursor: grabbing;}
+
+    @media(max-width: 520px){
+      .card3d{width: 340px; height: 210px;}
+      :root{ --thickness: 10px; }
+    }
+
+    .face{
+      position:absolute;
+      inset:0;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.14);
+      overflow:hidden;
+      backface-visibility:hidden;
+    }
+    .front{
+      background: linear-gradient(135deg, rgba(102,126,234,.95), rgba(118,75,162,.85));
+      transform: translateZ(calc(var(--thickness) / 2));
+    }
+    .back{
+      transform: rotateY(180deg) translateZ(calc(var(--thickness) / 2));
+      background: linear-gradient(135deg, rgba(17,153,142,.35), rgba(56,239,125,.16)),
+                  radial-gradient(900px 200px at 20% 10%, rgba(255,255,255,.16), transparent 60%),
+                  rgba(13,13,26,.9);
+    }
+
+    /* NEW: 4 edges to create real thickness */
+    .edge{
+      position:absolute;
+      background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.03));
+      opacity:.65;
+      border:1px solid rgba(255,255,255,.10);
+      filter: blur(.0px);
+    }
+    .edge--top{
+      height: var(--thickness);
+      left: 12px;
+      right: 12px;
+      top: 0;
+      transform-origin: top;
+      transform: rotateX(90deg);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.12));
+    }
+    .edge--bottom{
+      height: var(--thickness);
+      left: 12px;
+      right: 12px;
+      bottom: 0;
+      transform-origin: bottom;
+      transform: rotateX(-90deg);
+      border-radius: 16px;
+      background: linear-gradient(0deg, rgba(255,255,255,.18), rgba(0,0,0,.16));
+    }
+    .edge--left{
+      width: var(--thickness);
+      top: 12px;
+      bottom: 12px;
+      left: 0;
+      transform-origin: left;
+      transform: rotateY(-90deg);
+      border-radius: 16px;
+      background: linear-gradient(90deg, rgba(255,255,255,.16), rgba(0,0,0,.18));
+    }
+    .edge--right{
+      width: var(--thickness);
+      top: 12px;
+      bottom: 12px;
+      right: 0;
+      transform-origin: right;
+      transform: rotateY(90deg);
+      border-radius: 16px;
+      background: linear-gradient(270deg, rgba(255,255,255,.16), rgba(0,0,0,.18));
+    }
+
+    /* overlays for material realism */
+    .holo{
+      position:absolute;
+      inset:-2px;
+      border-radius: 24px;
+      pointer-events:none;
+      mix-blend-mode: screen;
+      opacity: var(--shine);
+      background:
+        radial-gradient(520px 220px at var(--shineX) var(--shineY), rgba(255,255,255,.35), transparent 55%),
+        conic-gradient(from 280deg at 55% 45%,
+          rgba(255,0,150,.10), rgba(0,255,255,.10), rgba(0,255,120,.10), rgba(255,255,0,.10), rgba(255,0,150,.10));
+      filter: blur(.2px) saturate(1.25);
+    }
+
+    .grain{
+      position:absolute;
+      inset:0;
+      border-radius: 22px;
+      pointer-events:none;
+      opacity: var(--grain);
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, rgba(255,255,255,0) 1px 3px),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.08) 0 1px, rgba(0,0,0,0) 1px 3px);
+      mix-blend-mode: overlay;
+    }
+
+    .microtext{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:.10;
+      transform: translateZ(1px);
+      background:
+        repeating-linear-gradient(135deg, rgba(255,255,255,.18) 0 1px, rgba(255,255,255,0) 1px 6px);
+
+      /* Вместо mask (IDE ругалась) используем clip-path — эффект "защитного окна" */
+      clip-path: ellipse(260px 140px at 78% 26%);
+
+      mix-blend-mode: soft-light;
+    }
+
+    .glow{
+      position:absolute; inset:-2px;
+      border-radius: 24px;
+      background: radial-gradient(500px 180px at 25% 15%, rgba(255,255,255,.25), transparent 60%),
+                  radial-gradient(420px 240px at 80% 80%, rgba(240,147,251,.18), transparent 70%);
+      mix-blend-mode: screen;
+      pointer-events:none;
+    }
+
+    .brand{
+      position:absolute; left:18px; top:16px;
+      display:flex; align-items:center; gap:10px;
+      font-weight:900;
+      letter-spacing:.4px;
+      color:rgba(255,255,255,.95);
+      text-shadow: 0 6px 18px rgba(0,0,0,.35);
+    }
+    .logo{
+      width:34px; height:34px; border-radius:12px;
+      background: rgba(255,255,255,.14);
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(255,255,255,.18);
+    }
+
+    .chip{
+      position:absolute; left:18px; top:78px;
+      width:54px; height:42px; border-radius:10px;
+      background: linear-gradient(135deg, rgba(255,215,0,.35), rgba(255,255,255,.10));
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
+    }
+
+    .number{
+      position:absolute; left:18px; bottom:64px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 6px 16px rgba(0,0,0,.35);
+    }
+    .meta{
+      position:absolute; left:18px; bottom:18px;
+      display:flex; align-items:flex-end; gap:18px;
+      color: rgba(255,255,255,.9);
+      font-size: 12px;
+      text-shadow: 0 6px 16px rgba(0,0,0,.35);
+    }
+    .meta b{display:block; font-size:10px; color:rgba(255,255,255,.65); font-weight:700; letter-spacing:.6px}
+
+    .emblem{
+      position:absolute;
+      right:16px;
+      top:18px;
+      width:84px;
+      height:84px;
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .emblem svg{width:70px; height:70px; opacity:.95; filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));}
+
+    .mask{
+      position:absolute;
+      right:-40px;
+      bottom:-60px;
+      width:240px;
+      height:240px;
+      border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.26), rgba(255,255,255,.05) 45%, transparent 70%);
+      opacity:.85;
+      transform: rotate(-14deg);
+      mix-blend-mode: overlay;
+      pointer-events:none;
+    }
+
+    /* back side details */
+    .mag{
+      position:absolute;
+      left:0; top:22px;
+      width:100%; height:46px;
+      background: rgba(0,0,0,.55);
+    }
+    .sig{
+      position:absolute; left:18px; top:92px;
+      width:64%; height:34px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+    }
+    .cvv{
+      position:absolute; right:18px; top:92px;
+      width:90px; height:34px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      color: rgba(255,255,255,.85);
+      display:flex; align-items:center; justify-content:center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      letter-spacing:1px;
+    }
+
+    .hint{padding:0 22px 22px; color: var(--muted); font-size:13px; line-height:1.5;}
+
+    /* controls */
+    .right{display:flex; flex-direction:column;}
+    .controls{padding:18px;}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;}
+    .label{color:rgba(255,255,255,.75); font-size:13px; font-weight:700;}
+    .sub{color:rgba(255,255,255,.45); font-size:12px; margin-top:2px;}
+
+    input[type="range"]{width:100%; accent-color: var(--accent1);}
+
+    .grid{display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;}
+    .cardbtn{padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-weight:800;text-align:left}
+    .cardbtn small{display:block;color:rgba(255,255,255,.55);font-weight:600;margin-top:3px}
+    .cardbtn.active{border-color: rgba(102,126,234,.55); background: rgba(102,126,234,.12)}
+
+    .note{padding:14px 18px 18px; border-top:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.48); font-size:12px; line-height:1.45}
+    .note b{color:rgba(255,255,255,.80)}
+
+    .ok{color: var(--good); font-weight:800;}
+
+    .presetRow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .preset{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:12px;
+    }
+    .preset:hover{background:rgba(255,255,255,.10)}
+
+    @media (prefers-reduced-motion: reduce){
+      .card3d{transition:none}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="panel left">
+      <div class="header">
+        <div class="title">
+          <span style="display:inline-flex;width:26px;height:26px;border-radius:9px;background:rgba(255,255,255,.10);align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.14)">🧊</span>
+          3D карточка
+          <span class="pill" id="themePill">Фэнтези‑тема</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+          <button class="btn" id="orderBtn" title="Выпустить новую карту">➕ Заказать карту</button>
+          <button class="btn" onclick="location.href='dashboard.html'">← В кабинет</button>
+          <button class="btn" id="flipBtn">Перевернуть</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="scene">
+          <div class="card3d" id="card" aria-label="3D card">
+            <!-- faces -->
+            <div class="face front" id="front">
+              <div class="glow"></div>
+              <div class="holo"></div>
+              <div class="grain"></div>
+              <div class="microtext"></div>
+
+              <div class="brand">
+                <div class="logo">🏦</div>
+                <div>
+                  <div style="font-size:14px">BankSystem</div>
+                  <div style="font-size:11px;opacity:.78">Premium Card</div>
+                </div>
+              </div>
+
+              <div class="emblem" id="emblem"></div>
+              <div class="chip"></div>
+
+              <div class="number" id="cardNumber">5321  0821  7731  9056</div>
+              <div class="meta">
+                <div>
+                  <b>Владелец</b>
+                  <div id="cardHolder">MAKESH NAIMAN</div>
+                </div>
+                <div>
+                  <b>Срок</b>
+                  <div id="cardExp">08/29</div>
+                </div>
+                <div>
+                  <b>Статус</b>
+                  <div class="ok">ACTIVE</div>
+                </div>
+              </div>
+
+              <div class="mask"></div>
+            </div>
+
+            <div class="face back">
+              <div class="holo"></div>
+              <div class="grain"></div>
+              <div class="mag"></div>
+              <div class="sig"></div>
+              <div class="cvv" id="cvv">•••</div>
+              <div style="position:absolute;left:18px;bottom:18px;color:rgba(255,255,255,.60);font-size:12px;max-width:82%">
+                Для безопасности не показывайте CVV третьим лицам. Любые операции подтверждайте только в вашем приложении.
+              </div>
+            </div>
+
+            <!-- NEW: thickness edges -->
+            <div class="edge edge--top" aria-hidden="true"></div>
+            <div class="edge edge--right" aria-hidden="true"></div>
+            <div class="edge edge--bottom" aria-hidden="true"></div>
+            <div class="edge edge--left" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint">
+        Подсказка: можно вращать карту мышкой (на ПК) или пальцем (на телефоне). Кнопка «Перевернуть» покажет обратную сторону.
+      </div>
+    </div>
+
+    <div class="panel right">
+      <div class="header">
+        <div class="title">
+          <span style="font-size:18px">🎨</span>
+          <span>Стили и параметры</span>
+        </div>
+        <span class="pill">без внешних картинок</span>
+      </div>
+
+      <div class="controls">
+        <div class="row">
+          <div>
+            <div class="label">Поворот по X</div>
+            <div class="sub">наклон вверх/вниз</div>
+          </div>
+          <div style="width:58%">
+            <label for="rx" style="position:absolute;left:-9999px;">Поворот по X</label>
+            <input id="rx" type="range" min="-45" max="45" value="12" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">Поворот по Y</div>
+            <div class="sub">влево/вправо</div>
+          </div>
+          <div style="width:58%">
+            <label for="ry" style="position:absolute;left:-9999px;">Поворот по Y</label>
+            <input id="ry" type="range" min="-60" max="60" value="-18" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">Поворот по Z</div>
+            <div class="sub">как «поворот руля»</div>
+          </div>
+          <div style="width:58%">
+            <label for="rz" style="position:absolute;left:-9999px;">Поворот по Z</label>
+            <input id="rz" type="range" min="-20" max="20" value="0" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">Глубина (3D)</div>
+            <div class="sub">интенсивность перспективы</div>
+          </div>
+          <div style="width:58%">
+            <label for="persp" style="position:absolute;left:-9999px;">Глубина (перспектива)</label>
+            <input id="persp" type="range" min="600" max="2000" value="1200" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:14px">
+          <div>
+            <div class="label">Эффекты</div>
+            <div class="sub">голограмма/текстура</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn" id="effectsBtn">Уменьшить эффекты</button>
+          </div>
+        </div>
+
+        <div class="label" style="margin-top:12px">Пресеты камеры</div>
+        <div class="presetRow">
+          <button class="preset" data-preset="front">Фронт</button>
+          <button class="preset" data-preset="angle">3/4</button>
+          <button class="preset" data-preset="top">Сверху</button>
+          <button class="preset" data-preset="back">Обратная</button>
+        </div>
+
+        <div class="grid">
+          <button class="cardbtn active" data-theme="fantasy">
+            Фэнтези
+            <small>универсальная «геройская» стилистика</small>
+          </button>
+          <button class="cardbtn" data-theme="tech">
+            Кибер
+            <small>неон, тех‑узоры</small>
+          </button>
+          <button class="cardbtn" data-theme="night">
+            Найт
+            <small>тёмный «рыцарский» стиль</small>
+          </button>
+          <button class="cardbtn" data-theme="hero">
+            Супер
+            <small>яркий стиль «герой/щит»</small>
+          </button>
+        </div>
+
+        <div style="margin-top:16px;">
+          <div class="label">Данные на карте</div>
+          <div class="sub">можно подставить данные пользователя/карты</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+            <div>
+              <label for="holder" style="position:absolute;left:-9999px;">Владелец</label>
+              <input id="holder" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff" value="MAKESH NAIMAN" />
+              <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:6px">Владелец</div>
+            </div>
+            <div>
+              <label for="exp" style="position:absolute;left:-9999px;">Срок действия</label>
+              <input id="exp" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff" value="08/29" />
+              <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:6px">Срок</div>
+            </div>
+            <div style="grid-column:1/-1">
+              <label for="num" style="position:absolute;left:-9999px;">Номер карты</label>
+              <input id="num" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff" value="5321  0821  7731  9056" />
+              <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:6px">Номер (демо)</div>
+            </div>
+          </div>
+
+          <button class="btn" id="applyBtn" style="margin-top:12px;width:100%">Применить</button>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Про Marvel/DC:</b> технически можно сделать дизайн «как стиль комиксов», но использовать конкретных персонажей/логотипы Marvel/DC для публичного проекта нельзя из‑за авторских прав.
+        Вместо этого: кастомные «геройские» темы, маски, логотипы и узоры.
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = '/api';
+    const token = () => localStorage.getItem('token');
+    const authHdr = () => {
+      const hdrs = { 'Content-Type': 'application/json' };
+      const t = token();
+      if (t) hdrs['Authorization'] = 'Bearer ' + t;
+      return hdrs;
+    };
+
+    const card = document.getElementById('card');
+    const scene = document.querySelector('.scene');
+    const rx = document.getElementById('rx');
+    const ry = document.getElementById('ry');
+    const rz = document.getElementById('rz');
+    const persp = document.getElementById('persp');
+    const flipBtn = document.getElementById('flipBtn');
+    const themePill = document.getElementById('themePill');
+
+    const cardHolder = document.getElementById('cardHolder');
+    const cardExp = document.getElementById('cardExp');
+    const cardNumber = document.getElementById('cardNumber');
+
+    const inpHolder = document.getElementById('holder');
+    const inpExp = document.getElementById('exp');
+    const inpNum = document.getElementById('num');
+
+    const emblem = document.getElementById('emblem');
+
+    // state
+    let flipped = false;
+    let effectsReduced = false;
+
+    // angles (in degrees)
+    let state = { rx: Number(rx.value), ry: Number(ry.value), rz: Number(rz.value) };
+    let vel = { x: 0, y: 0, z: 0 };
+
+    // pointer drag
+    let dragging = false;
+    let last = { x: 0, y: 0, t: 0 };
+
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+    function applyTransform(){
+      rx.value = String(Math.round(state.rx));
+      ry.value = String(Math.round(state.ry));
+      rz.value = String(Math.round(state.rz));
+
+      // order matters: base rotation + optional flip around Y
+      const flipPart = flipped ? ' rotateY(180deg)' : '';
+      card.style.transform = `rotateX(${state.rx}deg) rotateY(${state.ry}deg) rotateZ(${state.rz}deg)${flipPart}`;
+      scene.style.perspective = `${persp.value}px`;
+    }
+
+    function setTheme(name){
+      document.querySelectorAll('.cardbtn').forEach(b => b.classList.toggle('active', b.dataset.theme === name));
+
+      if(name === 'fantasy'){
+        themePill.textContent = 'Фэнтези‑тема';
+        document.getElementById('front').style.background = 'linear-gradient(135deg, rgba(102,126,234,.95), rgba(118,75,162,.85))';
+        setEmblem('shield');
+      }
+      if(name === 'tech'){
+        themePill.textContent = 'Кибер‑тема';
+        document.getElementById('front').style.background = 'linear-gradient(135deg, rgba(16,185,129,.62), rgba(59,130,246,.55))';
+        setEmblem('circuit');
+      }
+      if(name === 'night'){
+        themePill.textContent = 'Найт‑тема';
+        document.getElementById('front').style.background = 'linear-gradient(135deg, rgba(15,23,42,.95), rgba(88,28,135,.70))';
+        setEmblem('bat');
+      }
+      if(name === 'hero'){
+        themePill.textContent = 'Супер‑тема';
+        document.getElementById('front').style.background = 'linear-gradient(135deg, rgba(239,68,68,.72), rgba(59,130,246,.62))';
+        setEmblem('star');
+      }
+    }
+
+    function setEmblem(kind){
+      // ВАЖНО: только оригинальная графика (SVG), без Marvel/DC персонажей.
+      if(kind === 'shield'){
+        emblem.innerHTML = `
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 5l21 9v18c0 14-9 22-21 27C20 54 11 46 11 32V14l21-9z" fill="rgba(255,255,255,.20)"/>
+            <path d="M32 12l15 6v14c0 10-6 16-15 20-9-4-15-10-15-20V18l15-6z" fill="rgba(255,255,255,.35)"/>
+            <path d="M32 18l8 4v10c0 6-3 10-8 13-5-3-8-7-8-13V22l8-4z" fill="rgba(255,255,255,.55)"/>
+          </svg>`;
+      }
+      if(kind === 'circuit'){
+        emblem.innerHTML = `
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 18h18v10H16V18z" fill="rgba(255,255,255,.42)"/>
+            <path d="M30 36h18v10H30V36z" fill="rgba(255,255,255,.30)"/>
+            <path d="M34 23h14" stroke="rgba(255,255,255,.65)" stroke-width="3" stroke-linecap="round"/>
+            <path d="M16 41h10" stroke="rgba(255,255,255,.65)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="52" cy="23" r="4" fill="rgba(255,255,255,.65)"/>
+            <circle cx="12" cy="41" r="4" fill="rgba(255,255,255,.65)"/>
+            <path d="M25 28v8" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/>
+            <path d="M39 28v8" stroke="rgba(255,255,255,.40)" stroke-width="3" stroke-linecap="round"/>
+          </svg>`;
+      }
+      if(kind === 'bat'){
+        emblem.innerHTML = `
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 36c6-10 14-12 22-6 8-6 16-4 22 6-6 2-10 0-14-2-2 6-8 10-8 10s-6-4-8-10c-4 2-8 4-14 2z" fill="rgba(255,255,255,.55)"/>
+            <path d="M22 30c2 2 4 3 10 3s8-1 10-3" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+          </svg>`;
+      }
+      if(kind === 'star'){
+        emblem.innerHTML = `
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 8l7.4 15 16.6 2.4-12 11.7 2.8 16.5L32 46.5 17.2 53.6 20 37.1 8 25.4 24.6 23 32 8z" fill="rgba(255,255,255,.58)"/>
+            <path d="M32 16l4.5 9 10 .8-7.6 7.4 1.8 10-8.7-4.6-8.7 4.6 1.8-10-7.6-7.4 10-.8 4.5-9z" fill="rgba(255,255,255,.22)"/>
+          </svg>`;
+      }
+    }
+
+    function updateShineFromPointer(px, py){
+      // px/py: [0..1] within card
+      const x = clamp(px * 100, 5, 95);
+      const y = clamp(py * 100, 5, 95);
+      document.documentElement.style.setProperty('--shineX', `${x}%`);
+      document.documentElement.style.setProperty('--shineY', `${y}%`);
+    }
+
+    // --- Inertia loop ---
+    let raf = null;
+    function tick(){
+      // friction
+      vel.y *= 0.92;
+      vel.x *= 0.92;
+      vel.z *= 0.92;
+
+      // apply velocity
+      state.ry = clamp(state.ry + vel.y, -60, 60);
+      state.rx = clamp(state.rx + vel.x, -45, 45);
+      state.rz = clamp(state.rz + vel.z, -20, 20);
+
+      // stop if almost still
+      if(Math.abs(vel.x) + Math.abs(vel.y) + Math.abs(vel.z) < 0.02){
+        raf = null;
+        applyTransform();
+        return;
+      }
+
+      applyTransform();
+      raf = requestAnimationFrame(tick);
+    }
+
+    function startRaf(){
+      if(raf) return;
+      raf = requestAnimationFrame(tick);
+    }
+
+    // pointer events
+    card.addEventListener('pointerdown', (e)=>{
+      dragging = true;
+      card.setPointerCapture(e.pointerId);
+      last = { x: e.clientX, y: e.clientY, t: performance.now() };
+      vel = { x: 0, y: 0, z: 0 };
+
+      const r = card.getBoundingClientRect();
+      updateShineFromPointer((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+    });
+
+    card.addEventListener('pointermove', (e)=>{
+      const r = card.getBoundingClientRect();
+      updateShineFromPointer((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+
+      if(!dragging) return;
+
+      const now = performance.now();
+      const dt = Math.max(1, now - last.t);
+      const dx = e.clientX - last.x;
+      const dy = e.clientY - last.y;
+
+      // update angles: feel like trackball
+      state.ry = clamp(state.ry + dx * 0.15, -60, 60);
+      state.rx = clamp(state.rx - dy * 0.12, -45, 45);
+
+      // velocity
+      vel.y = (dx / dt) * 6.2;
+      vel.x = (-dy / dt) * 6.2;
+
+      last = { x: e.clientX, y: e.clientY, t: now };
+      applyTransform();
+    });
+
+    function endDrag(){
+      if(!dragging) return;
+      dragging = false;
+      startRaf();
+    }
+
+    card.addEventListener('pointerup', endDrag);
+    card.addEventListener('pointercancel', endDrag);
+
+    // controls
+    function syncStateFromSliders(){
+      state.rx = Number(rx.value);
+      state.ry = Number(ry.value);
+      state.rz = Number(rz.value);
+      applyTransform();
+    }
+
+    [rx,ry,rz].forEach(i=>i.addEventListener('input', ()=>{
+      vel = { x:0, y:0, z:0 };
+      syncStateFromSliders();
+    }));
+    persp.addEventListener('input', applyTransform);
+
+    // Better flip: keep current orientation, just rotate 180 with small easing by temporarily boosting vel
+    flipBtn.addEventListener('click', ()=>{
+      flipped = !flipped;
+      flipBtn.textContent = flipped ? 'На лицевую' : 'Перевернуть';
+      // small impulse for nicer motion
+      vel.y += flipped ? 1.6 : -1.6;
+      startRaf();
+      applyTransform();
+    });
+
+    document.querySelectorAll('.cardbtn').forEach(btn=>{
+      btn.addEventListener('click', ()=> setTheme(btn.dataset.theme));
+    });
+
+    document.getElementById('applyBtn').addEventListener('click', ()=>{
+      cardHolder.textContent = (inpHolder.value || 'MAKESH NAIMAN').toUpperCase();
+      cardExp.textContent = (inpExp.value || '08/29').toUpperCase();
+      cardNumber.textContent = (inpNum.value || '5321  0821  7731  9056');
+    });
+
+    // NEW: выпуск карты прямо отсюда
+    async function orderCardFrom3D() {
+      const btn = document.getElementById('orderBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ Выпуск...';
+      try {
+        // получаем счета и берём первый (можно потом сделать выбор)
+        const ar = await fetch(`${API}/accounts`, { headers: authHdr() });
+        const atxt = await ar.text();
+        let accs = [];
+        try { accs = atxt ? JSON.parse(atxt) : []; } catch (_) { accs = []; }
+        const first = Array.isArray(accs) ? accs[0] : null;
+        const accountId = first && first.id ? first.id : null;
+        if (!accountId) {
+          alert('Сначала откройте счёт в кабинете (раздел Счета).');
+          return;
+        }
+
+        const r = await fetch(`${API}/cards/create/${accountId}`, { method: 'POST', headers: authHdr() });
+        const txt = await r.text();
+        let data = null;
+        try { data = txt ? JSON.parse(txt) : null; } catch (_) { data = null; }
+
+        if (!r.ok) {
+          alert((data && data.message) ? data.message : (txt || 'Ошибка выпуска карты'));
+          return;
+        }
+
+        // сохраняем и сразу гидратим
+        try { sessionStorage.setItem('bs_last_card', JSON.stringify(data)); } catch (_) { /* ignore */ }
+        // применим данные
+        try {
+          const c = data || {};
+          if (c.cardHolder) {
+            inpHolder.value = c.cardHolder;
+            cardHolder.textContent = String(c.cardHolder).toUpperCase();
+          }
+          if (c.expiryDate) {
+            let e = String(c.expiryDate);
+            if (/^\d{4}-\d{2}/.test(e)) {
+              const mm = e.slice(5,7);
+              const yy = e.slice(2,4);
+              e = `${mm}/${yy}`;
+            }
+            inpExp.value = e;
+            cardExp.textContent = String(e).toUpperCase();
+          }
+          if (c.cardNumber) {
+            const digits = String(c.cardNumber).replace(/\s+/g,'');
+            const pretty = digits.replace(/(.{4})/g, '$1  ').trim();
+            inpNum.value = pretty;
+            cardNumber.textContent = pretty;
+          }
+        } catch (_) { /* ignore */ }
+
+        alert('Карта выпущена! Данные подставлены на 3D‑превью. Проверьте почту.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    const orderBtn = document.getElementById('orderBtn');
+    if (orderBtn) orderBtn.addEventListener('click', orderCardFrom3D);
+
+    // NEW: авто-подстановка из dashboard.html (после выпуска карты)
+    (function hydrateFromDashboard(){
+      try {
+        const raw = sessionStorage.getItem('bs_last_card');
+        if (!raw) return;
+        const c = JSON.parse(raw);
+        if (!c || typeof c !== 'object') return;
+
+        // Поддерживаем разные варианты полей (в зависимости от того, что вернул API)
+        const holder = (c.cardHolder || c.holder || c.ownerName || c.fullName || '').toString().trim();
+        const exp = (c.expiryDate || c.exp || '').toString().trim();
+        const num = (c.cardNumber || c.number || '').toString().trim();
+
+        if (holder) {
+          inpHolder.value = holder;
+          cardHolder.textContent = holder.toUpperCase();
+        }
+
+        if (exp) {
+          // если формат YYYY-MM или YYYY-MM-DD — конвертируем в MM/YY
+          let e = exp;
+          if (/^\d{4}-\d{2}/.test(e)) {
+            const mm = e.slice(5,7);
+            const yy = e.slice(2,4);
+            e = `${mm}/${yy}`;
+          }
+          inpExp.value = e;
+          cardExp.textContent = e.toUpperCase();
+        }
+
+        if (num) {
+          // красиво расставим пробелы, если пришло без них
+          const digits = num.replace(/\s+/g,'');
+          const pretty = digits.replace(/(.{4})/g, '$1  ').trim();
+          inpNum.value = pretty;
+          cardNumber.textContent = pretty;
+        }
+      } catch (_) {
+        // ignore
+      }
+    })();
+
+    // presets
+    document.querySelectorAll('[data-preset]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const p = btn.getAttribute('data-preset');
+        if(p === 'front'){ state = { rx: 0, ry: 0, rz: 0 }; flipped = false; }
+        if(p === 'angle'){ state = { rx: 12, ry: -18, rz: 0 }; }
+        if(p === 'top'){ state = { rx: -28, ry: 0, rz: 0 }; }
+        if(p === 'back'){ state = { rx: 0, ry: 0, rz: 0 }; flipped = true; }
+        vel = { x:0, y:0, z:0 };
+        flipBtn.textContent = flipped ? 'На лицевую' : 'Перевернуть';
+        applyTransform();
+      });
+    });
+
+    // effects toggle
+    const effectsBtn = document.getElementById('effectsBtn');
+    effectsBtn.addEventListener('click', ()=>{
+      effectsReduced = !effectsReduced;
+      document.documentElement.style.setProperty('--shine', effectsReduced ? '.25' : '.55');
+      document.documentElement.style.setProperty('--grain', effectsReduced ? '.04' : '.10');
+      effectsBtn.textContent = effectsReduced ? 'Усилить эффекты' : 'Уменьшить эффекты';
+    });
+
+    // initial
+    setTheme('fantasy');
+    updateShineFromPointer(.35, .22);
+    applyTransform();
+  </script>
+</body>
+</html>

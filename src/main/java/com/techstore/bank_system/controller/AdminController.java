@@ -2,13 +2,13 @@ package com.techstore.bank_system.controller;
 
 import com.techstore.bank_system.entity.*;
 import com.techstore.bank_system.repository.*;
+import com.techstore.bank_system.service.CardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -17,7 +17,7 @@ import java.util.*;
 public class AdminController {
 
     private static final Set<String> ALLOWED_TABS =
-            Set.of("users", "requests", "loans", "deposits", "accounts");
+            Set.of("users", "requests", "loans", "deposits", "accounts", "cards");
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -26,6 +26,8 @@ public class AdminController {
     private final AccountRepository accountRepository;
     private final com.techstore.bank_system.service.LoanService loanService;
     private final com.techstore.bank_system.service.DepositService depositService;
+    private final CardService cardService;
+    private final CardRepository cardRepository;
 
     public AdminController(UserRepository userRepository,
                            RoleRepository roleRepository,
@@ -33,7 +35,9 @@ public class AdminController {
                            DepositRepository depositRepository,
                            AccountRepository accountRepository,
                            com.techstore.bank_system.service.LoanService loanService,
-                           com.techstore.bank_system.service.DepositService depositService) {
+                           com.techstore.bank_system.service.DepositService depositService,
+                           CardService cardService,
+                           CardRepository cardRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.loanRepository = loanRepository;
@@ -41,6 +45,8 @@ public class AdminController {
         this.accountRepository = accountRepository;
         this.loanService = loanService;
         this.depositService = depositService;
+        this.cardService = cardService;
+        this.cardRepository = cardRepository;
     }
 
     @GetMapping
@@ -56,6 +62,7 @@ public class AdminController {
         List<Loan> loans = loanRepository.findAll();
         List<Deposit> deposits = depositRepository.findAll();
         List<Account> accounts = accountRepository.findAll();
+        List<Card> cards = cardRepository.findAll();
         List<Loan> pendingLoans = loanRepository.findByStatus(LoanStatus.PENDING);
         List<Deposit> pendingDeposits = depositRepository.findByStatus(DepositStatus.PENDING);
 
@@ -64,6 +71,7 @@ public class AdminController {
         model.addAttribute("loans", loans);
         model.addAttribute("deposits", deposits);
         model.addAttribute("accounts", accounts);
+        model.addAttribute("cards", cards);
         model.addAttribute("pendingLoans", pendingLoans);
         model.addAttribute("pendingDeposits", pendingDeposits);
         model.addAttribute("tab", safeTab);
@@ -73,6 +81,7 @@ public class AdminController {
         model.addAttribute("totalLoans", loans.size());
         model.addAttribute("totalDeposits", deposits.size());
         model.addAttribute("totalAccounts", accounts.size());
+        model.addAttribute("totalCards", cards.size());
 
         return "admin";
     }
@@ -154,6 +163,35 @@ public class AdminController {
             if (currentEmail != null && currentEmail.equalsIgnoreCase(user.getEmail())) {
                 return;
             }
+
+            // 1) Удаляем кредиты и депозиты пользователя (они ссылаются на account_id NOT NULL)
+            loanRepository.findAll().stream()
+                    .filter(l -> l.getUser() != null && Objects.equals(l.getUser().getId(), user.getId()))
+                    .forEach(loanRepository::delete);
+
+            depositRepository.findAll().stream()
+                    .filter(d -> d.getUser() != null && Objects.equals(d.getUser().getId(), user.getId()))
+                    .forEach(depositRepository::delete);
+
+            // 2) Удаляем счета пользователя (и связанные с ними транзакции/карты)
+            accountRepository.findAll().stream()
+                    .filter(a -> a.getUser() != null && Objects.equals(a.getUser().getId(), user.getId()))
+                    .forEach(acc -> {
+                        // транзакции
+                        if (acc.getSentTransactions() != null) {
+                            acc.getSentTransactions().clear();
+                        }
+                        if (acc.getReceivedTransactions() != null) {
+                            acc.getReceivedTransactions().clear();
+                        }
+                        // карты
+                        if (acc.getCards() != null) {
+                            acc.getCards().clear();
+                        }
+                        accountRepository.delete(acc);
+                    });
+
+            // 3) Удаляем самого пользователя
             userRepository.delete(user);
         });
 
@@ -277,5 +315,55 @@ public class AdminController {
     public String deleteDeposit(@PathVariable Long id) {
         depositRepository.findById(id).ifPresent(depositRepository::delete);
         return "redirect:/admin/tab/deposits";
+    }
+
+    @PostMapping("/account/delete/{id}")
+    public String deleteAccount(@PathVariable Long id) {
+        // Удаляем связанные сущности (иначе SQL Server может ругаться на FK)
+        accountRepository.findById(id).ifPresent(acc -> {
+            // 1) Транзакции
+            if (acc.getSentTransactions() != null) {
+                acc.getSentTransactions().forEach(t -> {
+                    try { t.setFromAccount(null); } catch (Exception ignored) {}
+                });
+                acc.getSentTransactions().clear();
+            }
+            if (acc.getReceivedTransactions() != null) {
+                acc.getReceivedTransactions().forEach(t -> {
+                    try { t.setToAccount(null); } catch (Exception ignored) {}
+                });
+                acc.getReceivedTransactions().clear();
+            }
+
+            // 2) Карты (orphanRemoval не включен, но cascade=ALL есть) — удалим явно
+            if (acc.getCards() != null) {
+                acc.getCards().clear();
+            }
+
+            // 3) Кредиты/депозиты
+            loanRepository.findAll().stream()
+                    .filter(l -> l.getAccount() != null && Objects.equals(l.getAccount().getId(), acc.getId()))
+                    .forEach(loanRepository::delete);
+
+            depositRepository.findAll().stream()
+                    .filter(d -> d.getAccount() != null && Objects.equals(d.getAccount().getId(), acc.getId()))
+                    .forEach(depositRepository::delete);
+
+            // 4) Удаляем счёт
+            accountRepository.delete(acc);
+        });
+
+        return "redirect:/admin/tab/accounts";
+    }
+
+    @PostMapping("/card/delete/{id}")
+    public String adminDeleteCard(@PathVariable("id") Long cardId,
+                                  @RequestParam(value = "reason", required = false) String reason) {
+        try {
+            cardService.adminBlockAndDeactivate(cardId, reason);
+        } catch (Exception e) {
+            System.err.println("Admin: failed to delete card id=" + cardId + " :: " + e.getMessage());
+        }
+        return "redirect:/admin/tab/cards";
     }
 }

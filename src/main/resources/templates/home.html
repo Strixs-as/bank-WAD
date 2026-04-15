@@ -105,7 +105,7 @@
     <div class="nav-right">
         <a href="/admin" class="admin-link">⚙️ Админ панель</a>
         <a href="/profile">👤 Профиль</a>
-        <form th:action="@{/logout}" method="post" style="display:inline">
+        <form th:action="@{/logout}" method="post" style="display:inline" onsubmit="return (window.bankLogout ? window.bankLogout(event) : true)">
             <button type="submit">🚪 Выйти</button>
         </form>
     </div>
@@ -251,6 +251,8 @@
     updateUI();
 </script>
 
+<!-- общий logout (очистка localStorage + POST /logout + редирект) -->
+<script src="/js/logout.js"></script>
+
 </body>
 </html>
-

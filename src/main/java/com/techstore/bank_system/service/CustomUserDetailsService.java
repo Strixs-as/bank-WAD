@@ -26,14 +26,24 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+        System.out.println("CustomUserDetailsService: Loading user " + username + " with roles subset size " + (user.getRoles() != null ? user.getRoles().size() : "null"));
+
         // Если ролей нет — по умолчанию USER
         List<GrantedAuthority> authorities;
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+            System.out.println("CustomUserDetailsService: Assigned default ROLE_USER");
         } else {
             authorities = user.getRoles().stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                    .map(role -> {
+                        String rName = role.getName();
+                        if(!rName.startsWith("ROLE_")) {
+                            rName = "ROLE_" + rName;
+                        }
+                        return new SimpleGrantedAuthority(rName);
+                    })
                     .collect(Collectors.toList());
+            System.out.println("CustomUserDetailsService: Assigned roles " + authorities);
         }
 
         return org.springframework.security.core.userdetails.User
@@ -43,4 +53,3 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 }
-

@@ -42,6 +42,11 @@
         .link-row { text-align: center; margin-top: 1.25rem; color: rgba(255,255,255,0.45); font-size: 0.88rem; }
         .link-row a { color: #a78bfa; text-decoration: none; font-weight: 600; }
         .link-row a:hover { text-decoration: underline; }
+
+        /* Google-like "Forgot password" */
+        .aux-links { margin-top: 0.9rem; display: flex; justify-content: space-between; gap: 12px; font-size: 0.88rem; }
+        .aux-links a { color: rgba(167,139,250,0.95); text-decoration: none; font-weight: 650; }
+        .aux-links a:hover { text-decoration: underline; }
         .back { display: block; text-align: center; margin-top: 0.75rem; color: rgba(255,255,255,0.35); font-size: 0.82rem; text-decoration: none; }
         .back:hover { color: #fff; }
         .hint-box {
@@ -84,7 +89,11 @@
         <button type="submit" class="btn">Войти</button>
     </form>
 
-    <div class="link-row">Нет аккаунта? <a href="/register">Зарегистрироваться</a></div>
+    <div class="aux-links">
+        <a href="/unlock.html">Забыли пароль?</a>
+        <a href="/register">Создать аккаунт</a>
+    </div>
+
     <a href="/index.html" class="back">← Вернуться на главную</a>
 
     <!-- Подсказка с данными для входа -->
@@ -114,4 +123,5 @@
         document.getElementById('password').value = 'admin123';
     }
 </script>
-
+</body>
+</html>

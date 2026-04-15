@@ -38,28 +38,5 @@ public class AccountController {
         return "redirect:/accounts";
     }
 
-    // New profile method with full details
-    @GetMapping("/profile")
-    public String profile(Model model, Principal principal) {
-        if (principal != null) {
-            String username = principal.getName();
-            model.addAttribute("username", username);
-
-            User user = userRepository.findByEmail(username).orElse(null);
-            if (user != null) {
-                model.addAttribute("user", user);
-                model.addAttribute("roles", user.getRoles());
-
-                List<Account> accounts = accountService.getUserAccounts(user.getId());
-                model.addAttribute("accounts", accounts);
-
-                List<Loan> loans = loanService.getUserLoans(user.getId());
-                model.addAttribute("loans", loans);
-
-                List<Deposit> deposits = depositService.getUserDeposits(user.getId());
-                model.addAttribute("deposits", deposits);
-            }
-        }
-        return "profile";
-    }
+    // Handled in HomeController. Removed to fix Ambiguous mapping.
 }

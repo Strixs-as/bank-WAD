@@ -5,6 +5,8 @@ import com.techstore.bank_system.dto.LoginRequest;
 import com.techstore.bank_system.dto.RegisterRequest;
 import com.techstore.bank_system.repository.UserRepository;
 import com.techstore.bank_system.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,60 +36,47 @@ public class AuthResource {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody(required = false) RegisterRequest request) {
-        try {
-            if (request == null) {
-                return ResponseEntity.badRequest().body(Map.of("message",
-                        "Тело запроса пустое. Отправьте JSON: {firstName, lastName, email, password}"));
-            }
-            if (request.getEmail() == null || request.getEmail().isBlank()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Поле email обязательно"));
-            }
-            if (request.getPassword() == null || request.getPassword().isBlank()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Поле password обязательно"));
-            }
-            if (request.getFirstName() == null || request.getFirstName().isBlank()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Поле firstName обязательно"));
-            }
-            if (request.getLastName() == null || request.getLastName().isBlank()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Поле lastName обязательно"));
-            }
-
-            AuthResponse response = authService.register(request);
-            if (response.getToken() == null) {
-                return ResponseEntity.badRequest().body(Map.of("message", response.getMessage()));
-            }
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Ошибка при регистрации: " + e.getMessage()));
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = authService.register(request);
+        if (response.getToken() == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", response.getMessage()));
         }
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody(required = false) LoginRequest request) {
-        try {
-            if (request == null) {
-                return ResponseEntity.badRequest().body(Map.of("message",
-                        "Тело запроса пустое. Отправьте JSON: {email, password}"));
-            }
-            if (request.getEmail() == null || request.getEmail().isBlank()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Поле email обязательно"));
-            }
-            if (request.getPassword() == null || request.getPassword().isBlank()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Поле password обязательно"));
-            }
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        if (response.getToken() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", response.getMessage()));
+        }
+        return ResponseEntity.ok(response);
+    }
 
-            AuthResponse response = authService.login(request);
-            if (response.getToken() == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", response.getMessage()));
-            }
-            return ResponseEntity.ok(response);
+    @PostMapping("/unlock/request")
+    public ResponseEntity<?> requestUnlock(@Valid @RequestBody com.techstore.bank_system.dto.UnlockRequest request,
+                                           HttpServletRequest http) {
+        try {
+            String ip = http.getRemoteAddr();
+            String ua = http.getHeader("User-Agent");
+            authService.requestUnlockCode(request.getEmail(), ip, ua);
+        } catch (Exception ignored) {
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Если аккаунт существует, мы отправили код на email"));
+    }
+
+    @PostMapping("/unlock/confirm")
+    public ResponseEntity<?> confirmUnlock(@Valid @RequestBody com.techstore.bank_system.dto.UnlockConfirmRequest request) {
+        try {
+            authService.confirmUnlockCode(request.getEmail(), request.getCode());
+            return ResponseEntity.ok(Map.of("message", "Аккаунт разблокирован"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Ошибка при входе: " + e.getMessage()));
+                    .body(Map.of("message", "Ошибка сервера"));
         }
     }
 }
-

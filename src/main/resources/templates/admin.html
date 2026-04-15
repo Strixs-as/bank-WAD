@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       lang="ru">
 <head>
@@ -769,6 +767,11 @@
             🏦 Счета
             <span class="tab-count" th:text="${totalAccounts}"></span>
         </a>
+        <a th:href="@{/admin/tab/cards}"
+           th:class="${tab=='cards'} ? 'tab-btn active' : 'tab-btn'">
+            💳 Карты
+            <span class="tab-count" th:text="${totalCards}"></span>
+        </a>
     </div>
 
     <!-- ══ TAB: ПОЛЬЗОВАТЕЛИ ══ -->
@@ -1157,21 +1160,22 @@
                     <th>Валюта</th>
                     <th>Статус</th>
                     <th>Дата</th>
+                    <th>Действия</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:if="${#lists.isEmpty(accounts)}">
-                    <td colspan="8" class="empty">Счетов нет</td>
+                    <td colspan="9" class="empty">Счетов нет</td>
                 </tr>
                 <tr th:each="a : ${accounts}">
                     <td th:text="${a.id}"></td>
                     <td style="font-weight:600;font-family:monospace" th:text="${a.accountNumber}"></td>
                     <td>
-                            <span th:if="${a.user != null}">
-                                <a style="color:#a78bfa;text-decoration:none;font-weight:600;cursor:pointer"
-                                   th:onclick="'openUserModal(' + ${a.user.id} + ')'"
-                                   th:text="${a.user.firstName + ' ' + a.user.lastName}"></a>
-                            </span>
+                        <span th:if="${a.user != null}">
+                            <a style="color:#a78bfa;text-decoration:none;font-weight:600;cursor:pointer"
+                               th:onclick="'openUserModal(' + ${a.user.id} + ')'"
+                               th:text="${a.user.firstName + ' ' + a.user.lastName}"></a>
+                        </span>
                         <span th:unless="${a.user != null}">—</span>
                     </td>
                     <td th:text="${a.accountType}"></td>
@@ -1183,6 +1187,72 @@
                     </td>
                     <td style="font-size:.82rem"
                         th:text="${a.createdAt != null} ? ${#temporals.format(a.createdAt,'dd.MM.yyyy')} : '—'"></td>
+                    <td>
+                        <form th:action="@{/admin/account/delete/{id}(id=${a.id})}" method="post" class="inline"
+                              onsubmit="return confirm('Удалить счёт? Будут удалены связанные заявки (кредиты/депозиты), если они есть.')">
+                            <button type="submit" class="btn btn-danger">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ TAB: КАРТЫ ══ -->
+    <div th:if="${tab == 'cards'}">
+        <div class="section-header">
+            <div class="section-title">💳 Все карты</div>
+            <span style="font-size:.85rem;color:rgba(255,255,255,.4)" th:text="'Всего: ' + ${totalCards}"></span>
+        </div>
+        <div class="table-wrap">
+            <table class="no-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Номер</th>
+                    <th>Держатель</th>
+                    <th>Пользователь</th>
+                    <th>Счёт</th>
+                    <th>Статус</th>
+                    <th>Создана</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(cards)}">
+                    <td colspan="8" class="empty">Карт нет</td>
+                </tr>
+                <tr th:each="c : ${cards}">
+                    <td th:text="${c.id}"></td>
+                    <td style="font-family:monospace" th:text="${c.cardNumber}"></td>
+                    <td th:text="${c.cardHolder}"></td>
+                    <td>
+                        <span th:if="${c.user != null}">
+                            <a style="color:#a78bfa;text-decoration:none;font-weight:600;cursor:pointer"
+                               th:onclick="'openUserModal(' + ${c.user.id} + ')'"
+                               th:text="${c.user.firstName + ' ' + c.user.lastName}"></a>
+                            <div style="font-size:.75rem;color:rgba(255,255,255,.4)" th:text="${c.user.email}"></div>
+                        </span>
+                        <span th:unless="${c.user != null}">—</span>
+                    </td>
+                    <td>
+                        <span th:if="${c.account != null}" style="font-family:monospace" th:text="${c.account.accountNumber}"></span>
+                        <span th:unless="${c.account != null}">—</span>
+                    </td>
+                    <td>
+                        <span th:if="${c.isActive}" class="badge badge-active">Активна</span>
+                        <span th:unless="${c.isActive}" class="badge badge-closed">Неактивна</span>
+                        <span th:if="${c.isBlocked}" class="badge badge-rejected" style="margin-left:6px">Заблок.</span>
+                    </td>
+                    <td style="font-size:.82rem" th:text="${c.createdAt != null} ? ${#temporals.format(c.createdAt,'dd.MM.yyyy HH:mm')} : '—'"></td>
+                    <td>
+                        <form th:action="@{/admin/card/delete/{id}(id=${c.id})}" method="post" class="inline"
+                              onsubmit="return confirm('Заблокировать и удалить карту? Пользователю придёт email.')">
+                            <input type="hidden" name="reason" value="Удалено администратором"/>
+                            <button type="submit" class="btn btn-danger">🗑 Заблокировать и удалить</button>
+                        </form>
+                    </td>
                 </tr>
                 </tbody>
             </table>

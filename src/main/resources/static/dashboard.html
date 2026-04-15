@@ -254,15 +254,20 @@
         <div class="nav-item active" onclick="showPanel('home')"><span class="icon">🏠</span> Главная</div>
         <div class="nav-item" onclick="showPanel('accounts')"><span class="icon">🏦</span> Мои счета</div>
         <div class="nav-item" onclick="showPanel('newAccount')"><span class="icon">➕</span> Открыть счёт</div>
+        <div class="nav-item" onclick="showPanel('cards')"><span class="icon">💳</span> Карты</div>
         <div class="nav-item" onclick="showPanel('transfer')"><span class="icon">💸</span> Переводы</div>
         <div class="nav-item" onclick="showPanel('transactions')"><span class="icon">📊</span> История</div>
         <div class="nav-item" onclick="showPanel('session')"><span class="icon">🔐</span> Сессия</div>
         <div class="sidebar-section" style="margin-top: 0.75rem;">Продукты</div>
         <div class="nav-item" onclick="window.location.href='loans.html'"><span class="icon">📋</span> Кредиты</div>
         <div class="nav-item" onclick="window.location.href='deposits.html'"><span class="icon">💰</span> Вклады</div>
-        <div class="sidebar-section" style="margin-top: 0.75rem;">Учёба</div>
-        <div class="nav-item" onclick="window.location.href='javaee.html'"><span class="icon">📚</span> Java EE</div>
         <div class="nav-item" onclick="window.location.href='index.html'"><span class="icon">🌐</span> Главная страница</div>
+        <div class="sidebar-section" style="margin-top: 0.75rem;">Финансы</div>
+        <div class="nav-item" onclick="showPanel('accounts')"><span class="icon">🏦</span>Счета</div>
+        <div class="nav-item" onclick="showPanel('transfer')"><span class="icon">💸</span>Переводы</div>
+        <div class="nav-item" onclick="showPanel('transactions')"><span class="icon">📊</span>История</div>
+        <!-- NEW -->
+        <div class="nav-item" onclick="showPanel('analytics')"><span class="icon">🧾</span>Аналитика покупок</div>
 
         <script>
             // Проверка роли пользователя для отображения админ панели
@@ -296,6 +301,7 @@
                     <button class="quick-btn primary" onclick="showPanel('newAccount')">+ Открыть счёт</button>
                     <button class="quick-btn secondary" onclick="showPanel('transfer')">💸 Перевод</button>
                     <button class="quick-btn secondary" onclick="showPanel('transactions')">📊 История</button>
+                    <button class="quick-btn secondary" onclick="showPanel('cards')">💳 Заказать карту</button>
                 </div>
             </div>
 
@@ -501,12 +507,128 @@
             </div>
         </div>
 
+        <!-- ══ PURCHASE ANALYTICS PANEL ══ -->
+        <div class="panel" id="panel-analytics">
+            <div class="section-header"><h2>🧾 Аналитика покупок</h2></div>
+
+            <div class="card">
+                <h3>Фильтры</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Счёт (необязательно)</label>
+                        <select id="anAccount"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Валюта (необязательно)</label>
+                        <select id="anCurrency">
+                            <option value="">Все</option>
+                            <option value="KZT">KZT</option>
+                            <option value="RUB">RUB</option>
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Дата с</label>
+                        <input type="date" id="anFrom" />
+                    </div>
+                    <div class="form-group">
+                        <label>Дата по</label>
+                        <input type="date" id="anTo" />
+                    </div>
+                    <div class="form-group full">
+                        <button class="btn-submit" onclick="loadPurchaseAnalytics()">Обновить аналитику</button>
+                        <div class="alert" id="anErr"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card green">
+                    <div class="stat-label">Сумма покупок</div>
+                    <div class="stat-value" id="anTotal">—</div>
+                    <div class="stat-sub">за период</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-label">Количество</div>
+                    <div class="stat-value" id="anCount">—</div>
+                    <div class="stat-sub">операций</div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-label">Средний чек</div>
+                    <div class="stat-value" id="anAvg">—</div>
+                    <div class="stat-sub">по покупкам</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-label">Покупки/день</div>
+                    <div class="stat-value" id="anPerDay">—</div>
+                    <div class="stat-sub">грубо</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Динамика по дням</h3>
+                <div id="anChart" style="height:160px; display:flex; gap:6px; align-items:flex-end;"></div>
+                <div style="color:var(--muted); font-size:12px; margin-top:10px; line-height:1.4;">
+                    Покупка в MVP считается как операция <b>WITHDRAWAL</b>. Чтобы видеть категории/мерчантов, в описании операции можно писать:
+                    <code>MER: Магазин; CAT: Продукты; ...</code>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Топ мерчантов</h3>
+                <div id="anTopMerchants" class="tx-list">
+                    <div class="loader">Нажмите «Обновить аналитику»</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Топ категорий</h3>
+                <div id="anTopCategories" class="tx-list">
+                    <div class="loader">Нажмите «Обновить аналитику»</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ CARDS PANEL ══ -->
+        <div class="panel" id="panel-cards">
+            <div class="section-header">
+                <h2>💳 Мои карты</h2>
+            </div>
+
+            <div class="card">
+                <h3>Заказать новую карту</h3>
+                <div class="alert alert-success" id="cardSuccess"></div>
+                <div class="alert alert-error" id="cardError"></div>
+
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Выберите счёт для привязки карты</label>
+                        <select id="cardAccount"></select>
+                        <div style="margin-top:6px;color:rgba(255,255,255,0.45);font-size:0.82rem;line-height:1.45;">
+                            Карта будет привязана к выбранному счёту. После выпуска вы получите email-уведомление.
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-submit" onclick="orderCard()">Выпустить карту</button>
+            </div>
+
+            <div class="card">
+                <h3>Список карт</h3>
+                <div id="cardsList" class="accounts-grid">
+                    <div class="loader">Загрузка карт...</div>
+                </div>
+            </div>
+        </div>
+
     </div><!-- /main -->
 </div><!-- /layout -->
 
 <script>
     const API = '/api';
     let accounts = [];
+    let cards = [];
 
     // ── Auth check: JWT или сессия
     const token = () => localStorage.getItem('token');
@@ -531,6 +653,7 @@
         event && event.currentTarget && event.currentTarget.classList.add('active');
         if (name === 'accounts' || name === 'home') loadAccounts();
         if (name === 'transfer' || name === 'transactions') { loadAccounts(); }
+        if (name === 'cards') { loadAccounts(); loadCards(); }
     }
 
     // ── Show alert
@@ -545,7 +668,7 @@
     async function loadAccounts() {
         try {
             const r = await fetch(`${API}/accounts`, { headers: authHdr() });
-            if (r.status === 401 || r.status === 403) { localStorage.clear(); window.location.href = '/login'; return; }
+            if (r.status === 401 || r.status === 403) { localStorage.clear(); window.location.href = '/index.html'; return; }
             if (!r.ok) { accounts = []; return; }
             accounts = await r.json();
         } catch (e) { accounts = []; }
@@ -605,11 +728,132 @@
             const el = document.getElementById(id);
             if (el) { el.innerHTML = opts || '<option value="">Нет счетов</option>'; }
         });
+
+        // NEW: accounts for cards — value должен быть accountId
+        const cardSel = document.getElementById('cardAccount');
+        if (cardSel) {
+            if (!accounts.length) {
+                cardSel.innerHTML = '<option value="">Сначала откройте счёт</option>';
+            } else {
+                cardSel.innerHTML = accounts.map(a =>
+                    `<option value="${a.id}">${a.accountNumber} (${formatBalance(a.balance, a.currency)})</option>`
+                ).join('');
+            }
+        }
+
+        // NEW: analytics accounts (with empty option)
+        const an = document.getElementById('anAccount');
+        if (an) {
+            an.innerHTML = '<option value="">Все счета</option>' + (opts || '');
+        }
     }
 
-    function updateStats() {
-        const el = id => document.getElementById(id);
-        if (el('statAccounts')) el('statAccounts').textContent = accounts.length;
+    function showSmallAlert(id, text) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = '⚠️ ' + text;
+        el.className = 'alert alert-error show';
+        setTimeout(() => el.classList.remove('show'), 6000);
+    }
+
+    function anQuery() {
+        const acc = document.getElementById('anAccount')?.value || '';
+        const cur = document.getElementById('anCurrency')?.value || '';
+        const from = document.getElementById('anFrom')?.value || '';
+        const to = document.getElementById('anTo')?.value || '';
+
+        const p = new URLSearchParams();
+        if (acc) p.set('accountNumber', acc);
+        if (cur) p.set('currency', cur);
+        if (from) p.set('from', from);
+        if (to) p.set('to', to);
+        return p.toString();
+    }
+
+    function fmtMoney(v) {
+        if (v === null || v === undefined) return '—';
+        const n = Number(v);
+        if (Number.isNaN(n)) return String(v);
+        return n.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    async function loadPurchaseAnalytics() {
+        try {
+            const qs = anQuery();
+            const [sumR, dayR, merR, catR] = await Promise.all([
+                fetch(`${API}/analytics/purchases/summary${qs ? '?' + qs : ''}`, { headers: authHdr() }),
+                fetch(`${API}/analytics/purchases/by-day${qs ? '?' + qs : ''}`, { headers: authHdr() }),
+                fetch(`${API}/analytics/purchases/by-merchant${qs ? '?' + qs : ''}`, { headers: authHdr() }),
+                fetch(`${API}/analytics/purchases/by-category${qs ? '?' + qs : ''}`, { headers: authHdr() }),
+            ]);
+
+            if (!sumR.ok) {
+                const t = await sumR.text();
+                showSmallAlert('anErr', t || 'Ошибка аналитики');
+                return;
+            }
+
+            const summary = await sumR.json();
+            const byDay = dayR.ok ? await dayR.json() : [];
+            const byMer = merR.ok ? await merR.json() : [];
+            const byCat = catR.ok ? await catR.json() : [];
+
+            // KPIs
+            const cur = document.getElementById('anCurrency')?.value || '';
+            const curLabel = cur || '';
+            document.getElementById('anTotal').textContent = fmtMoney(summary.totalAmount) + (curLabel ? ' ' + curLabel : '');
+            document.getElementById('anCount').textContent = (summary.totalCount ?? 0);
+            document.getElementById('anAvg').textContent = fmtMoney(summary.avgAmount) + (curLabel ? ' ' + curLabel : '');
+            document.getElementById('anPerDay').textContent = byDay.length ? (Math.round((summary.totalCount || 0) / byDay.length * 10) / 10) : '0';
+
+            renderChart(byDay);
+            renderTop('anTopMerchants', byMer, curLabel);
+            renderTop('anTopCategories', byCat, curLabel);
+
+        } catch (e) {
+            showSmallAlert('anErr', 'Ошибка соединения: ' + (e.message || e));
+        }
+    }
+
+    function renderChart(points) {
+        const el = document.getElementById('anChart');
+        if (!el) return;
+        if (!points || !points.length) {
+            el.innerHTML = '<div class="loader">Нет данных за период</div>';
+            return;
+        }
+        const max = Math.max(...points.map(p => Number(p.totalAmount) || 0), 1);
+        el.innerHTML = points.map(p => {
+            const v = Number(p.totalAmount) || 0;
+            const h = Math.max(4, Math.round((v / max) * 150));
+            const title = `${p.date}: ${fmtMoney(v)} (${p.totalCount})`;
+            return `<div title="${title}" style="width: 14px; height:${h}pixel; border-radius:6px; background: linear-gradient(180deg, rgba(102,126,234,.85), rgba(240,147,251,.55)); border:1px solid rgba(255,255,255,.10);"></div>`;
+        }).join('');
+    }
+
+    function renderTop(targetId, rows, currencyLabel) {
+        const el = document.getElementById(targetId);
+        if (!el) return;
+        if (!rows || !rows.length) {
+            el.innerHTML = '<div class="empty-state"><div class="icon">🧾</div><p>Нет данных (или не заполнены MER/CAT в описании операций)</p></div>';
+            return;
+        }
+        el.innerHTML = rows.map(r => {
+            const amount = fmtMoney(r.totalAmount);
+            const cnt = r.totalCount ?? 0;
+            const label = (r.label || '—');
+            return `
+                <div class="tx-item">
+                    <div class="tx-left">
+                        <div class="tx-title">${label}</div>
+                        <div class="tx-sub">${cnt} операций</div>
+                    </div>
+                    <div class="tx-right">
+                        <div class="tx-amount">${amount}${currencyLabel ? ' ' + currencyLabel : ''}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     // ── Open account
@@ -712,10 +956,127 @@
         }
     }
 
-    function logout() { localStorage.clear(); window.location.href = '/login'; }
+    async function loadCards() {
+        const list = document.getElementById('cardsList');
+        if (list) list.innerHTML = '<div class="loader">Загрузка...</div>';
+        try {
+            const r = await fetch(`${API}/cards`, { headers: authHdr() });
+            if (r.status === 401 || r.status === 403) { localStorage.clear(); window.location.href = '/index.html'; return; }
+            if (!r.ok) {
+                const t = await r.text();
+                if (list) list.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>${t || 'Ошибка загрузки карт'}</p></div>`;
+                return;
+            }
+            cards = await r.json();
+        } catch (e) {
+            cards = [];
+        }
+        renderCards();
+        updateStats();
+    }
+
+    function maskCard(num) {
+        if (!num) return '•••• •••• •••• ••••';
+        const s = String(num).replace(/\s+/g, '');
+        if (s.length < 8) return s;
+        return s.slice(0, 4) + ' •••• •••• ' + s.slice(-4);
+    }
+
+    function renderCards() {
+        const list = document.getElementById('cardsList');
+        if (!list) return;
+        if (!cards || !cards.length) {
+            list.innerHTML = '<div class="empty-state"><div class="icon">💳</div><p>У вас пока нет карт. Нажмите «Выпустить карту».</p></div>';
+            return;
+        }
+        list.innerHTML = cards.map(c => {
+            const exp = c.expiryDate ? ('' + c.expiryDate).slice(0, 7).replace('-', '/') : '—';
+            const status = c.isBlocked ? 'Заблокирована' : (c.isActive ? 'Активна' : 'Неактивна');
+            const statusColor = c.isBlocked ? '#fca5a5' : (c.isActive ? '#86efac' : '#fcd34d');
+            return `
+                <div class="account-card checking" style="cursor:default;">
+                    <div class="account-type-label">💳 Карта • <span style="color:${statusColor};font-weight:800;">${status}</span></div>
+                    <div class="account-number">${maskCard(c.cardNumber)}</div>
+                    <div class="account-balance" style="font-size:1.05rem;">${(c.cardHolder || '—')}</div>
+                    <div class="account-currency" style="opacity:.8;">EXP: ${exp}</div>
+                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="quick-btn secondary" style="padding:0.45rem 0.75rem;" onclick="cardAction(${c.id}, '${c.isBlocked ? 'unblock' : 'block'}')">${c.isBlocked ? '🔓 Разблок.' : '⛔ Блок.'}</button>
+                        <button class="quick-btn secondary" style="padding:0.45rem 0.75rem;" onclick="cardAction(${c.id}, 'deactivate')">🧊 Деактив.</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function orderCard() {
+        const accountId = document.getElementById('cardAccount')?.value;
+        if (!accountId) { showAlert('cardError', 'Сначала выберите счёт', 'error'); return; }
+        try {
+            const r = await fetch(`${API}/cards/create/${accountId}`, { method: 'POST', headers: authHdr() });
+            const txt = await r.text();
+            let data = null;
+            try { data = txt ? JSON.parse(txt) : null; } catch (_) { /* ignore */ }
+
+            if (r.ok) {
+                // Сохраняем данные выпущенной карты, чтобы card-3d.html мог подхватить их автоматически
+                try {
+                    const cardPayload = data && typeof data === 'object' ? data : null;
+                    if (cardPayload) {
+                        sessionStorage.setItem('bs_last_card', JSON.stringify(cardPayload));
+                    } else {
+                        // fallback: хотя бы accountId
+                        sessionStorage.setItem('bs_last_card', JSON.stringify({ accountId: Number(accountId) }));
+                    }
+                } catch (_) { /* ignore */ }
+
+                showAlert('cardSuccess', 'Карта выпущена! Обновляю список…', 'success');
+
+                // Сразу пробуем обновить список
+                await loadCards();
+
+                // Небольшой ретрай (на случай задержек транзакции/репликации/кеша)
+                if (!cards || !cards.length) {
+                    setTimeout(() => { loadCards().catch(()=>{}); }, 500);
+                    setTimeout(() => { loadCards().catch(()=>{}); }, 1500);
+                }
+
+                // Редирект на 3D визуализацию карты
+                setTimeout(() => { window.location.href = '/card-3d.html'; }, 600);
+                return;
+            }
+            showAlert('cardError', (data && data.message) ? data.message : (txt || 'Ошибка выпуска карты'), 'error');
+        } catch (e) {
+            showAlert('cardError', 'Ошибка соединения', 'error');
+        }
+    }
+
+    async function cardAction(cardId, action) {
+        try {
+            const r = await fetch(`${API}/cards/${cardId}/${action}`, { method: 'PUT', headers: authHdr() });
+            const txt = await r.text();
+            if (r.ok) {
+                showAlert('cardSuccess', 'Операция выполнена', 'success');
+                await loadCards();
+                return;
+            }
+            showAlert('cardError', txt || 'Ошибка операции', 'error');
+        } catch (e) {
+            showAlert('cardError', 'Ошибка соединения', 'error');
+        }
+    }
+
+    function updateStats() {
+        const accCount = accounts.length;
+        document.getElementById('statAccounts').textContent = accCount;
+        // cards
+        const activeCards = (cards || []).filter(c => c.isActive && !c.isBlocked).length;
+        const statCards = document.getElementById('statCards');
+        if (statCards) statCards.textContent = activeCards;
+    }
 
     // ── Init load
     loadAccounts();
+    loadCards();
 
     // ══════════════════════════════════════════════
     //  IDLE TIMER — 3 минуты бездействия → выход
@@ -835,6 +1196,36 @@
         if (name === 'session') loadSessionInfo();
     };
 
+    // ══════════════════════════════════════════════
+    //  LOGOUT
+    // ══════════════════════════════════════════════
+    function logout() {
+        // 1) Сначала чистим клиентскую авторизацию
+        try {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
+        } catch (e) {
+            // ignore
+        }
+
+        // 2) Пытаемся корректно завершить server-side session (если она есть)
+        // Spring Security по умолчанию ожидает POST /logout
+        fetch('/logout', {
+            method: 'POST',
+            credentials: 'same-origin'
+        }).catch(() => {
+            // даже если бэкенд недоступен/ответ не 2xx — мы всё равно выходим на клиенте
+        }).finally(() => {
+            // 3) Редирект на главную
+            window.location.href = '/index.html';
+        });
+    }
+
 </script>
+
+<!-- BankSystem Chat Widget -->
+<script src="js/chat-widget.js"></script>
 </body>
 </html>

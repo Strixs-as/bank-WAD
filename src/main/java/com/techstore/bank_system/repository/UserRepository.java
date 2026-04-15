@@ -17,7 +17,7 @@ public class UserRepository extends GenericRepository<User, Long> {
     @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email) {
         try {
-            return Optional.of(entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
+            return Optional.of(entityManager.createQuery("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email", User.class)
                     .setParameter("email", email)
                     .getSingleResult());
         } catch (NoResultException e) {

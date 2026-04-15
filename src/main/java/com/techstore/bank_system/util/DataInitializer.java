@@ -48,18 +48,28 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initializeAdminUser() {
-        // Если admin уже существует — пропускаем
-        if (userRepository.findByEmail("admin@bank.kz").isPresent()) {
-            return;
-        }
-
         Role adminRole = roleRepository.findByName("ADMIN")
                 .orElseThrow(() -> new RuntimeException("Роль ADMIN не найдена"));
+
+        // Если admin уже существует — проверяем роли и при необходимости чиним
+        var existingOpt = userRepository.findByEmail("admin@bank.kz");
+        if (existingOpt.isPresent()) {
+            User existing = existingOpt.get();
+            boolean hasAdmin = existing.getRoles() != null
+                    && existing.getRoles().stream().anyMatch(r -> "ADMIN".equalsIgnoreCase(r.getName()));
+
+            if (!hasAdmin) {
+                existing.getRoles().add(adminRole);
+                userRepository.save(existing);
+                System.out.println("✅ Администратору admin@bank.kz назначена роль ADMIN (исправлено автоматически)");
+            }
+            return;
+        }
 
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("System")
-                .patronymic("Administrator")
+                .patronymic("")
                 .email("admin@bank.kz")
                 .password(passwordEncoder.encode("admin123"))
                 .passportNumber("ADMIN000001")

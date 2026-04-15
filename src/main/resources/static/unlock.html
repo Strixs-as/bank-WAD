@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Разблокировка / Сброс пароля — BankSystem</title>
+  <style>
+    :root {
+      --primary: #667eea;
+      --secondary: #764ba2;
+      --accent: #f093fb;
+      --dark: #1a1a2e;
+      --dark2: #16213e;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(102,126,234,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(240,147,251,0.10) 0%, transparent 50%),
+        linear-gradient(135deg, var(--dark) 0%, var(--dark2) 50%, #0f3460 100%);
+      z-index: -1;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #0d0d1a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 2.25rem 2rem;
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.55rem;
+      font-weight: 900;
+      margin-bottom: 0.35rem;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-bottom: 1.6rem;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      text-align: center;
+      padding: 0.7rem 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.75);
+      cursor: pointer;
+      user-select: none;
+      font-weight: 700;
+      transition: all .2s;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, rgba(102,126,234,0.35), rgba(118,75,162,0.35));
+      border-color: rgba(167,139,250,0.35);
+      color: #fff;
+    }
+
+    label {
+      display: block;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin: 0.9rem 0 0.45rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.98rem;
+      transition: all 0.25s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(102,126,234,0.10);
+    }
+
+    input::placeholder { color: rgba(255,255,255,0.25); }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 160px;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .row { grid-template-columns: 1fr; }
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 1.1rem;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .25s;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.35); }
+
+    .btn.secondary {
+      margin-top: 0.65rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.85);
+      font-weight: 750;
+    }
+
+    .btn.secondary:hover { box-shadow: none; transform: translateY(-1px); border-color: rgba(167,139,250,0.35); }
+
+    .msg {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      border: 1px solid transparent;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .msg.show { display: block; }
+    .ok { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: #86efac; }
+    .err { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+
+    .small {
+      margin-top: 1.15rem;
+      text-align: center;
+      color: rgba(255,255,255,0.45);
+      font-size: 0.86rem;
+    }
+
+    a { color: #a78bfa; text-decoration: none; font-weight: 650; }
+    a:hover { text-decoration: underline; }
+
+    .divider {
+      margin: 1.25rem 0;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .note {
+      background: rgba(102,126,234,0.08);
+      border: 1px solid rgba(102,126,234,0.22);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.75);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <div class="card">
+    <div class="logo">🔐</div>
+    <h1>Восстановление доступа</h1>
+    <p class="sub">Если вы забыли пароль или аккаунт заблокирован — запросите код на почту и подтвердите его.</p>
+
+    <div class="tabs">
+      <div class="tab active" id="tabUnlock">Разблокировка</div>
+      <div class="tab" id="tabReset">Сброс пароля</div>
+    </div>
+
+    <div class="note" id="noteText">
+      Если аккаунт заблокирован после 3 неверных попыток входа, мы отправим <b>код разблокировки</b> на вашу почту.
+    </div>
+
+    <hr class="divider" />
+
+    <div class="row">
+      <div>
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="example@gmail.com" autocomplete="email" />
+      </div>
+      <div>
+        <label for="code">Код</label>
+        <input id="code" type="text" placeholder="6 цифр" maxlength="6" inputmode="numeric" />
+      </div>
+    </div>
+
+    <div id="resetPasswordBlock" style="display:none;">
+      <label for="newPassword">Новый пароль</label>
+      <input id="newPassword" type="password" placeholder="Минимум 6 символов" autocomplete="new-password" />
+    </div>
+
+    <button class="btn" id="btnConfirm">Подтвердить код</button>
+    <button class="btn secondary" type="button" id="btnRequest">Запросить код на почту</button>
+
+    <div id="result" class="msg"></div>
+
+    <div class="small">
+      Вернуться на <a href="/login">страницу входа</a>
+    </div>
+  </div>
+
+  <script>
+    let mode = 'UNLOCK'; // UNLOCK | RESET
+
+    function show(ok, message) {
+      const el = document.getElementById('result');
+      el.className = 'msg show ' + (ok ? 'ok' : 'err');
+      el.textContent = message;
+    }
+
+    async function postJson(url, body) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const text = await res.text();
+      let json;
+      try { json = JSON.parse(text); } catch (e) { json = { raw: text }; }
+      return { ok: res.ok, status: res.status, json };
+    }
+
+    function setMode(nextMode) {
+      mode = nextMode;
+
+      document.getElementById('tabUnlock').classList.toggle('active', mode === 'UNLOCK');
+      document.getElementById('tabReset').classList.toggle('active', mode === 'RESET');
+
+      const note = document.getElementById('noteText');
+      const resetBlock = document.getElementById('resetPasswordBlock');
+
+      if (mode === 'UNLOCK') {
+        note.innerHTML = 'Если аккаунт заблокирован после 3 неверных попыток входа, мы отправим <b>код разблокировки</b> на вашу почту.';
+        resetBlock.style.display = 'none';
+        document.getElementById('btnConfirm').textContent = 'Разблокировать';
+        document.getElementById('btnRequest').textContent = 'Запросить код разблокировки';
+      } else {
+        note.innerHTML = 'Для сброса пароля запросите <b>код подтверждения</b> на почту, затем введите код и новый пароль.';
+        resetBlock.style.display = 'block';
+        document.getElementById('btnConfirm').textContent = 'Сменить пароль';
+        document.getElementById('btnRequest').textContent = 'Запросить код сброса';
+      }
+
+      // очистим сообщения
+      const el = document.getElementById('result');
+      el.className = 'msg';
+      el.textContent = '';
+    }
+
+    document.getElementById('tabUnlock').addEventListener('click', () => setMode('UNLOCK'));
+    document.getElementById('tabReset').addEventListener('click', () => setMode('RESET'));
+
+    document.getElementById('btnRequest').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      if (!email) return show(false, 'Введите email.');
+
+      if (mode === 'UNLOCK') {
+        const r = await postJson('/api/auth/unlock/request', { email });
+        if (r.ok) return show(true, 'Если аккаунт существует — мы отправили код разблокировки на почту.');
+        return show(false, (r.json && (r.json.message || r.json.error)) ? (r.json.message || r.json.error) : ('Ошибка (' + r.status + ')'));
+      } else {
+        const r = await postJson('/api/auth/password/reset/request', { email });
+        if (r.ok) return show(true, 'Если аккаунт существует — мы отправили код сброса на почту.');
+        return show(false, (r.json && (r.json.message || r.json.error)) ? (r.json.message || r.json.error) : ('Ошибка (' + r.status + ')'));
+      }
+    });
+
+    document.getElementById('btnConfirm').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const code = document.getElementById('code').value.trim();
+      if (!email || !code) return show(false, 'Введите email и код.');
+
+      if (mode === 'UNLOCK') {
+        const r = await postJson('/api/auth/unlock/confirm', { email, code });
+        if (r.ok) return show(true, 'Готово! Аккаунт разблокирован. Теперь вы можете войти.');
+        return show(false, (r.json && (r.json.message || r.json.error)) ? (r.json.message || r.json.error) : ('Ошибка (' + r.status + ')'));
+      } else {
+        const newPassword = document.getElementById('newPassword').value;
+        if (!newPassword || newPassword.length < 6) return show(false, 'Новый пароль должен быть не менее 6 символов.');
+
+        const r = await postJson('/api/auth/password/reset/confirm', { email, code, newPassword });
+        if (r.ok) return show(true, 'Пароль изменён. Теперь вы можете войти с новым паролем.');
+        return show(false, (r.json && (r.json.message || r.json.error)) ? (r.json.message || r.json.error) : ('Ошибка (' + r.status + ')'));
+      }
+    });
+
+    // default
+    setMode('UNLOCK');
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-з<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -103,7 +103,7 @@
         <a href="/home">← Главная</a>
         <a href="dashboard.html">Кабинет</a>
         <a href="deposits.html">Депозиты</a>
-        <a href="index.html" onclick="logout()">Выйти</a>
+        <a href="#" onclick="return logout(event)">Выйти</a>
     </div>
 </nav>
 
@@ -244,7 +244,25 @@
         el.textContent = text; el.className = `message ${type}`; el.style.display = 'block';
         setTimeout(() => el.style.display = 'none', 5000);
     }
-    function logout() { localStorage.clear(); }
+    async function logout(e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
+        try { localStorage.clear(); } catch (err) {}
+
+        // При JWT logout на сервере необязателен, но пусть корректно завершит сессию form-login.
+        try {
+            await fetch('/logout', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: ''
+            });
+        } catch (err) {}
+
+        // На главную страницу лендинга
+        window.location.href = '/index.html';
+        return false;
+    }
 </script>
 </body>
 </html>

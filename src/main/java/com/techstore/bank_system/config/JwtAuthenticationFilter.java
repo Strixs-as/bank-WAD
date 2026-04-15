@@ -37,6 +37,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Если это не API, пропускаем JWT проверку.
+        // Для обычных MVC-страниц (например, /admin) будет использована сессионная аутентификация Spring Security
+        if (!request.getRequestURI().startsWith("/api/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -49,7 +56,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String role = jwtUtil.extractRole(token);
 
             if (email != null && !jwtUtil.isTokenExpired(token)) {
-                String springRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+                String springRole = role;
+                if (!springRole.startsWith("ROLE_")) {
+                    springRole = "ROLE_" + springRole;
+                }
                 List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(springRole));
 
                 UsernamePasswordAuthenticationToken authToken =

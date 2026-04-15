@@ -1,9 +1,13 @@
 package com.techstore.bank_system.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "cards")
 @Data
@@ -39,9 +43,11 @@ public class Card {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private Account account;
 }

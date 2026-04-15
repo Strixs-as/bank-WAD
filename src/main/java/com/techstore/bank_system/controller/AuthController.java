@@ -1,21 +1,20 @@
 package com.techstore.bank_system.controller;
 
-import com.techstore.bank_system.entity.Role;
-import com.techstore.bank_system.entity.User;
+import com.techstore.bank_system.entity.*;
 import com.techstore.bank_system.repository.RoleRepository;
 import com.techstore.bank_system.repository.UserRepository;
+import com.techstore.bank_system.service.EmailService;
+import com.techstore.bank_system.service.EmailTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Controller
 public class AuthController {
@@ -28,6 +27,17 @@ public class AuthController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private EmailTemplateService emailTemplateService;
+
+    @GetMapping("/login")
+    public String showLogin() {
+        return "login";
+    }
 
     @GetMapping("/register")
     public String showRegister(Model model) {
@@ -109,13 +119,15 @@ public class AuthController {
         }
 
         userRepository.save(newUser);
+
+        // Улучшенное письмо о регистрации
+        try {
+            EmailTemplateService.EmailMessage msg = emailTemplateService.buildWelcome(newUser);
+            emailService.sendEmail(email, msg.subject(), msg.text());
+        } catch (Exception e) {
+            System.err.println("Email send error: " + e.getMessage());
+        }
+
         return "redirect:/login?registered";
     }
-
-    @GetMapping("/login")
-    public String showLogin() {
-        return "login";
-    }
 }
-
-

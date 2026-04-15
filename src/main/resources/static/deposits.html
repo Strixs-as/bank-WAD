@@ -108,7 +108,7 @@
         <a href="/home">← Главная</a>
         <a href="dashboard.html">Кабинет</a>
         <a href="loans.html">Кредиты</a>
-        <a href="index.html" onclick="logout()">Выйти</a>
+        <a href="#" onclick="return logout()">Выйти</a>
     </div>
 </nav>
 
@@ -269,7 +269,20 @@
         el.textContent = text; el.className = `message ${type}`; el.style.display = 'block';
         setTimeout(() => el.style.display = 'none', 5000);
     }
-    function logout() { localStorage.clear(); }
+        async function logout(e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        try { localStorage.clear(); } catch (e2) {}
+        try {
+            await fetch('/logout', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: ''
+            });
+        } catch (e3) {}
+        window.location.href = '/index.html';
+        return false;
+    }
 </script>
 </body>
 </html>

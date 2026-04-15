@@ -66,6 +66,41 @@
 
 ---
 
+## ✉️ Почта (SMTP) и локальный запуск без ошибок
+
+В некоторых сетях SMTP-порты до `smtp.gmail.com` (587/465) **блокируются** (в логах будет `SocketTimeoutException: Connect timed out`).
+Это **не баг приложения** — это ограничение сети/фаервола.
+
+Чтобы сайт и API всегда работали корректно локально:
+
+- По умолчанию отправка почты **выключена**: `app.mail.enabled=false`
+- Вместо реальной отправки используется **dev-fallback**: письмо логируется в консоль/лог (без падений)
+
+Включить реальную почту можно только если ваша сеть пропускает SMTP и вы задали переменные окружения:
+
+- `SPRING_MAIL_APP_PASSWORD` (или `SPRING_MAIL_PASSWORD`) — Gmail App Password
+- `APP_MAIL_ENABLED=true`
+
+Настройки лежат в `src/main/resources/application-sqlserver.properties`.
+
+---
+
+## 🧯 "java.lang.instrument ASSERTION FAILED ... JPLISAgent.c:876"
+
+Это сообщение генерируется **JDK agent-инструментации** (javaagent) при запуске из IDE.
+Обычно связано не с кодом проекта, а с конфликтом агентов (debugger/capture/profiler/hotswap).
+
+Что делать (IntelliJ IDEA):
+
+1. Запустите приложение **без профайлера и capture agent**.
+   - Отключите Async Profiler / Java Flight Recorder capture в Run Configuration
+2. Если включены плагины типа JRebel / DevTools hot swap — временно отключите.
+3. Если ошибка появляется только при Debug, попробуйте обычный Run.
+
+Важно: на работоспособность API/сайта это обычно не влияет, но сильно засоряет вывод.
+
+---
+
 ## ⚙️ Конфигурация SQL Server
 
 Убедитесь, что параметры в `src/main/resources/application-sqlserver.properties` совпадают с вашими учетными данными:
@@ -144,4 +179,3 @@ GitHub: [Strixs-as](https://github.com/Strixs-as)
 Email: [makeshnaiman@gmail.com](mailto:makeshnaiman@gmail.com)
 
 *Учебный проект включает в себя лабораторные работы по дисциплинам Web Application Development (WAD) и Java EE.*
-
