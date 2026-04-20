@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BankSystemApplication (run-no-agents)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.techstore.bank_system.BankSystemApplication" />
+    <module name="bank_system" />
+    <option name="VM_PARAMETERS" value="-Dapp.mail.enabled=true" />
+    <option name="PROGRAM_PARAMETERS" value="" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>
+

@@ -3,6 +3,7 @@ package com.techstore.bank_system.controller;
 import com.techstore.bank_system.entity.*;
 import com.techstore.bank_system.repository.*;
 import com.techstore.bank_system.service.CardService;
+import com.techstore.bank_system.application.card.command.AdminDeleteCardHandler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,7 @@ public class AdminController {
     private final com.techstore.bank_system.service.DepositService depositService;
     private final CardService cardService;
     private final CardRepository cardRepository;
+    private final AdminDeleteCardHandler adminDeleteCardHandler;
 
     public AdminController(UserRepository userRepository,
                            RoleRepository roleRepository,
@@ -37,7 +39,8 @@ public class AdminController {
                            com.techstore.bank_system.service.LoanService loanService,
                            com.techstore.bank_system.service.DepositService depositService,
                            CardService cardService,
-                           CardRepository cardRepository) {
+                           CardRepository cardRepository,
+                           AdminDeleteCardHandler adminDeleteCardHandler) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.loanRepository = loanRepository;
@@ -47,6 +50,7 @@ public class AdminController {
         this.depositService = depositService;
         this.cardService = cardService;
         this.cardRepository = cardRepository;
+        this.adminDeleteCardHandler = adminDeleteCardHandler;
     }
 
     @GetMapping
@@ -62,7 +66,8 @@ public class AdminController {
         List<Loan> loans = loanRepository.findAll();
         List<Deposit> deposits = depositRepository.findAll();
         List<Account> accounts = accountRepository.findAll();
-        List<Card> cards = cardRepository.findAll();
+        // В админке показываем все карты, включая soft-deleted (для аудита и управления).
+        List<Card> cards = cardRepository.findAdminAllCardsIncludingDeleted();
         List<Loan> pendingLoans = loanRepository.findByStatus(LoanStatus.PENDING);
         List<Deposit> pendingDeposits = depositRepository.findByStatus(DepositStatus.PENDING);
 
@@ -358,9 +363,15 @@ public class AdminController {
 
     @PostMapping("/card/delete/{id}")
     public String adminDeleteCard(@PathVariable("id") Long cardId,
-                                  @RequestParam(value = "reason", required = false) String reason) {
+                                  @RequestParam(value = "reason", required = false) String reason,
+                                  Authentication authentication) {
         try {
-            cardService.adminBlockAndDeactivate(cardId, reason);
+            String performedBy = (authentication != null) ? authentication.getName() : "admin";
+            adminDeleteCardHandler.handle(new com.techstore.bank_system.application.card.command.AdminDeleteCardCommand(
+                    cardId,
+                    reason,
+                    performedBy
+            ));
         } catch (Exception e) {
             System.err.println("Admin: failed to delete card id=" + cardId + " :: " + e.getMessage());
         }

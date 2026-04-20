@@ -960,7 +960,8 @@
         const list = document.getElementById('cardsList');
         if (list) list.innerHTML = '<div class="loader">Загрузка...</div>';
         try {
-            const r = await fetch(`${API}/cards`, { headers: authHdr() });
+            // Для UI показываем только активные (не заблокированные) карты
+            const r = await fetch(`${API}/cards/active`, { headers: authHdr() });
             if (r.status === 401 || r.status === 403) { localStorage.clear(); window.location.href = '/index.html'; return; }
             if (!r.ok) {
                 const t = await r.text();

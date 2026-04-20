@@ -231,6 +231,9 @@ public class CardService {
         }
 
         Card card = cardOpt.get();
+        if (Boolean.TRUE.equals(card.getIsDeleted())) {
+            throw new RuntimeException("Карта удалена");
+        }
         card.setIsBlocked(true);
         card.setBlockedAt(LocalDateTime.now());
         return cardRepository.save(card);
@@ -244,6 +247,9 @@ public class CardService {
         }
 
         Card card = cardOpt.get();
+        if (Boolean.TRUE.equals(card.getIsDeleted())) {
+            throw new RuntimeException("Карта удалена");
+        }
         card.setIsBlocked(false);
         card.setBlockedAt(null);
         return cardRepository.save(card);
@@ -257,6 +263,9 @@ public class CardService {
         }
 
         Card card = cardOpt.get();
+        if (Boolean.TRUE.equals(card.getIsDeleted())) {
+            throw new RuntimeException("Карта удалена");
+        }
         card.setIsActive(false);
         return cardRepository.save(card);
     }
@@ -270,11 +279,12 @@ public class CardService {
     }
 
     public List<Card> getAllCards() {
-        return cardRepository.findAll();
+        // по умолчанию не светим удалённые (soft-delete)
+        return cardRepository.findAdminVisibleCards();
     }
 
     /**
-     * Админская операция: заблокировать и деактивировать карту (soft delete).
+     * Админская операция: soft-delete карты.
      * Физически запись не удаляем — иначе можем сломать FK на account/user.
      */
     @Transactional
@@ -286,9 +296,19 @@ public class CardService {
             card.setIsBlocked(true);
             card.setBlockedAt(LocalDateTime.now());
         }
-        if (Boolean.TRUE.equals(card.getIsActive())) {
+        if (!Boolean.FALSE.equals(card.getIsActive())) {
             card.setIsActive(false);
         }
+
+        // soft-delete
+        if (!Boolean.TRUE.equals(card.getIsDeleted())) {
+            card.setIsDeleted(true);
+            card.setDeletedAt(LocalDateTime.now());
+        }
+        if (reason != null && !reason.isBlank()) {
+            card.setDeletedReason(reason);
+        }
+        // кто удалил — если есть контекст/безопасность, можно подставлять. Пока оставляем пустым.
 
         Card saved = cardRepository.save(card);
 
@@ -337,7 +357,16 @@ public class CardService {
     }
 
     public boolean isCardValid(String cardNumber) {
-        return cardNumber != null && cardNumber.matches("\\d{16}");
+        if (cardNumber == null || !cardNumber.matches("\\d{16}")) {
+            return false;
+        }
+        return cardRepository.findByCardNumber(cardNumber)
+                .map(c -> (c.getIsActive() != null && c.getIsActive())
+                        && (c.getIsBlocked() == null || !c.getIsBlocked())
+                        && (c.getIsDeleted() == null || !c.getIsDeleted())
+                        && c.getExpiryDate() != null
+                        && c.getExpiryDate().isAfter(LocalDate.now()))
+                .orElse(false);
     }
 
     private String generateCardNumber() {
